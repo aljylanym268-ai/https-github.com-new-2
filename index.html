@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Misar Systems | مسار سيستمز - لوحة المؤسس</title>
+    <title>Misar Systems | مسار سيستمز - النسخة الكاملة</title>
     <meta name="theme-color" content="#1a237e">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/x-icon" href="https://i.ibb.co/XktM4crn/1767120438295.png">
     <style>
+        /* جميع الأنماط كاملة كما في الملف الأصلي */
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Cairo', 'Tahoma', 'Arial', sans-serif; }
         body { background: #f8f9fa; color: #333; line-height: 1.4; min-height: 100vh; width: 100%; }
         .app-container { width: 100%; min-height: 100vh; background: #fff; display: flex; flex-direction: column; }
@@ -348,24 +349,46 @@
 <div class="app-container">
     <div class="status-bar"></div>
     <div class="loading" id="loadingScreen"><div class="loading-spinner"></div><p>جاري تحميل التطبيق...</p></div>
+    <!-- شاشة اختيار الموقع -->
     <div class="screen hidden" id="locationScreen"><div class="location-screen"><img src="https://i.ibb.co/XktM4crn/1767120438295.png" alt="Misar Systems" class="login-logo" loading="lazy"><div class="location-card"><h1 class="location-title">اختر موقعك</h1><p class="location-subtitle">لتقديم خدمات أفضل في منطقتك</p><div class="input-group"><label class="input-label">المحافظة</label><select class="location-select" id="governorateSelect" disabled><option value="قنا" selected>قنا</option></select></div><div class="input-group"><label class="input-label">المركز</label><select class="location-select" id="centerSelect"><option value="">اختر المركز</option><option value="قنا">قنا</option><option value="نقادة">نقادة</option><option value="قوص">قوص</option><option value="دشنا">دشنا</option><option value="فرشوط">فرشوط</option><option value="أبو تشت">أبو تشت</option><option value="نجع حمادي">نجع حمادي</option><option value="قفط">قفط</option></select></div><div class="input-group"><label class="input-label">القرية</label><select class="location-select" id="villageSelect"><option value="">اختر القرية</option></select></div><button class="location-btn" id="saveLocationBtn"><i class="fas fa-check-circle"></i> حفظ وبدء الاستخدام</button><div class="location-note"><i class="fas fa-info-circle"></i> يمكنك تغيير الموقع لاحقاً من الإعدادات</div></div></div></div>
+    <!-- شاشات الدخول والتسجيل -->
     <div class="screen hidden" id="loginScreen"><div class="login-screen"><img src="https://i.ibb.co/XktM4crn/1767120438295.png" alt="Misar Systems" class="login-logo" loading="lazy"><div class="login-card"><div class="bear-wrapper"><div class="bear-backdrop"></div><div class="bear-avatar" id="loginBear"><div class="bear-ear left"><div class="bear-ear-inner"></div></div><div class="bear-ear right"><div class="bear-ear-inner"></div></div><div class="bear-face"><div class="brows"><div class="brow"></div><div class="brow"></div></div><div class="bear-eyes"><div class="eye"><div class="pupil"></div></div><div class="eye"><div class="pupil"></div></div></div><div class="bear-nose"><div class="nose-shine"></div></div><div class="bear-mouth"></div></div><div class="cover-paws"><div class="paw"><i class="fas fa-paw"></i></div><div class="paw"><i class="fas fa-paw"></i></div></div></div></div><h1 class="login-title">تسجيل الدخول</h1><select class="account-type-select" id="loginAccountType"><option value="client" selected>عميل</option><option value="seller">بائع</option><option value="delivery">مندوب</option></select><button class="google-btn" id="googleLoginBtn"><i class="fab fa-google"></i> تسجيل الدخول عبر Google</button><div style="text-align:center; margin:15px 0; color:#aaa;">أو</div><div class="input-group"><label class="input-label">البريد الإلكتروني</label><input type="email" class="input-field" id="loginEmail" placeholder="example@email.com"></div><div class="input-group"><label class="input-label">كلمة المرور</label><input type="password" class="input-field" id="loginPassword" placeholder="أدخل كلمة المرور"></div><button class="login-btn" id="loginBtn"><i class="fas fa-sign-in-alt"></i> تسجيل الدخول</button><div class="skip-login"><button onclick="skipLogin()">تخطي التسجيل ومتابعة التصفح</button></div><div class="login-footer"><p>ليس لديك حساب؟ <a href="#" id="showRegisterLink">سجل الآن</a></p></div></div></div></div>
     <div class="screen hidden" id="registerScreen"><div class="register-screen"><img src="https://i.ibb.co/XktM4crn/1767120438295.png" alt="Misar Systems" class="login-logo" loading="lazy"><div class="register-card"><div class="bear-wrapper"><div class="bear-backdrop"></div><div class="bear-avatar" id="registerBear"><div class="bear-ear left"><div class="bear-ear-inner"></div></div><div class="bear-ear right"><div class="bear-ear-inner"></div></div><div class="bear-face"><div class="brows"><div class="brow"></div><div class="brow"></div></div><div class="bear-eyes"><div class="eye"><div class="pupil"></div></div><div class="eye"><div class="pupil"></div></div></div><div class="bear-nose"><div class="nose-shine"></div></div><div class="bear-mouth"></div></div><div class="cover-paws"><div class="paw"><i class="fas fa-paw"></i></div><div class="paw"><i class="fas fa-paw"></i></div></div></div></div><h1 class="register-title">إنشاء حساب جديد</h1><p class="register-subtitle">أدخل بياناتك للتسجيل</p><select class="account-type-select" id="registerAccountType"><option value="client" selected>عميل</option><option value="seller">بائع</option><option value="delivery">مندوب</option></select><div id="deliveryCenterField" style="display:none;"><div class="input-group"><label class="input-label">المركز (للمندوبين)</label><select id="deliveryCenterSelect" class="input-field"><option value="">اختر المركز</option><option value="قنا">قنا</option><option value="نقادة">نقادة</option><option value="قوص">قوص</option><option value="دشنا">دشنا</option><option value="فرشوط">فرشوط</option><option value="أبو تشت">أبو تشت</option><option value="نجع حمادي">نجع حمادي</option><option value="قفط">قفط</option></select></div></div><div class="input-group"><label class="input-label">الاسم (اختياري)</label><input type="text" class="input-field" id="registerName" placeholder="محمد أحمد"></div><div class="input-group"><label class="input-label">البريد الإلكتروني</label><input type="email" class="input-field" id="registerEmail" placeholder="example@email.com"></div><div class="input-group"><label class="input-label">كلمة المرور</label><input type="password" class="input-field" id="registerPassword" placeholder="أدخل كلمة المرور"></div><div class="input-group"><label class="input-label">تأكيد كلمة المرور</label><input type="password" class="input-field" id="registerConfirmPassword" placeholder="أعد إدخال كلمة المرور"></div><button class="login-btn" id="registerBtn"><i class="fas fa-user-plus"></i> إنشاء حساب</button><div class="login-footer"><p>لديك حساب بالفعل؟ <a href="#" id="showLoginLink">تسجيل الدخول</a></p></div></div></div></div>
+    <!-- الشاشة الرئيسية -->
     <div class="screen hidden" id="homeScreen"><div class="app-header"><div class="header-content"><div class="header-left"><button class="back-btn" onclick="goBack()"><i class="fas fa-arrow-right"></i></button><img src="https://i.ibb.co/XktM4crn/1767120438295.png" alt="Misar Systems" class="app-logo" loading="lazy"><div class="header-title">Misar Systems</div></div><div class="header-actions"><button class="header-icon" onclick="showScreen('cartScreen')"><i class="fas fa-shopping-cart"></i></button><button class="header-icon" onclick="showScreen('profileScreen')"><i class="fas fa-user"></i></button></div></div></div><div class="welcome-section"><div style="display:flex; align-items:center; justify-content:space-between;"><div class="welcome-text"><h1 id="welcomeName">مرحباً، زائر</h1><p id="welcomeLocation">موقعك: قنا - قنا</p></div><div class="user-avatar" id="welcomeAvatar" onclick="showScreen('editProfileScreen')"><i class="fas fa-user"></i></div></div></div><div class="quick-actions"><div class="section-title"><span>إجراءات سريعة</span><a href="#" style="font-size:0.9rem; color:#1a237e;">عرض الكل</a></div><div class="actions-grid"><a href="#" class="action-btn" onclick="showScreen('marketScreen')"><div class="action-icon"><i class="fas fa-shopping-bag"></i></div><span class="action-label">التسوق</span></a><a href="#" class="action-btn" onclick="showScreen('servicesScreen')"><div class="action-icon"><i class="fas fa-tools"></i></div><span class="action-label">الخدمات</span></a><a href="#" class="action-btn" onclick="showScreen('ordersScreen')"><div class="action-icon"><i class="fas fa-shopping-cart"></i></div><span class="action-label">طلباتي</span></a><a href="#" class="action-btn" onclick="showScreen('walletScreen')"><div class="action-icon"><i class="fas fa-wallet"></i></div><span class="action-label">المحفظة</span></a></div></div><div class="categories-section"><div class="section-title">الأقسام الرئيسية</div><div class="categories-grid"><a href="#" class="category-card" onclick="showScreen('electronicsScreen')"><div class="category-icon"><i class="fas fa-laptop"></i></div><div class="category-title">إلكترونيات</div><div class="category-desc">هواتف، لابتوبات، أجهزة</div></a><a href="#" class="category-card" onclick="showScreen('fashionScreen')"><div class="category-icon"><i class="fas fa-tshirt"></i></div><div class="category-title">أزياء</div><div class="category-desc">ملابس، أحذية، إكسسوارات</div></a><a href="#" class="category-card" onclick="showScreen('homeScreen')"><div class="category-icon"><i class="fas fa-home"></i></div><div class="category-title">منزل</div><div class="category-desc">أثاث، ديكور، مطبخ</div></a><a href="#" class="category-card" onclick="showScreen('foodScreen')"><div class="category-icon"><i class="fas fa-utensils"></i></div><div class="category-title">أطعمة</div><div class="category-desc">حلويات، مشروبات، أطعمة</div></a></div></div><div class="products-section"><div class="section-title">منتجات مميزة</div><div class="products-grid" id="featuredProducts"></div></div></div>
+    <!-- شاشة المتجر (market) -->
     <div class="screen hidden" id="marketScreen"><div class="app-header"><div class="header-content"><div class="header-left"><button class="back-btn active" onclick="goBack()"><i class="fas fa-arrow-right"></i></button></div><div class="header-search"><div class="search-container"><i class="fas fa-search"></i><input type="text" id="marketSearchInput" placeholder="ابحث في Misar Systems..."><span class="clear-search" id="clearSearch" onclick="clearSearch()"><i class="fas fa-times-circle"></i></span></div></div><div class="header-actions"></div></div></div><div class="products-section" style="padding-top:20px;"><div class="products-grid" id="marketProducts"></div></div></div>
+    <!-- شاشة السلة -->
     <div class="screen hidden" id="cartScreen"><div class="app-header"><div class="header-content"><div class="header-left"><button class="back-btn active" onclick="goBack()"><i class="fas fa-arrow-right"></i></button><div class="header-title">سلة التسوق</div></div></div></div><div class="cart-items" id="cartItems"></div><div class="cart-summary"><div class="cart-total"><div class="total-label">الإجمالي:</div><div class="total-amount" id="cartTotal">0 ج.م</div></div><button class="checkout-btn" onclick="openCheckout()"><i class="fas fa-shopping-bag"></i> إتمام الشراء</button></div></div>
+    <!-- شاشة الخدمات -->
     <div class="screen hidden" id="servicesScreen"><div class="app-header"><div class="header-content"><div class="header-left"><button class="back-btn active" onclick="goBack()"><i class="fas fa-arrow-right"></i></button><div class="header-title">الخدمات</div></div></div></div><div class="services-list" id="servicesList"></div></div>
+    <!-- شاشة الملف الشخصي -->
     <div class="screen hidden" id="profileScreen"><div class="app-header"><div class="header-content"><div class="header-left"><button class="back-btn active" onclick="goBack()"><i class="fas fa-arrow-right"></i></button><div class="header-title">الملف الشخصي</div></div></div></div><div class="profile-header"><div class="profile-avatar" id="profileAvatar" onclick="showScreen('editProfileScreen')"><i class="fas fa-user"></i></div><div class="profile-name" id="profileName">زائر</div><div class="profile-email" id="profileEmail">غير مسجل</div><div class="profile-location" id="profileLocation">المنطقة: غير محددة</div><div class="edit-avatar-icon" onclick="showScreen('editProfileScreen')"><i class="fas fa-pen"></i></div></div><div class="profile-stats"><div class="stat-card"><div class="stat-value" id="profileOrdersCount">0</div><div class="stat-label">طلبات</div></div><div class="stat-card"><div class="stat-value">0</div><div class="stat-label">رصيد</div></div><div class="stat-card"><div class="stat-value">0</div><div class="stat-label">نقاط</div></div></div><div class="profile-menu"><a href="#" class="menu-item" onclick="showScreen('ordersScreen')"><div class="menu-icon"><i class="fas fa-shopping-bag"></i></div><div class="menu-text">طلباتي</div><i class="fas fa-chevron-left menu-arrow"></i></a><a href="#" class="menu-item" onclick="showScreen('walletScreen')"><div class="menu-icon"><i class="fas fa-wallet"></i></div><div class="menu-text">المحفظة الإلكترونية</div><i class="fas fa-chevron-left menu-arrow"></i></a><a href="#" class="menu-item" id="sellerDashboardMenuItem" style="display:none;" onclick="showScreen('sellerDashboardScreen')"><div class="menu-icon"><i class="fas fa-store"></i></div><div class="menu-text">لوحة البائع</div><i class="fas fa-chevron-left menu-arrow"></i></a><a href="#" class="menu-item" id="deliveryDashboardMenuItem" style="display:none;" onclick="showScreen('deliveryDashboardScreen')"><div class="menu-icon"><i class="fas fa-truck"></i></div><div class="menu-text">لوحة المندوب</div><i class="fas fa-chevron-left menu-arrow"></i></a><a href="#" class="menu-item" id="founderDashboardMenuItem" style="display:none;" onclick="showScreen('founderDashboardScreen')"><div class="menu-icon"><i class="fas fa-crown"></i></div><div class="menu-text">لوحة تحكم المؤسس</div><i class="fas fa-chevron-left menu-arrow"></i></a><a href="#" class="menu-item" onclick="openLocationSettings()"><div class="menu-icon"><i class="fas fa-map-marker-alt"></i></div><div class="menu-text">تغيير المنطقة</div><i class="fas fa-chevron-left menu-arrow"></i></a><a href="#" class="menu-item" onclick="showScreen('editProfileScreen')"><div class="menu-icon"><i class="fas fa-user-edit"></i></div><div class="menu-text">تعديل الملف الشخصي</div><i class="fas fa-chevron-left menu-arrow"></i></a><div style="margin: 20px 0 10px; color:#1a237e; font-weight:700;">إعدادات الحساب</div><a href="#" class="menu-item" onclick="showChangePasswordModal()"><div class="menu-icon"><i class="fas fa-key"></i></div><div class="menu-text">تغيير كلمة المرور</div><i class="fas fa-chevron-left menu-arrow"></i></a><a href="#" class="menu-item" onclick="showSecurityModal()"><div class="menu-icon"><i class="fas fa-shield-alt"></i></div><div class="menu-text">إعدادات الأمان</div><i class="fas fa-chevron-left menu-arrow"></i></a><a href="#" class="menu-item warning" onclick="switchAccount()"><div class="menu-icon"><i class="fas fa-exchange-alt"></i></div><div class="menu-text">تبديل الحساب</div><i class="fas fa-chevron-left menu-arrow"></i></a><a href="#" class="menu-item danger" id="logoutMenuItem" style="display:none;" onclick="confirmLogout()"><div class="menu-icon"><i class="fas fa-sign-out-alt"></i></div><div class="menu-text">تسجيل الخروج</div><i class="fas fa-chevron-left menu-arrow"></i></a><a href="#" class="menu-item" id="loginMenuItem" onclick="showScreen('loginScreen')"><div class="menu-icon"><i class="fas fa-sign-in-alt"></i></div><div class="menu-text">تسجيل الدخول</div><i class="fas fa-chevron-left menu-arrow"></i></a></div></div>
+    <!-- شاشة تعديل الملف الشخصي -->
     <div class="screen hidden" id="editProfileScreen"><div class="app-header"><div class="header-content"><div class="header-left"><button class="back-btn active" onclick="goBack()"><i class="fas fa-arrow-right"></i></button><div class="header-title">تعديل الملف الشخصي</div></div></div></div><div class="edit-profile-screen"><div class="edit-profile-card"><h2 class="edit-profile-title">بياناتك الشخصية</h2><div class="edit-avatar-section"><div class="edit-avatar-preview" id="editAvatarPreview"><img src="" id="editAvatarImg" style="display:none;"><i class="fas fa-user" id="editAvatarIcon" style="font-size:3rem; color:#aaa; line-height:120px;"></i></div><input type="file" id="avatarUpload" accept="image/*" style="display:none;"><button class="edit-avatar-btn" onclick="document.getElementById('avatarUpload').click()">تغيير الصورة</button></div><div class="input-group"><label class="input-label">الاسم</label><input type="text" class="input-field" id="editName" placeholder="أدخل اسمك"></div><div class="input-group"><label class="input-label">رقم الهاتف</label><input type="tel" class="input-field" id="editPhone" placeholder="أدخل رقم الهاتف"></div><div class="input-group"><label class="input-label">المحافظة</label><input type="text" class="input-field" id="editGovernorate" value="قنا" disabled></div><div class="input-group"><label class="input-label">المركز</label><input type="text" class="input-field" id="editCenter" placeholder="اختر المركز أولاً من شاشة الموقع"></div><div class="input-group"><label class="input-label">القرية</label><input type="text" class="input-field" id="editVillage" placeholder="اختر القرية أولاً من شاشة الموقع"></div><div id="sellerExtraFields" style="display:none;"><div class="input-group"><label class="input-label">اسم المستخدم (للرابط الشخصي)</label><input type="text" id="editUsername" class="input-field" placeholder="example_name"><small style="color:#666;">سيظهر في رابط متجرك</small></div><div class="input-group"><label class="input-label">السيرة الذاتية (وصف المتجر)</label><textarea id="editBio" class="input-field" rows="3" placeholder="وصف قصير عن متجرك..."></textarea></div></div><button class="login-btn" id="saveProfileBtn" onclick="saveProfile()"><i class="fas fa-save"></i> حفظ التغييرات</button></div></div></div>
+    <!-- شاشة تفاصيل المنتج -->
     <div class="screen hidden" id="productDetailScreen"><div class="app-header"><div class="header-content"><div class="header-left"><button class="back-btn active" onclick="goBack()"><i class="fas fa-arrow-right"></i></button><div class="header-title">تفاصيل المنتج</div></div><div class="header-actions"><button class="header-icon" onclick="showScreen('cartScreen')"><i class="fas fa-shopping-cart"></i></button></div></div></div><div class="products-section" style="padding-top:20px;"><div id="productDetailContent"></div></div></div>
+    <!-- شاشة متجر البائع -->
     <div class="screen hidden" id="storeScreen"><div class="app-header"><div class="header-content"><div class="header-left"><button class="back-btn active" onclick="goBack()"><i class="fas fa-arrow-right"></i></button><div class="header-title">متجر البائع</div></div></div></div><div id="storeContent"><div style="text-align:center; padding:50px;">جاري تحميل المتجر...</div></div></div>
+    <!-- شاشة لوحة البائع -->
     <div class="screen hidden" id="sellerDashboardScreen"><div class="app-header"><div class="header-content"><div class="header-left"><button class="back-btn active" onclick="goBack()"><i class="fas fa-arrow-right"></i></button><div class="header-title">لوحة البائع</div></div><div class="header-actions"><button class="header-icon" onclick="refreshSellerDashboard()" title="تحديث"><i class="fas fa-sync-alt"></i></button><button class="header-icon" onclick="showAddProductForm()" title="إضافة منتج"><i class="fas fa-plus"></i></button><button class="header-icon" onclick="showNotifications()" title="الإشعارات"><i class="fas fa-bell"></i><span class="notification-badge" id="sellerNotificationBadge">0</span></button></div></div></div><div class="seller-stats"><div class="stat-card"><div class="stat-value" id="sellerProductCount">0</div><div class="stat-label">المنتجات</div></div><div class="stat-card"><div class="stat-value" id="sellerOrderCount">0</div><div class="stat-label">الطلبات</div></div><div class="stat-card"><div class="stat-value" id="sellerRevenue">0 ج.م</div><div class="stat-label">المبيعات</div></div></div><div id="sellerStoreTools" class="qr-section" style="margin:20px 5%; padding:20px; background:white; border-radius:20px; box-shadow:0 4px 15px rgba(0,0,0,0.05); display:none;"><h3 style="color:#1a237e; margin-bottom:10px;"><i class="fas fa-store"></i> متجرك الشخصي</h3><div id="storeLinkDisplay" class="store-link"></div><div class="action-buttons"><button class="copy-btn" id="copyStoreLinkBtn"><i class="fas fa-copy"></i> نسخ الرابط</button><button class="share-btn" id="shareStoreLinkBtn"><i class="fas fa-share-alt"></i> مشاركة</button><button class="view-store-btn" id="viewMyStoreBtn"><i class="fas fa-eye"></i> عرض متجري</button></div><div><strong>QR Code للمتجر:</strong></div><div class="qr-container" id="storeQRCode"></div><div><button class="edit-avatar-btn" id="downloadQRBtn"><i class="fas fa-download"></i> تحميل QR</button></div></div><div class="seller-tabs"><div class="seller-tab active" onclick="switchSellerTab('products')"><i class="fas fa-box"></i> المنتجات</div><div class="seller-tab" onclick="switchSellerTab('orders')"><i class="fas fa-shopping-cart"></i> الطلبات</div><div class="seller-tab" onclick="switchSellerTab('analytics')"><i class="fas fa-chart-line"></i> الإحصائيات</div></div><div class="seller-content"><div id="sellerProductsTab"><div class="search-box"><i class="fas fa-search"></i><input type="text" id="sellerProductSearch" placeholder="ابحث عن منتج..." oninput="filterSellerProducts()"></div><div class="filter-buttons" id="productCategoryFilters"><button class="filter-btn active" data-category="all">الكل</button><button class="filter-btn" data-category="electronics">إلكترونيات</button><button class="filter-btn" data-category="fashion">أزياء</button><button class="filter-btn" data-category="home">منزل</button><button class="filter-btn" data-category="food">أطعمة</button><button class="filter-btn" data-category="beauty">جمال</button><button class="filter-btn" data-category="sports">رياضة</button></div><div class="product-management" id="sellerProductsList"></div></div><div id="sellerOrdersTab" style="display:none;"><div class="search-box"><i class="fas fa-search"></i><input type="text" id="sellerOrderSearch" placeholder="ابحث عن طلب..." oninput="filterSellerOrders()"></div><div class="filter-buttons"><button class="filter-btn active" data-order-status="all">الكل</button><button class="filter-btn" data-order-status="pending">جديد</button><button class="filter-btn" data-order-status="confirmed">مؤكد</button><button class="filter-btn" data-order-status="prepared">تم التجهيز</button><button class="filter-btn" data-order-status="delivered">مكتمل</button><button class="filter-btn" data-order-status="cancelled">ملغي</button></div><div class="orders-list" id="sellerOrdersList"></div></div><div id="sellerAnalyticsTab" style="display:none;"><div style="background:white; border-radius:18px; padding:20px; box-shadow:0 4px 15px rgba(0,0,0,0.05);"><h3 style="color:#1a237e; margin-bottom:15px;">إحصائيات متقدمة</h3><div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:20px;"><div style="text-align:center; padding:15px; background:#f5f7fa; border-radius:15px;"><div style="font-size:2rem; color:#1a237e;" id="totalProductsStat">0</div><div>إجمالي المنتجات</div></div><div style="text-align:center; padding:15px; background:#f5f7fa; border-radius:15px;"><div style="font-size:2rem; color:#1a237e;" id="totalOrdersStat">0</div><div>إجمالي الطلبات</div></div><div style="text-align:center; padding:15px; background:#f5f7fa; border-radius:15px;"><div style="font-size:2rem; color:#1a237e;" id="totalRevenueStat">0 ج.م</div><div>إجمالي المبيعات</div></div><div style="text-align:center; padding:15px; background:#f5f7fa; border-radius:15px;"><div style="font-size:2rem; color:#1a237e;" id="averageOrderStat">0 ج.م</div><div>متوسط الطلب</div></div></div><canvas id="salesChart" style="width:100%; height:200px;"></canvas><button class="login-btn" style="margin-top:15px;" onclick="exportOrdersCSV()"><i class="fas fa-download"></i> تصدير التقرير (CSV)</button></div></div></div><div id="productModal" class="modal" onclick="if(event.target===this) closeProductModal()"><div class="modal-content"><h3 style="color:#1a237e; margin-bottom:15px;" id="productModalTitle">إضافة منتج جديد</h3><div class="input-group"><label class="input-label">اسم المنتج</label><input type="text" id="productName" class="input-field" placeholder="مثال: هاتف سامسونج"></div><div class="input-group"><label class="input-label">السعر (ج.م)</label><input type="number" id="productPrice" class="input-field" placeholder="0.00" step="0.01"></div><div class="input-group"><label class="input-label">الكمية المتاحة</label><input type="number" id="productStock" class="input-field" placeholder="0" value="1"></div><div class="input-group"><label class="input-label">الوصف</label><textarea id="productDescription" class="input-field" placeholder="وصف المنتج" rows="3"></textarea></div><div class="input-group"><label class="input-label">التصنيف</label><select id="productCategory" class="input-field"><option value="">اختر التصنيف</option><option value="electronics">إلكترونيات</option><option value="fashion">أزياء</option><option value="home">منزل</option><option value="food">أطعمة</option><option value="beauty">جمال وعناية</option><option value="sports">رياضة</option></select></div><div class="input-group"><label class="input-label">صور المنتج (يمكنك اختيار عدة صور)</label><input type="file" id="productImages" accept="image/*" multiple onchange="previewMultipleImages(event)"><div class="image-preview-list" id="multiImagePreview"></div></div><div class="input-group"><label class="input-label">نسبة الخصم (%)</label><input type="number" id="productDiscount" class="input-field" placeholder="0" min="0" max="100"></div><input type="hidden" id="editingProductId" value=""><div style="display:flex; gap:10px; margin-top:20px;"><button class="login-btn" style="flex:1;" onclick="saveProduct()">حفظ</button><button class="google-btn" style="flex:1;" onclick="closeProductModal()">إلغاء</button></div></div></div><div id="orderModal" class="modal" onclick="if(event.target===this) closeOrderModal()"><div class="modal-content"><h3 style="color:#1a237e; margin-bottom:15px;">تفاصيل الطلب</h3><div id="orderDetails"></div><div style="margin-top:15px;"><label class="input-label">تغيير الحالة:</label><select id="orderStatusSelect" class="input-field"></select><button class="login-btn" style="margin-top:10px;" onclick="updateOrderStatusFromModal()">تحديث الحالة</button></div><button class="google-btn" style="margin-top:10px;" onclick="closeOrderModal()">إغلاق</button></div></div></div>
+    <!-- شاشة لوحة المندوب -->
     <div class="screen hidden" id="deliveryDashboardScreen"><div class="app-header"><div class="header-content"><div class="header-left"><button class="back-btn active" onclick="goBack()"><i class="fas fa-arrow-right"></i></button><div class="header-title">لوحة المندوب</div></div><div class="header-actions"><button class="header-icon" onclick="refreshDeliveryDashboard()" title="تحديث"><i class="fas fa-sync-alt"></i></button><button class="header-icon" onclick="showNotifications()" title="الإشعارات"><i class="fas fa-bell"></i><span class="notification-badge" id="deliveryNotificationBadge">0</span></button></div></div></div><div class="delivery-stats"><div class="stat-card"><div class="stat-value" id="availableOrdersCount">0</div><div class="stat-label">طلبات متاحة</div></div><div class="stat-card"><div class="stat-value" id="myOrdersCount">0</div><div class="stat-label">طلباتي</div></div></div><div class="seller-tabs"><div class="seller-tab active" onclick="switchDeliveryTab('available')"><i class="fas fa-list"></i> طلبات متاحة</div><div class="seller-tab" onclick="switchDeliveryTab('my')"><i class="fas fa-truck"></i> طلباتي</div></div><div class="seller-content"><div id="availableOrdersTab"><div class="orders-list" id="availableOrdersList"></div></div><div id="myOrdersTab" style="display:none;"><div class="orders-list" id="myDeliveryOrdersList"></div></div></div></div>
+    <!-- شاشة طلبات العميل -->
     <div class="screen hidden" id="ordersScreen"><div class="app-header"><div class="header-content"><div class="header-left"><button class="back-btn active" onclick="goBack()"><i class="fas fa-arrow-right"></i></button><div class="header-title">طلباتي</div></div></div></div><div class="orders-list" id="buyerOrdersList" style="padding:20px 5%;"></div></div>
+    <!-- شاشة لوحة المؤسس -->
+    <div class="screen hidden" id="founderDashboardScreen"><div class="app-header"><div class="header-content"><div class="header-left"><button class="back-btn active" onclick="goBack()"><i class="fas fa-arrow-right"></i></button><div class="header-title">لوحة تحكم المؤسس</div></div></div></div><div style="padding:20px 5%;"><div class="founder-dashboard-card"><div class="founder-dashboard-title"><i class="fas fa-crown" style="margin-left:10px;"></i> التحكم بصفحة المؤسس</div><div class="toggle-switch"><span><i class="fas fa-eye-slash"></i> إظهار/إخفاء الصفحة (للجميع)</span><label class="switch"><input type="checkbox" id="toggleFounderPage"><span class="slider"></span></label></div><div class="stats-row"><div class="stat-box"><div class="stat-number" id="founderViewsCount">0</div><div class="stat-label">عدد المشاهدات</div></div><div class="stat-box"><div class="stat-number" id="founderSharesTotal">0</div><div class="stat-label">إجمالي المشاركات</div></div></div><button class="refresh-stats-btn" onclick="refreshFounderStats()"><i class="fas fa-sync-alt"></i> تحديث الإحصائيات</button></div><div class="founder-dashboard-card"><div class="founder-dashboard-title"><i class="fas fa-users"></i> طلبات انضمام المناديب</div><div id="pendingDeliveriesList" class="pending-deliveries-list"><p>جاري التحميل...</p></div></div></div></div>
+    <!-- شاشة المحفظة (placeholder) -->
+    <div class="screen hidden" id="walletScreen"><div class="app-header"><div class="header-content"><div class="header-left"><button class="back-btn active" onclick="goBack()"><i class="fas fa-arrow-right"></i></button><div class="header-title">المحفظة الإلكترونية</div></div></div></div><div style="text-align:center; padding:50px;"><i class="fas fa-wallet" style="font-size:4rem; color:#1a237e;"></i><h3 style="margin:20px 0;">المحفظة قيد التطوير</h3><p>سيتم إضافة هذه الميزة قريباً</p></div></div>
+    <!-- شاشات الفئات (placeholder) -->
+    <div class="screen hidden" id="electronicsScreen"><div class="app-header"><div class="header-content"><div class="header-left"><button class="back-btn active" onclick="goBack()"><i class="fas fa-arrow-right"></i></button><div class="header-title">إلكترونيات</div></div></div></div><div class="products-section"><div class="products-grid" id="electronicsProducts"></div></div></div>
+    <div class="screen hidden" id="fashionScreen"><div class="app-header"><div class="header-content"><div class="header-left"><button class="back-btn active" onclick="goBack()"><i class="fas fa-arrow-right"></i></button><div class="header-title">أزياء</div></div></div></div><div class="products-section"><div class="products-grid" id="fashionProducts"></div></div></div>
+    <div class="screen hidden" id="foodScreen"><div class="app-header"><div class="header-content"><div class="header-left"><button class="back-btn active" onclick="goBack()"><i class="fas fa-arrow-right"></i></button><div class="header-title">أطعمة</div></div></div></div><div class="products-section"><div class="products-grid" id="foodProducts"></div></div></div>
+    <!-- مودالات -->
     <div id="checkoutModal" class="modal" onclick="if(event.target===this) closeCheckoutModal()"><div class="modal-content"><h3 style="color:#1a237e; margin-bottom:15px;">إتمام الطلب</h3><div class="input-group"><label class="input-label">الاسم الكامل</label><input type="text" id="checkoutName" class="input-field" placeholder="أدخل اسمك"></div><div class="input-group"><label class="input-label">رقم الهاتف</label><input type="tel" id="checkoutPhone" class="input-field" placeholder="أدخل رقم الهاتف"></div><div class="input-group"><label class="input-label">العنوان</label><textarea id="checkoutAddress" class="input-field" rows="2" placeholder="أدخل العنوان بالتفصيل"></textarea></div><div style="display:flex; gap:10px; margin-top:20px;"><button class="login-btn" style="flex:1;" onclick="confirmOrder()">تأكيد الطلب</button><button class="google-btn" style="flex:1;" onclick="closeCheckoutModal()">إلغاء</button></div></div></div>
     <div id="changePasswordModal" class="modal" onclick="if(event.target===this) closeModal('changePasswordModal')"><div class="modal-content"><h3 style="color:#1a237e; margin-bottom:15px;">تغيير كلمة المرور</h3><div class="input-group"><label class="input-label">كلمة المرور الحالية</label><input type="password" id="oldPassword" class="input-field" placeholder="أدخل كلمة المرور الحالية"></div><div class="input-group"><label class="input-label">كلمة المرور الجديدة</label><input type="password" id="newPassword" class="input-field" placeholder="أدخل كلمة المرور الجديدة"></div><div class="input-group"><label class="input-label">تأكيد كلمة المرور الجديدة</label><input type="password" id="confirmNewPassword" class="input-field" placeholder="أعد إدخال كلمة المرور الجديدة"></div><div style="display:flex; gap:10px; margin-top:20px;"><button class="login-btn" style="flex:1;" onclick="changePassword()">تغيير</button><button class="google-btn" style="flex:1;" onclick="closeModal('changePasswordModal')">إلغاء</button></div></div></div>
     <div id="securityModal" class="modal" onclick="if(event.target===this) closeModal('securityModal')"><div class="modal-content"><h3 style="color:#1a237e; margin-bottom:15px;">إعدادات الأمان</h3><p style="margin-bottom:20px;">يمكنك تفعيل المصادقة الثنائية لحماية حسابك.</p><div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;"><span>المصادقة الثنائية</span><label class="switch"><input type="checkbox" id="twoFactorCheck"><span class="slider round"></span></label></div><p style="color:#666; font-size:0.9rem;">عند التفعيل، سيتم إرسال رمز إلى هاتفك عند كل تسجيل دخول.</p><div style="display:flex; gap:10px; margin-top:20px;"><button class="login-btn" style="flex:1;" onclick="saveSecuritySettings()">حفظ</button><button class="google-btn" style="flex:1;" onclick="closeModal('securityModal')">إغلاق</button></div></div></div>
-    <div class="screen hidden" id="founderDashboardScreen"><div class="app-header"><div class="header-content"><div class="header-left"><button class="back-btn active" onclick="goBack()"><i class="fas fa-arrow-right"></i></button><div class="header-title">لوحة تحكم المؤسس</div></div></div></div><div style="padding:20px 5%;"><div class="founder-dashboard-card"><div class="founder-dashboard-title"><i class="fas fa-crown" style="margin-left:10px;"></i> التحكم بصفحة المؤسس</div><div class="toggle-switch"><span><i class="fas fa-eye-slash"></i> إظهار/إخفاء الصفحة (للجميع)</span><label class="switch"><input type="checkbox" id="toggleFounderPage"><span class="slider"></span></label></div><div class="stats-row"><div class="stat-box"><div class="stat-number" id="founderViewsCount">0</div><div class="stat-label">عدد المشاهدات</div></div><div class="stat-box"><div class="stat-number" id="founderSharesTotal">0</div><div class="stat-label">إجمالي المشاركات</div></div></div><button class="refresh-stats-btn" onclick="refreshFounderStats()"><i class="fas fa-sync-alt"></i> تحديث الإحصائيات</button></div><div class="founder-dashboard-card"><div class="founder-dashboard-title"><i class="fas fa-users"></i> طلبات انضمام المناديب</div><div id="pendingDeliveriesList" class="pending-deliveries-list"><p>جاري التحميل...</p></div></div></div></div>
+    <!-- أزرار إضافية -->
     <button class="chatbot-btn" onclick="openChatbot()"><i class="fas fa-robot"></i><span class="chatbot-badge" id="chatbotBadge">3</span></button>
     <div class="chatbot-screen" id="chatbotScreen"><div class="chatbot-header"><i class="fas fa-robot"></i><h2>مساعد Misar الذكي</h2><button class="founder-btn" onclick="openFounderProfile()" title="صفحة المؤسس"><i class="fas fa-crown"></i><span>مؤسس</span></button><button class="founder-btn" onclick="contactDeveloper()" title="تواصل مع المطور"><i class="fas fa-headset"></i><span>مطور</span></button><button class="close-chatbot" onclick="closeChatbot()"><i class="fas fa-times"></i></button></div><div class="chat-messages" id="chatMessages"><div class="message bot">مرحباً! أنا مساعد Misar الذكي، كيف يمكنني مساعدتك اليوم؟ 😊</div></div><div class="suggestions" id="suggestions"><span class="suggestion-chip" onclick="sendSuggestion('ما هي المنتجات المتوفرة؟')">المنتجات المتوفرة</span><span class="suggestion-chip" onclick="sendSuggestion('كيف أشتري منتج؟')">كيف أشتري؟</span><span class="suggestion-chip" onclick="sendSuggestion('عروض اليوم')">عروض اليوم</span><span class="suggestion-chip" onclick="sendSuggestion('خدمات الصيانة')">خدمات الصيانة</span><span class="suggestion-chip" onclick="sendSuggestion('حالة الطلب')">حالة الطلب</span></div><div class="chat-input-area"><input type="text" id="chatInput" placeholder="اكتب رسالتك..." onkeypress="if(event.key==='Enter') sendMessage()"><button onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button></div></div>
     <div class="founder-profile-screen" id="founderProfileScreen"><div class="founder-cover"></div><div class="founder-card"><div class="founder-avatar" onclick="openImageModal()"><img src="https://i.ibb.co/Fb0bXv47/1b7c163c815821997ef4c0271269d86e-0.webp" alt="صورة المؤسس" loading="lazy"></div><div class="founder-name">م / محمد سعد</div><div class="founder-title">مهندس برمجيات مصري، مؤسس ورئيس شركة Misar Systems</div><div class="founder-bio"><i class="fas fa-quote-right"></i><p>تم تأسيس الشركة عام 2026 بهدف تطوير حلول رقمية حديثة تخدم المجتمع والأسواق المحلية في مسار.</p></div><div class="founder-contact"><a href="mailto:mohamed.saad@misar.com" class="contact-row"><div class="contact-icon"><i class="fas fa-envelope"></i></div><div class="contact-info"><div class="contact-label">البريد الإلكتروني</div><div class="contact-value">mohamed.saad@misar.com</div></div></a><a href="https://www.facebook.com/share/1DdQ5ezkjw/" target="_blank" class="contact-row"><div class="contact-icon"><i class="fab fa-facebook-f"></i></div><div class="contact-info"><div class="contact-label">فيسبوك</div><div class="contact-value">@mohammedsaad</div></div></a><a href="https://www.instagram.com/mohammedsaad7098?igsh=dWR0MmszenA3Z2po" target="_blank" class="contact-row"><div class="contact-icon"><i class="fab fa-instagram"></i></div><div class="contact-info"><div class="contact-label">إنستغرام</div><div class="contact-value">@mohammedsaad7098</div></div></a><a href="https://wa.me/message/6EKAC2UQB73VK1" target="_blank" class="contact-row"><div class="contact-icon"><i class="fab fa-whatsapp"></i></div><div class="contact-info"><div class="contact-label">واتساب (Misar Systems)</div><div class="contact-value">راسلنا مباشرة</div></div></a></div><div class="founder-share-section"><h4 style="color:#1a237e; margin-bottom: 10px;"><i class="fas fa-share-alt"></i> مشاركة صفحة المؤسس</h4><div class="share-buttons" style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;"><button onclick="shareFounderPage('whatsapp')" class="share-icon-btn" style="background:#25D366; color:white; border:none; width:45px; height:45px; border-radius:50%; cursor:pointer;"><i class="fab fa-whatsapp"></i></button><button onclick="shareFounderPage('facebook')" class="share-icon-btn" style="background:#1877F2; color:white; border:none; width:45px; height:45px; border-radius:50%; cursor:pointer;"><i class="fab fa-facebook-f"></i></button><button onclick="shareFounderPage('twitter')" class="share-icon-btn" style="background:#1DA1F2; color:white; border:none; width:45px; height:45px; border-radius:50%; cursor:pointer;"><i class="fab fa-twitter"></i></button><button onclick="shareFounderPage('copy')" class="share-icon-btn" style="background:#1a237e; color:white; border:none; width:45px; height:45px; border-radius:50%; cursor:pointer;"><i class="fas fa-copy"></i></button></div><div class="founder-link-container" style="margin-top: 15px; direction: ltr; background: #f0f2f5; padding: 8px 12px; border-radius: 30px; font-size: 0.8rem; word-break: break-all; display: flex; justify-content: space-between; align-items: center;"><span id="founderShareLink" style="flex:1; overflow-x: auto;">جاري التحميل...</span><button onclick="shareFounderPage('copy')" style="background: none; border: none; color:#1a237e; margin-right: 8px;"><i class="fas fa-copy"></i></button></div><div style="display: flex; justify-content: space-between; margin-top: 12px; font-size: 0.75rem; color: #666;"><span><i class="fab fa-whatsapp"></i> <span id="shareCount_whatsapp">0</span></span><span><i class="fab fa-facebook"></i> <span id="shareCount_facebook">0</span></span><span><i class="fab fa-twitter"></i> <span id="shareCount_twitter">0</span></span><span><i class="fas fa-copy"></i> <span id="shareCount_copy">0</span></span></div></div><button class="back-to-chatbot" onclick="closeFounderProfile()"><i class="fas fa-arrow-right"></i> العودة إلى المساعد</button></div></div>
@@ -375,11 +398,9 @@
 </div>
 
 <script>
-    // ========== قاعدة البيانات الجديدة ==========
-    // تم استبدال بيانات الاتصال بقاعدة البيانات الجديدة بناءً على طلب المستخدم
+    // ========== قاعدة البيانات ==========
     const SUPABASE_URL = 'https://wwojtkxwmgkrudtevbcb.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_Rqi9qMZgIrslWSDc61gG-A_QGQxcvNr';
-    
     const { createClient } = supabase;
     const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -404,19 +425,8 @@
             'نجع حمادي': ['نجع حمادي','الطود','الحلفاية','الغربية'],
             'قفط': ['قفط','القلعة','الرفش','الصباب']
         },
-        seller: {
-            products: [],
-            orders: [],
-            currentTab: 'products',
-            filterCategory: 'all',
-            filterOrderStatus: 'all',
-            chart: null
-        },
-        delivery: {
-            availableOrders: [],
-            myOrders: [],
-            currentTab: 'available'
-        },
+        seller: { products: [], orders: [], currentTab: 'products', filterCategory: 'all', filterOrderStatus: 'all', chart: null },
+        delivery: { availableOrders: [], myOrders: [], currentTab: 'available' },
         tempImages: [],
         founderPageVisible: true,
         founderViews: 0,
@@ -503,10 +513,7 @@
             const compressed = await compressImage(file, 1024, 1024, 0.8);
             const uniqueName = `product-${Date.now()}-${Math.random().toString(36).substring(2)}.${file.name.split('.').pop()}`;
             const filePath = `products/${uniqueName}`;
-            const { error } = await supabaseClient.storage.from('product-images').upload(filePath, compressed, {
-                cacheControl: '3600',
-                upsert: false
-            });
+            const { error } = await supabaseClient.storage.from('product-images').upload(filePath, compressed, { cacheControl: '3600', upsert: false });
             if (error) throw new Error(`فشل رفع ${file.name}: ${error.message}`);
             const { data: { publicUrl } } = supabaseClient.storage.from('product-images').getPublicUrl(filePath);
             urls.push(publicUrl);
@@ -521,46 +528,29 @@
             const { data: cartData, error: cartError } = await supabaseClient.from('cart_items').select('*').eq('user_id', appState.user.id);
             if (cartError) throw cartError;
             if (!cartData.length) return [];
-            
             const productIds = cartData.map(item => item.product_id);
             const { data: productsData, error: productsError } = await supabaseClient.from('products').select('*').in('id', productIds);
             if (productsError) throw productsError;
-            
             const productsMap = new Map(productsData.map(p => [p.id, p]));
             return cartData.map(item => {
                 const product = productsMap.get(item.product_id);
-                return {
-                    id: item.product_id,
-                    name: product?.name || 'منتج غير معروف',
-                    price: product?.price || 0,
-                    image_url: (product?.images && product.images[0]) || product?.image_url || '',
-                    quantity: item.quantity,
-                    cart_item_id: item.id
-                };
+                return { id: item.product_id, name: product?.name || 'منتج غير معروف', price: product?.price || 0, image_url: (product?.images && product.images[0]) || product?.image_url || '', quantity: item.quantity, cart_item_id: item.id };
             });
-        } catch (error) {
-            console.error('Error syncing cart:', error);
-            return [];
-        }
+        } catch (error) { console.error('Error syncing cart:', error); return []; }
     }
-    
     async function addToCart(productId) {
         if (!appState.user) { showToast('يجب تسجيل الدخول أولاً', 'warning'); return; }
         showLoading(true);
         try {
             const { data: existing } = await supabaseClient.from('cart_items').select('id, quantity').eq('user_id', appState.user.id).eq('product_id', productId).maybeSingle();
-            if (existing) {
-                await supabaseClient.from('cart_items').update({ quantity: existing.quantity + 1, updated_at: new Date() }).eq('id', existing.id);
-            } else {
-                await supabaseClient.from('cart_items').insert({ user_id: appState.user.id, product_id: productId, quantity: 1, created_at: new Date() });
-            }
+            if (existing) await supabaseClient.from('cart_items').update({ quantity: existing.quantity + 1, updated_at: new Date() }).eq('id', existing.id);
+            else await supabaseClient.from('cart_items').insert({ user_id: appState.user.id, product_id: productId, quantity: 1, created_at: new Date() });
             const product = appState.products.find(p => p.id === productId);
             showToast(`تم إضافة ${product?.name || 'المنتج'} إلى السلة`, 'success');
             await updateCartBadgeFromDB();
         } catch (err) { showToast(err.message, 'error'); }
         finally { showLoading(false); }
     }
-    
     async function updateQuantity(productId, change) {
         if (!appState.user) return;
         showLoading(true);
@@ -574,7 +564,6 @@
         } catch (err) { showToast(err.message, 'error'); }
         finally { showLoading(false); }
     }
-    
     async function removeFromCart(productId) {
         if (!appState.user) return;
         showLoading(true);
@@ -586,7 +575,6 @@
         } catch (err) { showToast(err.message, 'error'); }
         finally { showLoading(false); }
     }
-    
     async function loadCart() {
         const container = document.getElementById('cartItems');
         const totalEl = document.getElementById('cartTotal');
@@ -604,7 +592,6 @@
         }
         totalEl.textContent = `${total.toLocaleString()} ج.م`;
     }
-    
     async function updateCartBadgeFromDB() {
         const badge = document.getElementById('cartBadge');
         if (!appState.user) { if (badge) badge.style.display = 'none'; return; }
@@ -612,7 +599,6 @@
         const total = (data || []).reduce((s, i) => s + i.quantity, 0);
         if (badge) { badge.style.display = total > 0 ? 'flex' : 'none'; badge.textContent = total; }
     }
-    
     async function clearCartAfterOrder() { if (appState.user) await supabaseClient.from('cart_items').delete().eq('user_id', appState.user.id); await loadCart(); await updateCartBadgeFromDB(); }
 
     // ========== المصادقة ==========
@@ -860,91 +846,50 @@
                 const { data: products, error: prodError } = await supabaseClient.from('products').select('id, name, image_url').in('id', productIds);
                 if (!prodError && products) {
                     const productMap = new Map(products.map(p => [p.id, p]));
-                    orders.forEach(order => {
-                        if (order.product_id) order.products = productMap.get(order.product_id) || { name: 'منتج غير معروف', image_url: null };
-                    });
+                    orders.forEach(order => { if (order.product_id) order.products = productMap.get(order.product_id) || { name: 'منتج غير معروف', image_url: null }; });
                 }
             }
             return orders;
-        } catch (error) {
-            console.error('Error loading seller orders:', error);
-            return [];
-        }
+        } catch (error) { console.error('Error loading seller orders:', error); return []; }
     }
-    
     async function updateOrderStatus(orderId, status, extraData = {}) {
         const updates = { status, updated_at: new Date(), ...extraData };
         const { data, error } = await supabaseClient.from('orders').update(updates).eq('id', orderId).select().single();
         if (error) throw error;
         return data;
     }
-
-    // ========== إشعارات المناديب في المركز ==========
     async function notifyDeliveryPersonsInCenter(center, orderId, title, message) {
         try {
-            const { data: deliveryUsers, error } = await supabaseClient
-                .from('user_data')
-                .select('id')
-                .eq('account_type', 'delivery')
-                .eq('center', center)
-                .eq('status', 'approved');
+            const { data: deliveryUsers, error } = await supabaseClient.from('user_data').select('id').eq('account_type', 'delivery').eq('center', center).eq('status', 'approved');
             if (error) throw error;
             if (!deliveryUsers || deliveryUsers.length === 0) return;
-            for (const delivery of deliveryUsers) {
-                await sendNotification(delivery.id, title, message, { order_id: orderId });
-            }
+            for (const delivery of deliveryUsers) await sendNotification(delivery.id, title, message, { order_id: orderId });
             console.log(`تم إرسال إشعار لـ ${deliveryUsers.length} مندوب في مركز ${center}`);
-        } catch (err) {
-            console.warn('فشل إرسال إشعارات للمناديب', err);
-        }
+        } catch (err) { console.warn('فشل إرسال إشعارات للمناديب', err); }
     }
-
     async function sendNotification(userId, title, message, data = {}) {
-        try {
-            await supabaseClient.from('notifications').insert({ user_id: userId, title, message, data, created_at: new Date(), is_read: false });
-        } catch (error) {
-            console.warn('فشل إرسال الإشعار (قد يكون جدول الإشعارات غير موجود)', error);
-        }
+        try { await supabaseClient.from('notifications').insert({ user_id: userId, title, message, data, created_at: new Date(), is_read: false }); } 
+        catch (error) { console.warn('فشل إرسال الإشعار', error); }
     }
-
-    // ========== إنشاء الطلب (محسن) ==========
     async function createOrder(productId, quantity, totalPrice, sellerId, customerName, customerPhone, shippingAddress, center) {
         if (!appState.user) throw new Error('يجب تسجيل الدخول');
         const { data, error } = await supabaseClient.from('orders').insert({
-            buyer_id: appState.user.id,
-            seller_id: sellerId,
-            product_id: productId,
-            quantity,
-            total_price: totalPrice,
-            status: 'pending',
-            customer_name: customerName,
-            customer_phone: customerPhone,
-            shipping_address: shippingAddress,
-            center: center,
-            created_at: new Date()
+            buyer_id: appState.user.id, seller_id: sellerId, product_id: productId, quantity, total_price: totalPrice,
+            status: 'pending', customer_name: customerName, customer_phone: customerPhone, shipping_address: shippingAddress, center: center, created_at: new Date()
         }).select().single();
         if (error) throw error;
         await sendNotification(sellerId, 'طلب جديد', `لديك طلب جديد من ${customerName}`, { order_id: data.id });
         return data;
     }
-
     async function confirmOrder() {
         const name = document.getElementById('checkoutName').value.trim();
         const phone = document.getElementById('checkoutPhone').value.trim();
         const address = document.getElementById('checkoutAddress').value.trim();
         if (!name || !phone || !address) { showToast('يرجى ملء جميع الحقول', 'warning'); return; }
-        
         let center = '';
-        if (appState.userData.center) {
-            center = appState.userData.center;
-        } else if (appState.location && appState.location.center) {
-            center = appState.location.center;
-        } else {
-            const match = address.match(/(قنا|نقادة|قوص|دشنا|فرشوط|أبو تشت|نجع حمادي|قفط)/i);
-            if (match) center = match[0];
-            else center = 'قنا';
-        }
-
+        if (appState.userData.center) center = appState.userData.center;
+        else if (appState.location && appState.location.center) center = appState.location.center;
+        else { const match = address.match(/(قنا|نقادة|قوص|دشنا|فرشوط|أبو تشت|نجع حمادي|قفط)/i); if (match) center = match[0]; else center = 'قنا'; }
         showLoading(true);
         try {
             const cartItems = await syncCartFromDB();
@@ -961,8 +906,6 @@
         } catch (err) { showToast(err.message, 'error'); console.error(err); }
         finally { showLoading(false); }
     }
-
-    // ========== طلبات العميل ==========
     async function loadBuyerOrders() {
         if (!appState.user) return [];
         try {
@@ -974,55 +917,26 @@
                 const { data: products, error: prodError } = await supabaseClient.from('products').select('id, name, image_url').in('id', productIds);
                 if (!prodError && products) {
                     const productMap = new Map(products.map(p => [p.id, p]));
-                    orders.forEach(order => {
-                        if (order.product_id) order.products = productMap.get(order.product_id) || { name: 'منتج غير معروف', image_url: null };
-                    });
+                    orders.forEach(order => { if (order.product_id) order.products = productMap.get(order.product_id) || { name: 'منتج غير معروف', image_url: null }; });
                 }
             }
             return orders;
-        } catch (error) {
-            console.error('Error loading buyer orders:', error);
-            return [];
-        }
+        } catch (error) { console.error('Error loading buyer orders:', error); return []; }
     }
-
     async function cancelOrder(orderId) {
         if (!confirm('هل أنت متأكد من إلغاء الطلب؟')) return;
         showLoading(true);
-        try {
-            await updateOrderStatus(orderId, 'cancelled');
-            showToast('تم إلغاء الطلب', 'success');
-            await loadBuyerOrdersWithTimeline();
-        } catch (err) { showToast(err.message, 'error'); }
-        finally { showLoading(false); }
+        try { await updateOrderStatus(orderId, 'cancelled'); showToast('تم إلغاء الطلب', 'success'); await loadBuyerOrdersWithTimeline(); } 
+        catch (err) { showToast(err.message, 'error'); } finally { showLoading(false); }
     }
-
-    function getStatusText(status) {
-        const map = { pending: 'قيد الانتظار', confirmed: 'تم التأكيد', prepared: 'تم التجهيز', picked_up: 'تم الاستلام', in_delivery: 'في الطريق', delivered: 'تم التوصيل', cancelled: 'ملغي' };
-        return map[status] || status;
-    }
-
+    function getStatusText(status) { const map = { pending: 'قيد الانتظار', confirmed: 'تم التأكيد', prepared: 'تم التجهيز', picked_up: 'تم الاستلام', in_delivery: 'في الطريق', delivered: 'تم التوصيل', cancelled: 'ملغي' }; return map[status] || status; }
     function generateTimeline(currentStatus) {
-        const steps = [
-            { key: 'pending', label: 'تم الطلب' },
-            { key: 'confirmed', label: 'تم التأكيد' },
-            { key: 'prepared', label: 'تم التجهيز' },
-            { key: 'picked_up', label: 'خرج للتوصيل' },
-            { key: 'in_delivery', label: 'في الطريق' },
-            { key: 'delivered', label: 'تم التوصيل' }
-        ];
+        const steps = [{ key: 'pending', label: 'تم الطلب' }, { key: 'confirmed', label: 'تم التأكيد' }, { key: 'prepared', label: 'تم التجهيز' }, { key: 'picked_up', label: 'خرج للتوصيل' }, { key: 'in_delivery', label: 'في الطريق' }, { key: 'delivered', label: 'تم التوصيل' }];
         const statusIndex = steps.findIndex(s => s.key === currentStatus);
         let html = '<div class="timeline-steps">';
-        steps.forEach((step, idx) => {
-            let color = '#ccc';
-            if (idx <= statusIndex) color = '#4caf50';
-            if (idx === statusIndex && currentStatus !== 'delivered') color = '#ff9800';
-            html += `<div class="timeline-step"><div class="timeline-dot" style="background:${color};"></div><div class="timeline-label">${step.label}</div></div>`;
-        });
-        html += '</div>';
-        return html;
+        steps.forEach((step, idx) => { let color = '#ccc'; if (idx <= statusIndex) color = '#4caf50'; if (idx === statusIndex && currentStatus !== 'delivered') color = '#ff9800'; html += `<div class="timeline-step"><div class="timeline-dot" style="background:${color};"></div><div class="timeline-label">${step.label}</div></div>`; });
+        html += '</div>'; return html;
     }
-
     async function loadBuyerOrdersWithTimeline() {
         const orders = await loadBuyerOrders();
         const container = document.getElementById('buyerOrdersList');
@@ -1044,19 +958,15 @@
         showLoading(true);
         try {
             const [products, orders] = await Promise.all([ loadSellerProducts(appState.user.id), loadSellerOrders(appState.user.id) ]);
-            appState.seller.products = products;
-            appState.seller.orders = orders;
+            appState.seller.products = products; appState.seller.orders = orders;
             updateSellerStats();
             if (appState.seller.currentTab === 'products') displaySellerProducts();
             else if (appState.seller.currentTab === 'orders') displaySellerOrders();
             else if (appState.seller.currentTab === 'analytics') updateAnalytics();
-        } catch (err) { showToast(err.message, 'error'); }
-        finally { showLoading(false); }
+        } catch (err) { showToast(err.message, 'error'); } finally { showLoading(false); }
     }
     function updateSellerStats() {
-        const prodCount = appState.seller.products.length;
-        const orderCount = appState.seller.orders.length;
-        const revenue = appState.seller.orders.reduce((s, o) => s + (o.total_price || 0), 0);
+        const prodCount = appState.seller.products.length, orderCount = appState.seller.orders.length, revenue = appState.seller.orders.reduce((s, o) => s + (o.total_price || 0), 0);
         document.getElementById('sellerProductCount').textContent = prodCount;
         document.getElementById('sellerOrderCount').textContent = orderCount;
         document.getElementById('sellerRevenue').textContent = revenue.toLocaleString() + ' ج.م';
@@ -1124,282 +1034,50 @@
     function closeProductModal() { document.getElementById('productModal').classList.remove('active'); }
     function showNotifications() { const newOrders = appState.seller.orders.filter(o => o.status === 'pending'); if (newOrders.length === 0) { showToast('لا توجد إشعارات جديدة', 'info'); return; } let msg = 'طلبات جديدة:\n'; newOrders.forEach(o => msg += `- طلب #${o.id.slice(0,8)} بمبلغ ${o.total_price} ج.م\n`); alert(msg); document.getElementById('sellerNotificationBadge').style.display = 'none'; }
     function exportOrdersCSV() { const orders = appState.seller.orders; let csv = 'رقم الطلب,العميل,الهاتف,العنوان,التاريخ,الحالة,الإجمالي\n'; orders.forEach(o => { csv += `${o.id},${o.customer_name || ''},${o.customer_phone || ''},${o.shipping_address || ''},${new Date(o.created_at).toLocaleDateString()},${o.status},${o.total_price}\n`; }); const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = 'orders.csv'; link.click(); }
-    async function confirmOrderSeller(orderId) {
-        showLoading(true);
-        try {
-            const order = await updateOrderStatus(orderId, 'confirmed');
-            await sendNotification(order.buyer_id, 'تم تأكيد طلبك', `تم تأكيد طلبك #${orderId.slice(0,8)}`);
-            showToast('تم تأكيد الطلب', 'success');
-            await refreshSellerDashboard();
-        } catch (err) { showToast(err.message, 'error'); }
-        finally { showLoading(false); }
-    }
-    async function prepareOrderSeller(orderId) {
-        showLoading(true);
-        try {
-            const { data: order, error: fetchError } = await supabaseClient.from('orders').select('*, buyer_id, center').eq('id', orderId).single();
-            if (fetchError) throw fetchError;
-            await updateOrderStatus(orderId, 'prepared');
-            await sendNotification(order.buyer_id, 'تم تجهيز طلبك', `طلبك #${orderId.slice(0,8)} جاهز وسيتم توصيله قريباً`);
-            if (order.center) {
-                await notifyDeliveryPersonsInCenter(order.center, orderId, 'شحنة جاهزة في منطقتك', `طلب #${orderId.slice(0,8)} جاهز للتوصيل في ${order.center}`);
-            }
-            showToast('تم تحديث الحالة إلى "تم التجهيز" وإشعار المناديب', 'success');
-            await refreshSellerDashboard();
-        } catch (err) { showToast(err.message, 'error'); }
-        finally { showLoading(false); }
-    }
+    async function confirmOrderSeller(orderId) { showLoading(true); try { const order = await updateOrderStatus(orderId, 'confirmed'); await sendNotification(order.buyer_id, 'تم تأكيد طلبك', `تم تأكيد طلبك #${orderId.slice(0,8)}`); showToast('تم تأكيد الطلب', 'success'); await refreshSellerDashboard(); } catch (err) { showToast(err.message, 'error'); } finally { showLoading(false); } }
+    async function prepareOrderSeller(orderId) { showLoading(true); try { const { data: order, error: fetchError } = await supabaseClient.from('orders').select('*, buyer_id, center').eq('id', orderId).single(); if (fetchError) throw fetchError; await updateOrderStatus(orderId, 'prepared'); await sendNotification(order.buyer_id, 'تم تجهيز طلبك', `طلبك #${orderId.slice(0,8)} جاهز وسيتم توصيله قريباً`); if (order.center) await notifyDeliveryPersonsInCenter(order.center, orderId, 'شحنة جاهزة في منطقتك', `طلب #${orderId.slice(0,8)} جاهز للتوصيل في ${order.center}`); showToast('تم تحديث الحالة إلى "تم التجهيز" وإشعار المناديب', 'success'); await refreshSellerDashboard(); } catch (err) { showToast(err.message, 'error'); } finally { showLoading(false); } }
 
-    // ========== لوحة المندوب (مع التصفية حسب المركز) ==========
-    async function loadAvailableOrders() {
-        if (!appState.user || !appState.userData.center) return [];
-        try {
-            const { data: orders, error } = await supabaseClient.from('orders').select('*').is('delivery_id', null).in('status', ['confirmed', 'prepared']).eq('center', appState.userData.center).order('created_at', { ascending: true });
-            if (error) throw error;
-            if (!orders.length) return orders;
-            const productIds = [...new Set(orders.map(o => o.product_id).filter(id => id))];
-            if (productIds.length) {
-                const { data: products, error: prodError } = await supabaseClient.from('products').select('id, name, image_url').in('id', productIds);
-                if (!prodError && products) {
-                    const productMap = new Map(products.map(p => [p.id, p]));
-                    orders.forEach(order => {
-                        if (order.product_id) order.products = productMap.get(order.product_id) || { name: 'منتج غير معروف', image_url: null };
-                    });
-                }
-            }
-            return orders;
-        } catch (error) {
-            console.error('Error loading available orders:', error);
-            return [];
-        }
-    }
-    
-    async function loadMyDeliveryOrders() {
-        if (!appState.user) return [];
-        try {
-            const { data: orders, error } = await supabaseClient.from('orders').select('*').eq('delivery_id', appState.user.id).order('created_at', { ascending: false });
-            if (error) throw error;
-            if (!orders.length) return orders;
-            const productIds = [...new Set(orders.map(o => o.product_id).filter(id => id))];
-            if (productIds.length) {
-                const { data: products, error: prodError } = await supabaseClient.from('products').select('id, name, image_url').in('id', productIds);
-                if (!prodError && products) {
-                    const productMap = new Map(products.map(p => [p.id, p]));
-                    orders.forEach(order => {
-                        if (order.product_id) order.products = productMap.get(order.product_id) || { name: 'منتج غير معروف', image_url: null };
-                    });
-                }
-            }
-            return orders;
-        } catch (error) {
-            console.error('Error loading my delivery orders:', error);
-            return [];
-        }
-    }
-    
-    async function claimOrder(orderId) {
-        if (!appState.user) return;
-        showLoading(true);
-        try {
-            const order = await updateOrderStatus(orderId, 'picked_up', { delivery_id: appState.user.id });
-            await sendNotification(order.buyer_id, 'تم استلام طلبك', `المندوب ${appState.userData.name || ''} استلم طلبك #${orderId.slice(0,8)}`);
-            showToast('تم استلام الطلب بنجاح', 'success');
-            await refreshDeliveryDashboard();
-        } catch (err) { showToast(err.message, 'error'); }
-        finally { showLoading(false); }
-    }
-    async function startDelivery(orderId) {
-        showLoading(true);
-        try {
-            const order = await updateOrderStatus(orderId, 'in_delivery');
-            await sendNotification(order.buyer_id, 'الطلب في الطريق', `طلبك #${orderId.slice(0,8)} في طريقه إليك`);
-            showToast('تم بدء التوصيل', 'success');
-            await refreshDeliveryDashboard();
-        } catch (err) { showToast(err.message, 'error'); }
-        finally { showLoading(false); }
-    }
-    async function completeDelivery(orderId) {
-        showLoading(true);
-        try {
-            const order = await updateOrderStatus(orderId, 'delivered');
-            await sendNotification(order.buyer_id, 'تم توصيل الطلب', `طلبك #${orderId.slice(0,8)} تم توصيله بنجاح`);
-            showToast('تم تأكيد التوصيل', 'success');
-            await refreshDeliveryDashboard();
-        } catch (err) { showToast(err.message, 'error'); }
-        finally { showLoading(false); }
-    }
-    async function refreshDeliveryDashboard() {
-        if (!appState.user || appState.userData.account_type !== 'delivery') return;
-        showLoading(true);
-        try {
-            const [available, my] = await Promise.all([loadAvailableOrders(), loadMyDeliveryOrders()]);
-            appState.delivery.availableOrders = available;
-            appState.delivery.myOrders = my;
-            document.getElementById('availableOrdersCount').textContent = available.length;
-            document.getElementById('myOrdersCount').textContent = my.length;
-            displayAvailableOrders(available);
-            displayMyDeliveryOrders(my);
-        } catch (err) { showToast(err.message, 'error'); }
-        finally { showLoading(false); }
-    }
-    function displayAvailableOrders(orders) {
-        const container = document.getElementById('availableOrdersList'); if (!container) return;
-        if (orders.length === 0) { container.innerHTML = '<p style="text-align:center; padding:20px;">لا توجد طلبات متاحة حالياً</p>'; return; }
-        container.innerHTML = '';
-        orders.forEach(order => { container.appendChild(createOrderCardForDelivery(order, true)); });
-    }
-    function displayMyDeliveryOrders(orders) {
-        const container = document.getElementById('myDeliveryOrdersList'); if (!container) return;
-        if (orders.length === 0) { container.innerHTML = '<p style="text-align:center; padding:20px;">لم تقم باستلام أي طلبات بعد</p>'; return; }
-        container.innerHTML = '';
-        orders.forEach(order => { container.appendChild(createOrderCardForDelivery(order, false)); });
-    }
-    function createOrderCardForDelivery(order, isAvailable) {
-        const card = document.createElement('div'); card.className = 'order-card';
-        const product = order.products || {};
-        const imageHtml = product.image_url ? `<img src="${product.image_url}" loading="lazy">` : '📦';
-        let actionsHtml = '';
-        if (isAvailable) actionsHtml = `<button class="add-to-cart" style="margin-top:10px;" onclick="claimOrder('${order.id}')"><i class="fas fa-box-open"></i> استلام الطلب</button>`;
-        else {
-            if (order.status === 'picked_up') actionsHtml = `<button class="add-to-cart" style="margin-top:10px;" onclick="startDelivery('${order.id}')"><i class="fas fa-truck"></i> بدء التوصيل</button>`;
-            else if (order.status === 'in_delivery') actionsHtml = `<button class="add-to-cart" style="margin-top:10px; background:#4caf50;" onclick="completeDelivery('${order.id}')"><i class="fas fa-check-circle"></i> تم التوصيل</button>`;
-        }
-        card.innerHTML = `<div class="order-header"><span class="order-id">#${order.id.slice(0,8)}</span><span class="order-status ${order.status}">${getStatusText(order.status)}</span></div><div class="order-product"><div class="order-product-image">${imageHtml}</div><div class="order-product-details"><div>${escapeHTML(product.name || 'منتج')}</div><div>الكمية: ${order.quantity}</div><div>الإجمالي: ${order.total_price} ج.م</div></div></div>${actionsHtml}`;
-        return card;
-    }
-    function switchDeliveryTab(tab) {
-        appState.delivery.currentTab = tab;
-        document.querySelectorAll('#deliveryDashboardScreen .seller-tab').forEach((t, i) => { t.classList.toggle('active', (tab === 'available' && i === 0) || (tab === 'my' && i === 1)); });
-        document.getElementById('availableOrdersTab').style.display = tab === 'available' ? 'block' : 'none';
-        document.getElementById('myOrdersTab').style.display = tab === 'my' ? 'block' : 'none';
-    }
+    // ========== لوحة المندوب ==========
+    async function loadAvailableOrders() { if (!appState.user || !appState.userData.center) return []; try { const { data: orders, error } = await supabaseClient.from('orders').select('*').is('delivery_id', null).in('status', ['confirmed', 'prepared']).eq('center', appState.userData.center).order('created_at', { ascending: true }); if (error) throw error; if (!orders.length) return orders; const productIds = [...new Set(orders.map(o => o.product_id).filter(id => id))]; if (productIds.length) { const { data: products, error: prodError } = await supabaseClient.from('products').select('id, name, image_url').in('id', productIds); if (!prodError && products) { const productMap = new Map(products.map(p => [p.id, p])); orders.forEach(order => { if (order.product_id) order.products = productMap.get(order.product_id) || { name: 'منتج غير معروف', image_url: null }; }); } } return orders; } catch (error) { console.error('Error loading available orders:', error); return []; } }
+    async function loadMyDeliveryOrders() { if (!appState.user) return []; try { const { data: orders, error } = await supabaseClient.from('orders').select('*').eq('delivery_id', appState.user.id).order('created_at', { ascending: false }); if (error) throw error; if (!orders.length) return orders; const productIds = [...new Set(orders.map(o => o.product_id).filter(id => id))]; if (productIds.length) { const { data: products, error: prodError } = await supabaseClient.from('products').select('id, name, image_url').in('id', productIds); if (!prodError && products) { const productMap = new Map(products.map(p => [p.id, p])); orders.forEach(order => { if (order.product_id) order.products = productMap.get(order.product_id) || { name: 'منتج غير معروف', image_url: null }; }); } } return orders; } catch (error) { console.error('Error loading my delivery orders:', error); return []; } }
+    async function claimOrder(orderId) { if (!appState.user) return; showLoading(true); try { const order = await updateOrderStatus(orderId, 'picked_up', { delivery_id: appState.user.id }); await sendNotification(order.buyer_id, 'تم استلام طلبك', `المندوب ${appState.userData.name || ''} استلم طلبك #${orderId.slice(0,8)}`); showToast('تم استلام الطلب بنجاح', 'success'); await refreshDeliveryDashboard(); } catch (err) { showToast(err.message, 'error'); } finally { showLoading(false); } }
+    async function startDelivery(orderId) { showLoading(true); try { const order = await updateOrderStatus(orderId, 'in_delivery'); await sendNotification(order.buyer_id, 'الطلب في الطريق', `طلبك #${orderId.slice(0,8)} في طريقه إليك`); showToast('تم بدء التوصيل', 'success'); await refreshDeliveryDashboard(); } catch (err) { showToast(err.message, 'error'); } finally { showLoading(false); } }
+    async function completeDelivery(orderId) { showLoading(true); try { const order = await updateOrderStatus(orderId, 'delivered'); await sendNotification(order.buyer_id, 'تم توصيل الطلب', `طلبك #${orderId.slice(0,8)} تم توصيله بنجاح`); showToast('تم تأكيد التوصيل', 'success'); await refreshDeliveryDashboard(); } catch (err) { showToast(err.message, 'error'); } finally { showLoading(false); } }
+    async function refreshDeliveryDashboard() { if (!appState.user || appState.userData.account_type !== 'delivery') return; showLoading(true); try { const [available, my] = await Promise.all([loadAvailableOrders(), loadMyDeliveryOrders()]); appState.delivery.availableOrders = available; appState.delivery.myOrders = my; document.getElementById('availableOrdersCount').textContent = available.length; document.getElementById('myOrdersCount').textContent = my.length; displayAvailableOrders(available); displayMyDeliveryOrders(my); } catch (err) { showToast(err.message, 'error'); } finally { showLoading(false); } }
+    function displayAvailableOrders(orders) { const container = document.getElementById('availableOrdersList'); if (!container) return; if (orders.length === 0) { container.innerHTML = '<p style="text-align:center; padding:20px;">لا توجد طلبات متاحة حالياً</p>'; return; } container.innerHTML = ''; orders.forEach(order => { container.appendChild(createOrderCardForDelivery(order, true)); }); }
+    function displayMyDeliveryOrders(orders) { const container = document.getElementById('myDeliveryOrdersList'); if (!container) return; if (orders.length === 0) { container.innerHTML = '<p style="text-align:center; padding:20px;">لم تقم باستلام أي طلبات بعد</p>'; return; } container.innerHTML = ''; orders.forEach(order => { container.appendChild(createOrderCardForDelivery(order, false)); }); }
+    function createOrderCardForDelivery(order, isAvailable) { const card = document.createElement('div'); card.className = 'order-card'; const product = order.products || {}; const imageHtml = product.image_url ? `<img src="${product.image_url}" loading="lazy">` : '📦'; let actionsHtml = ''; if (isAvailable) actionsHtml = `<button class="add-to-cart" style="margin-top:10px;" onclick="claimOrder('${order.id}')"><i class="fas fa-box-open"></i> استلام الطلب</button>`; else { if (order.status === 'picked_up') actionsHtml = `<button class="add-to-cart" style="margin-top:10px;" onclick="startDelivery('${order.id}')"><i class="fas fa-truck"></i> بدء التوصيل</button>`; else if (order.status === 'in_delivery') actionsHtml = `<button class="add-to-cart" style="margin-top:10px; background:#4caf50;" onclick="completeDelivery('${order.id}')"><i class="fas fa-check-circle"></i> تم التوصيل</button>`; } card.innerHTML = `<div class="order-header"><span class="order-id">#${order.id.slice(0,8)}</span><span class="order-status ${order.status}">${getStatusText(order.status)}</span></div><div class="order-product"><div class="order-product-image">${imageHtml}</div><div class="order-product-details"><div>${escapeHTML(product.name || 'منتج')}</div><div>الكمية: ${order.quantity}</div><div>الإجمالي: ${order.total_price} ج.م</div></div></div>${actionsHtml}`; return card; }
+    function switchDeliveryTab(tab) { appState.delivery.currentTab = tab; document.querySelectorAll('#deliveryDashboardScreen .seller-tab').forEach((t, i) => { t.classList.toggle('active', (tab === 'available' && i === 0) || (tab === 'my' && i === 1)); }); document.getElementById('availableOrdersTab').style.display = tab === 'available' ? 'block' : 'none'; document.getElementById('myOrdersTab').style.display = tab === 'my' ? 'block' : 'none'; }
 
     // ========== متجر البائع ==========
-    async function showStorePage(identifier) {
-        showLoading(true);
-        let sellerData = null;
-        if (identifier.startsWith('user_') || (identifier.length > 20 && identifier.includes('-'))) {
-            const { data, error } = await supabaseClient.from('user_data').select('*').eq('id', identifier).single();
-            if (!error && data) sellerData = data;
-        } else {
-            const { data, error } = await supabaseClient.from('user_data').select('*').eq('username', identifier).single();
-            if (!error && data) sellerData = data;
-        }
-        if (!sellerData) { showLoading(false); showToast('البائع غير موجود', 'error'); showScreen('homeScreen'); return; }
-        const { data: products } = await supabaseClient.from('products').select('*').eq('user_id', sellerData.id).order('created_at', { ascending: false });
-        const container = document.getElementById('storeContent');
-        const avatarUrl = sellerData.image_url || '';
-        const avatarHtml = avatarUrl ? `<img src="${avatarUrl}" alt="صورة البائع">` : '<i class="fas fa-user" style="font-size:3rem; color:#aaa;"></i>';
-        const bioHtml = sellerData.bio ? `<div class="store-bio">${escapeHTML(sellerData.bio)}</div>` : '';
-        let productsHtml = '<div class="products-grid" id="storeProductsGrid">';
-        if (products && products.length) {
-            products.forEach(p => {
-                const img = p.images && p.images[0] ? p.images[0] : (p.image_url || '');
-                productsHtml += `<div class="product-card" onclick="openProductDetailFromStore('${p.id}')"><div class="product-image"><img src="${img}" loading="lazy" onerror="this.onerror=null;this.parentElement.innerHTML='<div>📦</div>';"> <div class="product-tag">${p.category || 'عام'}</div></div><div class="product-info"><div class="product-title">${escapeHTML(p.name)}</div><div class="product-price">${p.price} ج.م</div><button class="add-to-cart" onclick="event.stopPropagation(); addToCart('${p.id}')"><i class="fas fa-cart-plus"></i> إضافة للسلة</button></div></div>`;
-            });
-        } else { productsHtml += '<p style="grid-column:span2; text-align:center; padding:30px;">لا توجد منتجات متاحة حالياً</p>'; }
-        productsHtml += '</div>';
-        container.innerHTML = `<div class="store-header"><div class="store-avatar">${avatarHtml}</div><div class="store-name">${escapeHTML(sellerData.name || sellerData.email?.split('@')[0] || 'بائع')}</div>${bioHtml}</div><div class="store-products"><h2 style="color:#1a237e; margin-bottom:15px;">جميع المنتجات</h2>${productsHtml}</div>`;
-        showLoading(false);
-        showScreen('storeScreen');
-    }
+    async function showStorePage(identifier) { showLoading(true); let sellerData = null; if (identifier.startsWith('user_') || (identifier.length > 20 && identifier.includes('-'))) { const { data, error } = await supabaseClient.from('user_data').select('*').eq('id', identifier).single(); if (!error && data) sellerData = data; } else { const { data, error } = await supabaseClient.from('user_data').select('*').eq('username', identifier).single(); if (!error && data) sellerData = data; } if (!sellerData) { showLoading(false); showToast('البائع غير موجود', 'error'); showScreen('homeScreen'); return; } const { data: products } = await supabaseClient.from('products').select('*').eq('user_id', sellerData.id).order('created_at', { ascending: false }); const container = document.getElementById('storeContent'); const avatarUrl = sellerData.image_url || ''; const avatarHtml = avatarUrl ? `<img src="${avatarUrl}" alt="صورة البائع">` : '<i class="fas fa-user" style="font-size:3rem; color:#aaa;"></i>'; const bioHtml = sellerData.bio ? `<div class="store-bio">${escapeHTML(sellerData.bio)}</div>` : ''; let productsHtml = '<div class="products-grid" id="storeProductsGrid">'; if (products && products.length) { products.forEach(p => { const img = p.images && p.images[0] ? p.images[0] : (p.image_url || ''); productsHtml += `<div class="product-card" onclick="openProductDetailFromStore('${p.id}')"><div class="product-image"><img src="${img}" loading="lazy" onerror="this.onerror=null;this.parentElement.innerHTML='<div>📦</div>';"> <div class="product-tag">${p.category || 'عام'}</div></div><div class="product-info"><div class="product-title">${escapeHTML(p.name)}</div><div class="product-price">${p.price} ج.م</div><button class="add-to-cart" onclick="event.stopPropagation(); addToCart('${p.id}')"><i class="fas fa-cart-plus"></i> إضافة للسلة</button></div></div>`; }); } else { productsHtml += '<p style="grid-column:span2; text-align:center; padding:30px;">لا توجد منتجات متاحة حالياً</p>'; } productsHtml += '</div>'; container.innerHTML = `<div class="store-header"><div class="store-avatar">${avatarHtml}</div><div class="store-name">${escapeHTML(sellerData.name || sellerData.email?.split('@')[0] || 'بائع')}</div>${bioHtml}</div><div class="store-products"><h2 style="color:#1a237e; margin-bottom:15px;">جميع المنتجات</h2>${productsHtml}</div>`; showLoading(false); showScreen('storeScreen'); }
     function openProductDetailFromStore(productId) { const product = appState.products.find(p => p.id === productId); if (product) openProductDetail(product); else showToast('المنتج غير موجود', 'error'); }
     function generateStoreQR(storeUrl, containerId) { const container = document.getElementById(containerId); if (!container) return; container.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(storeUrl)}" alt="QR Code" style="width:150px;height:150px;">`; }
-    function getStoreUrl() { let baseUrl = window.location.origin + window.location.pathname; baseUrl = baseUrl.split('?')[0]; if (appState.userData.username) { return `${baseUrl}?store=${encodeURIComponent(appState.userData.username)}`; } else { return `${baseUrl}?store=${encodeURIComponent(appState.user.id)}`; } }
-    async function addSellerStoreTools() {
-        const toolsDiv = document.getElementById('sellerStoreTools');
-        if (!toolsDiv) return;
-        toolsDiv.style.display = 'block';
-        if (!toolsDiv.dataset.initialized) {
-            document.getElementById('copyStoreLinkBtn')?.addEventListener('click', () => { copyStoreLink(getStoreUrl()); });
-            document.getElementById('shareStoreLinkBtn')?.addEventListener('click', () => { shareStoreLink(getStoreUrl(), appState.userData.name || 'بائع'); });
-            document.getElementById('viewMyStoreBtn')?.addEventListener('click', () => { const identifier = appState.userData.username || appState.user.id; showStorePage(identifier); });
-            document.getElementById('downloadQRBtn')?.addEventListener('click', () => { const link = document.createElement('a'); link.download = `store_${appState.userData.username || appState.user.id}.png`; const qrImg = document.querySelector('#storeQRCode img'); if (qrImg && qrImg.src) { link.href = qrImg.src; link.click(); } else { showToast('لم يتم العثور على QR', 'error'); } });
-            toolsDiv.dataset.initialized = 'true';
-        }
-        updateStoreTools();
-    }
-    async function updateStoreTools() {
-        if (!appState.user || appState.userData.account_type !== 'seller') return;
-        const linkDisplay = document.getElementById('storeLinkDisplay'); const qrContainer = document.getElementById('storeQRCode');
-        if (!linkDisplay || !qrContainer) return;
-        const storeUrl = getStoreUrl();
-        linkDisplay.textContent = storeUrl;
-        generateStoreQR(storeUrl, 'storeQRCode');
-    }
+    function getStoreUrl() { let baseUrl = window.location.origin + window.location.pathname; baseUrl = baseUrl.split('?')[0]; if (appState.userData.username) return `${baseUrl}?store=${encodeURIComponent(appState.userData.username)}`; else return `${baseUrl}?store=${encodeURIComponent(appState.user.id)}`; }
+    async function addSellerStoreTools() { const toolsDiv = document.getElementById('sellerStoreTools'); if (!toolsDiv) return; toolsDiv.style.display = 'block'; if (!toolsDiv.dataset.initialized) { document.getElementById('copyStoreLinkBtn')?.addEventListener('click', () => { copyStoreLink(getStoreUrl()); }); document.getElementById('shareStoreLinkBtn')?.addEventListener('click', () => { shareStoreLink(getStoreUrl(), appState.userData.name || 'بائع'); }); document.getElementById('viewMyStoreBtn')?.addEventListener('click', () => { const identifier = appState.userData.username || appState.user.id; showStorePage(identifier); }); document.getElementById('downloadQRBtn')?.addEventListener('click', () => { const link = document.createElement('a'); link.download = `store_${appState.userData.username || appState.user.id}.png`; const qrImg = document.querySelector('#storeQRCode img'); if (qrImg && qrImg.src) { link.href = qrImg.src; link.click(); } else { showToast('لم يتم العثور على QR', 'error'); } }); toolsDiv.dataset.initialized = 'true'; } updateStoreTools(); }
+    async function updateStoreTools() { if (!appState.user || appState.userData.account_type !== 'seller') return; const linkDisplay = document.getElementById('storeLinkDisplay'); const qrContainer = document.getElementById('storeQRCode'); if (!linkDisplay || !qrContainer) return; const storeUrl = getStoreUrl(); linkDisplay.textContent = storeUrl; generateStoreQR(storeUrl, 'storeQRCode'); }
     function copyStoreLink(link) { navigator.clipboard.writeText(link).then(() => showToast('تم نسخ الرابط', 'success')).catch(() => showToast('فشل النسخ', 'error')); }
     function shareStoreLink(link, sellerName) { if (navigator.share) { navigator.share({ title: `متجر ${sellerName} على Misar Systems`, text: 'تفضل بزيارة متجري', url: link }).catch(() => {}); } else { copyStoreLink(link); } }
 
-    // ========== دوال المؤسس (مع طلبات الانضمام) ==========
+    // ========== دوال المؤسس (مُصلحة بالكامل) ==========
     async function loadGlobalFounderVisibility() {
-        try {
-            const { data, error } = await supabaseClient.from('founder_settings').select('page_visible').eq('id', 1).single();
-            if (!error && data) { appState.founderPageVisible = data.page_visible; }
-            else { const saved = localStorage.getItem('founder_page_visible'); appState.founderPageVisible = saved !== null ? saved === 'true' : true; }
-        } catch(e) { const saved = localStorage.getItem('founder_page_visible'); appState.founderPageVisible = saved !== null ? saved === 'true' : true; }
-        const toggleSwitch = document.getElementById('toggleFounderPage');
-        if (toggleSwitch && appState.user && appState.userData.account_type === 'founder') { toggleSwitch.checked = appState.founderPageVisible; }
-    }
-    async function initFounderSettings() {
-        await loadGlobalFounderVisibility();
-        const toggleSwitch = document.getElementById('toggleFounderPage');
-        if (toggleSwitch && appState.user && appState.userData.account_type === 'founder') {
-            toggleSwitch.checked = appState.founderPageVisible;
-            toggleSwitch.removeEventListener('change', handleToggleChange);
-            toggleSwitch.addEventListener('change', handleToggleChange);
-        }
-    }
-    async function handleToggleChange(e) {
-        appState.founderPageVisible = e.target.checked;
-        try {
-            await supabaseClient.from('founder_settings').upsert({ id: 1, page_visible: appState.founderPageVisible, updated_at: new Date() });
-        } catch(error) { console.warn('فشل حفظ الإعدادات في قاعدة البيانات', error); }
-        localStorage.setItem('founder_page_visible', appState.founderPageVisible);
-        showToast(appState.founderPageVisible ? 'تم إظهار صفحة المؤسس للجميع' : 'تم إخفاء صفحة المؤسس عن الجميع', 'success');
-    }
+        try { const { data, error } = await supabaseClient.from('founder_settings').select('page_visible').eq('id', 1).single(); if (!error && data) { appState.founderPageVisible = data.page_visible; } else { const saved = localStorage.getItem('founder_page_visible'); appState.founderPageVisible = saved !== null ? saved === 'true' : true; } } catch(e) { const saved = localStorage.getItem('founder_page_visible'); appState.founderPageVisible = saved !== null ? saved === 'true' : true; } const toggleSwitch = document.getElementById('toggleFounderPage'); if (toggleSwitch && appState.user && appState.userData.account_type === 'founder') { toggleSwitch.checked = appState.founderPageVisible; } }
+    async function initFounderSettings() { await loadGlobalFounderVisibility(); const toggleSwitch = document.getElementById('toggleFounderPage'); if (toggleSwitch && appState.user && appState.userData.account_type === 'founder') { toggleSwitch.removeEventListener('change', handleToggleChange); toggleSwitch.addEventListener('change', handleToggleChange); } }
+    async function handleToggleChange(e) { appState.founderPageVisible = e.target.checked; try { await supabaseClient.from('founder_settings').upsert({ id: 1, page_visible: appState.founderPageVisible, updated_at: new Date() }); } catch(error) { console.warn('فشل حفظ الإعدادات في قاعدة البيانات', error); } localStorage.setItem('founder_page_visible', appState.founderPageVisible); showToast(appState.founderPageVisible ? 'تم إظهار صفحة المؤسس للجميع' : 'تم إخفاء صفحة المؤسس عن الجميع', 'success'); }
     async function loadFounderStats() {
-        try {
-            const { data, error } = await supabaseClient.from('founder_views').select('count').eq('id',1).single();
-            if (!error && data) appState.founderViews = data.count || 0;
-            else appState.founderViews = parseInt(localStorage.getItem('founder_views') || '0');
-        } catch(e) { appState.founderViews = parseInt(localStorage.getItem('founder_views') || '0'); }
-        const viewsEl = document.getElementById('founderViewsCount'); if (viewsEl) viewsEl.textContent = appState.founderViews;
-        try {
-            const { data, error } = await supabaseClient.from('founder_shares').select('count');
-            if (!error && data) { const total = data.reduce((sum, s) => sum + (s.count || 0), 0); const sharesEl = document.getElementById('founderSharesTotal'); if (sharesEl) sharesEl.textContent = total; }
-            else { let total = 0; ['whatsapp','facebook','twitter','copy'].forEach(t => { total += parseInt(localStorage.getItem(`share_${t}`) || '0'); }); const sharesEl = document.getElementById('founderSharesTotal'); if (sharesEl) sharesEl.textContent = total; }
-        } catch(e) { let total = 0; ['whatsapp','facebook','twitter','copy'].forEach(t => { total += parseInt(localStorage.getItem(`share_${t}`) || '0'); }); const sharesEl = document.getElementById('founderSharesTotal'); if (sharesEl) sharesEl.textContent = total; }
+        try { const { data, error } = await supabaseClient.from('founder_views').select('count').eq('id',1).single(); if (!error && data) appState.founderViews = data.count || 0; else appState.founderViews = parseInt(localStorage.getItem('founder_views') || '0'); } catch(e) { appState.founderViews = parseInt(localStorage.getItem('founder_views') || '0'); } const viewsEl = document.getElementById('founderViewsCount'); if (viewsEl) viewsEl.textContent = appState.founderViews;
+        try { const { data, error } = await supabaseClient.from('founder_shares').select('count'); if (!error && data) { const total = data.reduce((sum, s) => sum + (s.count || 0), 0); const sharesEl = document.getElementById('founderSharesTotal'); if (sharesEl) sharesEl.textContent = total; } else { let total = 0; ['whatsapp','facebook','twitter','copy'].forEach(t => { total += parseInt(localStorage.getItem(`share_${t}`) || '0'); }); const sharesEl = document.getElementById('founderSharesTotal'); if (sharesEl) sharesEl.textContent = total; } } catch(e) { let total = 0; ['whatsapp','facebook','twitter','copy'].forEach(t => { total += parseInt(localStorage.getItem(`share_${t}`) || '0'); }); const sharesEl = document.getElementById('founderSharesTotal'); if (sharesEl) sharesEl.textContent = total; }
     }
     async function refreshFounderStats() { await loadFounderStats(); showToast('تم تحديث الإحصائيات', 'success'); }
     async function trackFounderView() {
-        try {
-            await supabaseClient.rpc('increment_founder_view');
-        } catch(e) {
-            let current = parseInt(localStorage.getItem('founder_views') || '0');
-            current++; localStorage.setItem('founder_views', current);
-            appState.founderViews = current;
-        }
+        try { await supabaseClient.rpc('increment_founder_view'); } catch(e) { let current = parseInt(localStorage.getItem('founder_views') || '0'); current++; localStorage.setItem('founder_views', current); appState.founderViews = current; }
         const viewsEl = document.getElementById('founderViewsCount'); if (viewsEl) viewsEl.textContent = appState.founderViews;
     }
     async function trackShare(shareType) {
-        try {
-            const { data, error } = await supabaseClient.from('founder_shares').select('count').eq('share_type', shareType).maybeSingle();
-            if (error) throw error;
-            let newCount = 1;
-            if (data && data.count !== undefined) { newCount = data.count + 1; await supabaseClient.from('founder_shares').update({ count: newCount, updated_at: new Date() }).eq('share_type', shareType); }
-            else { await supabaseClient.from('founder_shares').insert({ share_type: shareType, count: 1 }); }
-            const span = document.getElementById(`shareCount_${shareType}`); if (span) span.textContent = newCount;
-            const { data: allShares } = await supabaseClient.from('founder_shares').select('count');
-            if (allShares) { const total = allShares.reduce((sum, s) => sum + (s.count || 0), 0); const sharesEl = document.getElementById('founderSharesTotal'); if (sharesEl) sharesEl.textContent = total; }
-        } catch (err) { console.warn('فشل تحديث قاعدة بيانات المشاركات، استخدام localStorage', err); let localCount = parseInt(localStorage.getItem(`share_${shareType}`) || '0'); localCount++; localStorage.setItem(`share_${shareType}`, localCount); const span = document.getElementById(`shareCount_${shareType}`); if (span) span.textContent = localCount; let total = 0; ['whatsapp','facebook','twitter','copy'].forEach(t => { total += parseInt(localStorage.getItem(`share_${t}`) || '0'); }); const sharesEl = document.getElementById('founderSharesTotal'); if (sharesEl) sharesEl.textContent = total; }
+        try { const { data, error } = await supabaseClient.from('founder_shares').select('count').eq('share_type', shareType).maybeSingle(); if (error) throw error; let newCount = 1; if (data && data.count !== undefined) { newCount = data.count + 1; await supabaseClient.from('founder_shares').update({ count: newCount, updated_at: new Date() }).eq('share_type', shareType); } else { await supabaseClient.from('founder_shares').insert({ share_type: shareType, count: 1 }); } const span = document.getElementById(`shareCount_${shareType}`); if (span) span.textContent = newCount; const { data: allShares } = await supabaseClient.from('founder_shares').select('count'); if (allShares) { const total = allShares.reduce((sum, s) => sum + (s.count || 0), 0); const sharesEl = document.getElementById('founderSharesTotal'); if (sharesEl) sharesEl.textContent = total; } } catch (err) { console.warn('فشل تحديث قاعدة بيانات المشاركات، استخدام localStorage', err); let localCount = parseInt(localStorage.getItem(`share_${shareType}`) || '0'); localCount++; localStorage.setItem(`share_${shareType}`, localCount); const span = document.getElementById(`shareCount_${shareType}`); if (span) span.textContent = localCount; let total = 0; ['whatsapp','facebook','twitter','copy'].forEach(t => { total += parseInt(localStorage.getItem(`share_${t}`) || '0'); }); const sharesEl = document.getElementById('founderSharesTotal'); if (sharesEl) sharesEl.textContent = total; }
     }
     async function loadShareCounts() {
-        try {
-            const { data, error } = await supabaseClient.from('founder_shares').select('share_type, count');
-            if (error) throw error;
-            if (data && data.length) { data.forEach(item => { const span = document.getElementById(`shareCount_${item.share_type}`); if (span) span.textContent = item.count; }); const total = data.reduce((sum, s) => sum + (s.count || 0), 0); const sharesEl = document.getElementById('founderSharesTotal'); if (sharesEl) sharesEl.textContent = total; }
-            else { ['whatsapp', 'facebook', 'twitter', 'copy'].forEach(type => { const count = localStorage.getItem(`share_${type}`) || 0; const span = document.getElementById(`shareCount_${type}`); if (span) span.textContent = count; }); let total = 0; ['whatsapp','facebook','twitter','copy'].forEach(t => { total += parseInt(localStorage.getItem(`share_${t}`) || '0'); }); const sharesEl = document.getElementById('founderSharesTotal'); if (sharesEl) sharesEl.textContent = total; }
-        } catch (err) { console.warn(err); }
+        try { const { data, error } = await supabaseClient.from('founder_shares').select('share_type, count'); if (error) throw error; if (data && data.length) { data.forEach(item => { const span = document.getElementById(`shareCount_${item.share_type}`); if (span) span.textContent = item.count; }); const total = data.reduce((sum, s) => sum + (s.count || 0), 0); const sharesEl = document.getElementById('founderSharesTotal'); if (sharesEl) sharesEl.textContent = total; } else { ['whatsapp', 'facebook', 'twitter', 'copy'].forEach(type => { const count = localStorage.getItem(`share_${type}`) || 0; const span = document.getElementById(`shareCount_${type}`); if (span) span.textContent = count; }); let total = 0; ['whatsapp','facebook','twitter','copy'].forEach(t => { total += parseInt(localStorage.getItem(`share_${t}`) || '0'); }); const sharesEl = document.getElementById('founderSharesTotal'); if (sharesEl) sharesEl.textContent = total; } } catch (err) { console.warn(err); }
     }
     function getFounderShareLink() { const founderUsername = 'mohamed_saad'; const baseUrl = window.location.origin + window.location.pathname; return `${baseUrl}?founder=${founderUsername}`; }
     async function shareFounderPage(method) {
@@ -1415,28 +1093,8 @@
         }
         trackShare(method);
     }
-    function checkFounderParam() {
-        const params = new URLSearchParams(window.location.search);
-        const founder = params.get('founder');
-        if (founder && founder === 'mohamed_saad') {
-            setTimeout(async () => {
-                await loadGlobalFounderVisibility();
-                if (appState.founderPageVisible) { openFounderProfile(); } else { showToast('صفحة المؤسس غير متاحة حالياً', 'warning'); }
-                const newUrl = window.location.origin + window.location.pathname;
-                window.history.replaceState({}, document.title, newUrl);
-            }, 1000);
-        }
-    }
-    async function openFounderProfile() {
-        await loadGlobalFounderVisibility();
-        if (!appState.founderPageVisible) { showToast('صفحة المؤسس غير متاحة حالياً من قبل الإدارة', 'warning'); return; }
-        closeChatbot();
-        document.getElementById('founderProfileScreen').classList.add('active');
-        await loadShareCounts();
-        const shareLinkSpan = document.getElementById('founderShareLink');
-        if (shareLinkSpan) shareLinkSpan.textContent = getFounderShareLink();
-        await trackFounderView();
-    }
+    function checkFounderParam() { const params = new URLSearchParams(window.location.search); const founder = params.get('founder'); if (founder && founder === 'mohamed_saad') { setTimeout(async () => { await loadGlobalFounderVisibility(); if (appState.founderPageVisible) { openFounderProfile(); } else { showToast('صفحة المؤسس غير متاحة حالياً', 'warning'); } const newUrl = window.location.origin + window.location.pathname; window.history.replaceState({}, document.title, newUrl); }, 1000); } }
+    async function openFounderProfile() { await loadGlobalFounderVisibility(); if (!appState.founderPageVisible) { showToast('صفحة المؤسس غير متاحة حالياً من قبل الإدارة', 'warning'); return; } closeChatbot(); document.getElementById('founderProfileScreen').classList.add('active'); await loadShareCounts(); const shareLinkSpan = document.getElementById('founderShareLink'); if (shareLinkSpan) shareLinkSpan.textContent = getFounderShareLink(); await trackFounderView(); }
     function closeFounderProfile() { document.getElementById('founderProfileScreen').classList.remove('active'); openChatbot(); }
     function contactDeveloper() { window.open('https://app.fastbots.ai/embed/cmillclid07mep81pmwkjqyq6', '_blank'); }
     function openImageModal() { const img = document.querySelector('.founder-avatar img'); if (img) { document.getElementById('modalImage').src = img.src; document.getElementById('imageModal').classList.add('active'); } }
@@ -1445,39 +1103,10 @@
     // ========== طلبات انضمام المناديب ==========
     async function loadPendingDeliveries() {
         if (!appState.user || appState.userData.account_type !== 'founder') return;
-        try {
-            const { data, error } = await supabaseClient.from('user_data').select('id, name, email, phone, center, created_at').eq('account_type', 'delivery').eq('status', 'pending');
-            if (error) throw error;
-            const container = document.getElementById('pendingDeliveriesList');
-            if (!container) return;
-            if (!data || data.length === 0) { container.innerHTML = '<p>لا توجد طلبات انضمام حالياً</p>'; return; }
-            container.innerHTML = '';
-            data.forEach(del => {
-                const div = document.createElement('div'); div.className = 'pending-item';
-                div.innerHTML = `<div class="pending-info"><div class="pending-name">${escapeHTML(del.name || del.email)}</div><div class="pending-email">${del.email} | ${del.phone || 'لا يوجد هاتف'} | المركز: ${del.center || 'غير محدد'}</div></div><div class="pending-actions"><button class="approve-btn" onclick="approveDeliveryPerson('${del.id}')">قبول</button><button class="reject-btn" onclick="rejectDeliveryPerson('${del.id}')">رفض</button></div>`;
-                container.appendChild(div);
-            });
-        } catch(err) { console.error(err); document.getElementById('pendingDeliveriesList').innerHTML = '<p>حدث خطأ في تحميل الطلبات</p>'; }
+        try { const { data, error } = await supabaseClient.from('user_data').select('id, name, email, phone, center, created_at').eq('account_type', 'delivery').eq('status', 'pending'); if (error) throw error; const container = document.getElementById('pendingDeliveriesList'); if (!container) return; if (!data || data.length === 0) { container.innerHTML = '<p>لا توجد طلبات انضمام حالياً</p>'; return; } container.innerHTML = ''; data.forEach(del => { const div = document.createElement('div'); div.className = 'pending-item'; div.innerHTML = `<div class="pending-info"><div class="pending-name">${escapeHTML(del.name || del.email)}</div><div class="pending-email">${del.email} | ${del.phone || 'لا يوجد هاتف'} | المركز: ${del.center || 'غير محدد'}</div></div><div class="pending-actions"><button class="approve-btn" onclick="approveDeliveryPerson('${del.id}')">قبول</button><button class="reject-btn" onclick="rejectDeliveryPerson('${del.id}')">رفض</button></div>`; container.appendChild(div); }); } catch(err) { console.error(err); document.getElementById('pendingDeliveriesList').innerHTML = '<p>حدث خطأ في تحميل الطلبات</p>'; }
     }
-    async function approveDeliveryPerson(userId) {
-        showLoading(true);
-        try {
-            await supabaseClient.from('user_data').update({ status: 'approved' }).eq('id', userId);
-            showToast('تم قبول المندوب', 'success');
-            await loadPendingDeliveries();
-        } catch(err) { showToast(err.message, 'error'); }
-        finally { showLoading(false); }
-    }
-    async function rejectDeliveryPerson(userId) {
-        if (!confirm('هل أنت متأكد من رفض هذا المندوب؟ سيتم حذف حسابه.')) return;
-        showLoading(true);
-        try {
-            await supabaseClient.from('user_data').delete().eq('id', userId);
-            showToast('تم رفض المندوب وحذف الحساب', 'success');
-            await loadPendingDeliveries();
-        } catch(err) { showToast(err.message, 'error'); }
-        finally { showLoading(false); }
-    }
+    async function approveDeliveryPerson(userId) { showLoading(true); try { await supabaseClient.from('user_data').update({ status: 'approved' }).eq('id', userId); showToast('تم قبول المندوب', 'success'); await loadPendingDeliveries(); } catch(err) { showToast(err.message, 'error'); } finally { showLoading(false); } }
+    async function rejectDeliveryPerson(userId) { if (!confirm('هل أنت متأكد من رفض هذا المندوب؟ سيتم حذف حسابه.')) return; showLoading(true); try { await supabaseClient.from('user_data').delete().eq('id', userId); showToast('تم رفض المندوب وحذف الحساب', 'success'); await loadPendingDeliveries(); } catch(err) { showToast(err.message, 'error'); } finally { showLoading(false); } }
 
     // ========== إضافات أمان ==========
     function showChangePasswordModal() { if (!appState.user) { showToast('يجب تسجيل الدخول أولاً', 'warning'); return; } document.getElementById('changePasswordModal').classList.add('active'); }
@@ -1513,108 +1142,27 @@
     function sendSuggestion(text) { addMessage(text, 'user'); setTimeout(() => { addMessage(getBotResponse(text), 'bot'); document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight; }, 400); }
     function addMessage(text, sender) { const container = document.getElementById('chatMessages'); const div = document.createElement('div'); div.className = `message ${sender}`; div.textContent = text; container.appendChild(div); container.scrollTop = container.scrollHeight; }
     function getBotResponse(msg) { const m = msg.toLowerCase(); if (m.includes('السلام') || m.includes('اهلا')) return 'وعليكم السلام! كيف يمكنني مساعدتك؟ 😊'; if (m.includes('منتجات')) return 'لدينا إلكترونيات، أزياء، أثاث، أطعمة. تصفح المتجر!'; if (m.includes('اشتري') || m.includes('شراء')) return 'اذهب للمتجر، أضف المنتج للسلة ثم أكمل الطلب من صفحة السلة.'; if (m.includes('عروض')) return 'خصم 20% على الأثاث، وساعة هواوي بسعر مميز.'; if (m.includes('صيانة')) return 'خدمات الصيانة متوفرة: أجهزة، سباكة، كهرباء. احجز من قسم الخدمات.'; if (m.includes('طلب')) return 'تابع طلباتك من صفحة "طلباتي" في الملف الشخصي.'; if (m.includes('خدمة العملاء') || m.includes('الدعم')) return 'تواصل معنا: support@misar.com أو 19000.'; if (m.includes('شكرا')) return 'الشكر لله، دائمًا في خدمتك!'; return 'عذرًا، لم أفهم. جرب الاقتراحات أعلاه.'; }
-
-    async function loadUnreadNotificationsCount() {
-        if (!appState.user) return;
-        try {
-            const { count, error } = await supabaseClient.from('notifications').select('*', { count: 'exact', head: true }).eq('user_id', appState.user.id).eq('is_read', false);
-            if (!error) {
-                const badge = document.getElementById('notificationBadge');
-                if (badge) { badge.textContent = count || 0; badge.style.display = count > 0 ? 'flex' : 'none'; }
-            }
-        } catch(e) { console.warn('فشل تحميل عدد الإشعارات', e); }
-    }
-
-    function setupRealtimeSubscriptions() {
-        if (!appState.user) return;
-        if (appState.ordersSubscription) appState.ordersSubscription.unsubscribe();
-        appState.ordersSubscription = supabaseClient.channel('orders-channel').on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, (payload) => {
-            console.log('Order change:', payload);
-            if (appState.currentScreen === 'sellerDashboardScreen' && appState.userData.account_type === 'seller') refreshSellerDashboard();
-            else if (appState.currentScreen === 'deliveryDashboardScreen') refreshDeliveryDashboard();
-            else if (appState.currentScreen === 'ordersScreen') loadBuyerOrdersWithTimeline();
-            loadUnreadNotificationsCount();
-        }).subscribe();
-        if (appState.notificationsSubscription) appState.notificationsSubscription.unsubscribe();
-        appState.notificationsSubscription = supabaseClient.channel('notifications-channel').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${appState.user.id}` }, (payload) => {
-            showToast(payload.new.title, 'info'); loadUnreadNotificationsCount();
-        }).subscribe();
-    }
+    async function loadUnreadNotificationsCount() { if (!appState.user) return; try { const { count, error } = await supabaseClient.from('notifications').select('*', { count: 'exact', head: true }).eq('user_id', appState.user.id).eq('is_read', false); if (!error) { const badge = document.getElementById('notificationBadge'); if (badge) { badge.textContent = count || 0; badge.style.display = count > 0 ? 'flex' : 'none'; } } } catch(e) { console.warn('فشل تحميل عدد الإشعارات', e); } }
+    function setupRealtimeSubscriptions() { if (!appState.user) return; if (appState.ordersSubscription) appState.ordersSubscription.unsubscribe(); appState.ordersSubscription = supabaseClient.channel('orders-channel').on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, (payload) => { console.log('Order change:', payload); if (appState.currentScreen === 'sellerDashboardScreen' && appState.userData.account_type === 'seller') refreshSellerDashboard(); else if (appState.currentScreen === 'deliveryDashboardScreen') refreshDeliveryDashboard(); else if (appState.currentScreen === 'ordersScreen') loadBuyerOrdersWithTimeline(); loadUnreadNotificationsCount(); }).subscribe(); if (appState.notificationsSubscription) appState.notificationsSubscription.unsubscribe(); appState.notificationsSubscription = supabaseClient.channel('notifications-channel').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${appState.user.id}` }, (payload) => { showToast(payload.new.title, 'info'); loadUnreadNotificationsCount(); }).subscribe(); }
 
     // ========== الوظائف العامة للواجهة ==========
     function loadFeaturedProducts() { const container = document.getElementById('featuredProducts'); if (!container) return; container.innerHTML = ''; appState.products.slice(0,4).forEach(p => container.appendChild(createProductCard(p))); }
     function loadMarketProducts() { const container = document.getElementById('marketProducts'); if (!container) return; container.innerHTML = ''; appState.products.forEach(p => container.appendChild(createProductCard(p))); }
     function filterMarketProducts(query) { const container = document.getElementById('marketProducts'); if (!container) return; container.innerHTML = ''; const filtered = appState.products.filter(p => p.name.toLowerCase().includes(query)); if (filtered.length === 0) container.innerHTML = '<p style="grid-column:span2; text-align:center; padding:30px; color:#666;">لا توجد منتجات مطابقة للبحث</p>'; else filtered.forEach(p => container.appendChild(createProductCard(p))); }
     function clearSearch() { const input = document.getElementById('marketSearchInput'); if (input) input.value = ''; const clear = document.getElementById('clearSearch'); if (clear) clear.style.display = 'none'; filterMarketProducts(''); }
-    function createProductCard(product) {
-        const card = document.createElement('div'); card.className = 'product-card';
-        const imageUrl = product.images && product.images.length ? product.images[0] : (product.image_url || '');
-        const imageHtml = imageUrl ? `<img src="${imageUrl}" loading="lazy" onerror="this.onerror=null; this.parentElement.innerHTML='<div>📦</div>';">` : '<div>📦</div>';
-        card.innerHTML = `<div class="product-image">${imageHtml}<div class="product-tag">${product.category || 'عام'}</div></div><div class="product-info"><div class="product-title">${escapeHTML(product.name)}</div><div class="product-price">${product.price} ج.م</div><div class="product-rating">★★★★★</div><button class="add-to-cart" onclick="event.stopPropagation(); addToCart('${product.id}')"><i class="fas fa-cart-plus"></i> إضافة للسلة</button></div>`;
-        card.addEventListener('click', () => openProductDetail(product));
-        return card;
-    }
-    function openProductDetail(product) {
-        appState.currentProduct = product;
-        const container = document.getElementById('productDetailContent'); if (!container) return;
-        const images = (product.images && Array.isArray(product.images) && product.images.length) ? product.images : (product.image_url ? [product.image_url] : []);
-        let galleryHtml = '';
-        if (images.length) {
-            let mainImage = images[0];
-            galleryHtml = `<img src="${mainImage}" class="product-main-image" id="detailMainImage" style="width:100%; max-height:300px; object-fit:contain; border-radius:12px; margin-bottom:10px;">`;
-            if (images.length > 1) {
-                galleryHtml += `<div class="product-gallery">`;
-                images.forEach((img, idx) => { galleryHtml += `<img src="${img}" class="gallery-thumb" data-img="${img}" style="width:80px; height:80px; border-radius:8px; cursor:pointer; object-fit:cover; border:2px solid ${idx === 0 ? '#ff6d00' : 'transparent'}" onclick="document.getElementById('detailMainImage').src=this.dataset.img; document.querySelectorAll('.gallery-thumb').forEach(t=>t.style.borderColor='transparent'); this.style.borderColor='#ff6d00';">`; });
-                galleryHtml += `</div>`;
-            }
-        } else { galleryHtml = '<div style="text-align:center; padding:20px;">📦 لا توجد صور</div>'; }
-        container.innerHTML = `<div style="margin-bottom:15px;"><h2 style="color:#1a237e; margin:10px 0;">${escapeHTML(product.name)}</h2><div class="product-price" style="font-size:1.8rem; margin:10px 0;">${product.price} ج.م</div><div style="margin-bottom:15px; background:#f9f9f9; padding:12px; border-radius:12px;"><p style="color:#333; line-height:1.6; margin:0;">${escapeHTML(product.description || 'لا يوجد وصف')}</p></div>${galleryHtml}<div style="display:flex; gap:15px; flex-wrap:wrap; margin:15px 0;"><button class="login-btn" style="flex:1;" onclick="addToCartFromDetail()"><i class="fas fa-cart-plus"></i> إضافة إلى السلة</button><button class="checkout-btn" style="flex:1; background:linear-gradient(135deg,#ff6d00,#ff9100);" onclick="buyNowFromDetail()"><i class="fas fa-bolt"></i> شراء الآن</button></div></div><div id="similarProductsSectionDetail" style="margin-top:25px; border-top:1px solid #eee; padding-top:20px;"></div>`;
-        loadSimilarProductsInDetail(product.category, product.id);
-        showScreen('productDetailScreen');
-    }
-    function loadSimilarProductsInDetail(category, currentProductId, limit = 6) {
-        const container = document.getElementById('similarProductsSectionDetail'); if (!container) return;
-        let similar = appState.products.filter(p => p.category === category && p.id !== currentProductId);
-        similar = similar.slice(0, limit);
-        if (similar.length === 0) { container.innerHTML = ''; return; }
-        container.innerHTML = '<h3 style="font-size:1.2rem; color:#1a237e; margin-bottom:15px; font-weight:700;">منتجات مشابهة</h3><div class="similar-products-grid" id="similarProductsGridDetail"></div>';
-        const grid = document.getElementById('similarProductsGridDetail');
-        similar.forEach(product => {
-            const card = document.createElement('div'); card.className = 'similar-product-card';
-            const imgUrl = product.images && product.images.length ? product.images[0] : (product.image_url || '');
-            const imgHtml = imgUrl ? `<img src="${imgUrl}" loading="lazy">` : '<div style="font-size:2rem;">📦</div>';
-            card.innerHTML = `<div class="similar-product-image">${imgHtml}</div><div class="similar-product-info"><div class="similar-product-name">${escapeHTML(product.name)}</div><div class="similar-product-price">${product.price} ج.م</div></div>`;
-            card.addEventListener('click', () => openProductDetail(product));
-            grid.appendChild(card);
-        });
-    }
+    function createProductCard(product) { const card = document.createElement('div'); card.className = 'product-card'; const imageUrl = product.images && product.images.length ? product.images[0] : (product.image_url || ''); const imageHtml = imageUrl ? `<img src="${imageUrl}" loading="lazy" onerror="this.onerror=null; this.parentElement.innerHTML='<div>📦</div>';">` : '<div>📦</div>'; card.innerHTML = `<div class="product-image">${imageHtml}<div class="product-tag">${product.category || 'عام'}</div></div><div class="product-info"><div class="product-title">${escapeHTML(product.name)}</div><div class="product-price">${product.price} ج.م</div><div class="product-rating">★★★★★</div><button class="add-to-cart" onclick="event.stopPropagation(); addToCart('${product.id}')"><i class="fas fa-cart-plus"></i> إضافة للسلة</button></div>`; card.addEventListener('click', () => openProductDetail(product)); return card; }
+    function openProductDetail(product) { appState.currentProduct = product; const container = document.getElementById('productDetailContent'); if (!container) return; const images = (product.images && Array.isArray(product.images) && product.images.length) ? product.images : (product.image_url ? [product.image_url] : []); let galleryHtml = ''; if (images.length) { let mainImage = images[0]; galleryHtml = `<img src="${mainImage}" class="product-main-image" id="detailMainImage" style="width:100%; max-height:300px; object-fit:contain; border-radius:12px; margin-bottom:10px;">`; if (images.length > 1) { galleryHtml += `<div class="product-gallery">`; images.forEach((img, idx) => { galleryHtml += `<img src="${img}" class="gallery-thumb" data-img="${img}" style="width:80px; height:80px; border-radius:8px; cursor:pointer; object-fit:cover; border:2px solid ${idx === 0 ? '#ff6d00' : 'transparent'}" onclick="document.getElementById('detailMainImage').src=this.dataset.img; document.querySelectorAll('.gallery-thumb').forEach(t=>t.style.borderColor='transparent'); this.style.borderColor='#ff6d00';">`; }); galleryHtml += `</div>`; } } else { galleryHtml = '<div style="text-align:center; padding:20px;">📦 لا توجد صور</div>'; } container.innerHTML = `<div style="margin-bottom:15px;"><h2 style="color:#1a237e; margin:10px 0;">${escapeHTML(product.name)}</h2><div class="product-price" style="font-size:1.8rem; margin:10px 0;">${product.price} ج.م</div><div style="margin-bottom:15px; background:#f9f9f9; padding:12px; border-radius:12px;"><p style="color:#333; line-height:1.6; margin:0;">${escapeHTML(product.description || 'لا يوجد وصف')}</p></div>${galleryHtml}<div style="display:flex; gap:15px; flex-wrap:wrap; margin:15px 0;"><button class="login-btn" style="flex:1;" onclick="addToCartFromDetail()"><i class="fas fa-cart-plus"></i> إضافة إلى السلة</button><button class="checkout-btn" style="flex:1; background:linear-gradient(135deg,#ff6d00,#ff9100);" onclick="buyNowFromDetail()"><i class="fas fa-bolt"></i> شراء الآن</button></div></div><div id="similarProductsSectionDetail" style="margin-top:25px; border-top:1px solid #eee; padding-top:20px;"></div>`; loadSimilarProductsInDetail(product.category, product.id); showScreen('productDetailScreen'); }
+    function loadSimilarProductsInDetail(category, currentProductId, limit = 6) { const container = document.getElementById('similarProductsSectionDetail'); if (!container) return; let similar = appState.products.filter(p => p.category === category && p.id !== currentProductId); similar = similar.slice(0, limit); if (similar.length === 0) { container.innerHTML = ''; return; } container.innerHTML = '<h3 style="font-size:1.2rem; color:#1a237e; margin-bottom:15px; font-weight:700;">منتجات مشابهة</h3><div class="similar-products-grid" id="similarProductsGridDetail"></div>'; const grid = document.getElementById('similarProductsGridDetail'); similar.forEach(product => { const card = document.createElement('div'); card.className = 'similar-product-card'; const imgUrl = product.images && product.images.length ? product.images[0] : (product.image_url || ''); const imgHtml = imgUrl ? `<img src="${imgUrl}" loading="lazy">` : '<div style="font-size:2rem;">📦</div>'; card.innerHTML = `<div class="similar-product-image">${imgHtml}</div><div class="similar-product-info"><div class="similar-product-name">${escapeHTML(product.name)}</div><div class="similar-product-price">${product.price} ج.م</div></div>`; card.addEventListener('click', () => openProductDetail(product)); grid.appendChild(card); }); }
     function addToCartFromDetail() { if (appState.currentProduct) { addToCart(appState.currentProduct.id); showToast('تمت الإضافة إلى السلة', 'success'); } }
     function buyNowFromDetail() { if (appState.currentProduct) { addToCart(appState.currentProduct.id); showScreen('cartScreen'); } }
-    function loadServices() {
-        const container = document.getElementById('servicesList'); if (!container) return; container.innerHTML = '';
-        appState.services.forEach(s => { const card = document.createElement('div'); card.className = 'service-card'; card.innerHTML = `<div class="service-header"><div class="service-icon"><i class="${s.icon}"></i></div><div><div class="service-title">${s.name}</div><div class="service-price">${s.price}</div></div></div><div class="service-desc">${s.description}</div><button class="book-service-btn" onclick="bookService(${s.id})"><i class="fas fa-calendar-check"></i> حجز الخدمة</button>`; container.appendChild(card); });
-    }
+    function loadServices() { const container = document.getElementById('servicesList'); if (!container) return; container.innerHTML = ''; appState.services.forEach(s => { const card = document.createElement('div'); card.className = 'service-card'; card.innerHTML = `<div class="service-header"><div class="service-icon"><i class="${s.icon}"></i></div><div><div class="service-title">${s.name}</div><div class="service-price">${s.price}</div></div></div><div class="service-desc">${s.description}</div><button class="book-service-btn" onclick="bookService(${s.id})"><i class="fas fa-calendar-check"></i> حجز الخدمة</button>`; container.appendChild(card); }); }
     function bookService(serviceId) { const service = appState.services.find(s => s.id === serviceId); if (service) showToast(`تم حجز خدمة ${service.name} بنجاح`, 'success'); }
     function openCheckout() { if (!appState.user) { showToast('يجب تسجيل الدخول أولاً', 'warning'); return; } document.getElementById('checkoutModal').classList.add('active'); }
     function closeCheckoutModal() { document.getElementById('checkoutModal').classList.remove('active'); }
 
     // ========== تهيئة التطبيق ==========
     async function checkStoreParam() { const params = new URLSearchParams(window.location.search); const storeParam = params.get('store'); if (storeParam) { setTimeout(() => showStorePage(storeParam), 1000); } }
-    function setupEventListeners() {
-        const saveBtn = document.getElementById('saveLocationBtn'); if (saveBtn) saveBtn.addEventListener('click', saveLocation);
-        const centerSelect = document.getElementById('centerSelect'); if (centerSelect) { centerSelect.addEventListener('change', function(e) { const center = e.target.value; const villageSelect = document.getElementById('villageSelect'); villageSelect.innerHTML = '<option value="">اختر القرية</option>'; if (center && appState.villagesByCenter[center]) { appState.villagesByCenter[center].forEach(v => { const opt = document.createElement('option'); opt.value = v; opt.textContent = v; villageSelect.appendChild(opt); }); } }); }
-        const googleBtn = document.getElementById('googleLoginBtn'); if (googleBtn) googleBtn.addEventListener('click', signInWithGoogle);
-        const loginBtn = document.getElementById('loginBtn'); if (loginBtn) loginBtn.addEventListener('click', signInWithEmail);
-        const showRegisterLink = document.getElementById('showRegisterLink'); if (showRegisterLink) showRegisterLink.addEventListener('click', (e) => { e.preventDefault(); showScreen('registerScreen'); });
-        const showLoginLink = document.getElementById('showLoginLink'); if (showLoginLink) showLoginLink.addEventListener('click', (e) => { e.preventDefault(); showScreen('loginScreen'); });
-        const registerBtn = document.getElementById('registerBtn'); if (registerBtn) registerBtn.addEventListener('click', signUpWithEmail);
-        const marketSearch = document.getElementById('marketSearchInput'); if (marketSearch) { marketSearch.addEventListener('input', function(e) { const query = e.target.value.toLowerCase().trim(); filterMarketProducts(query); const clear = document.getElementById('clearSearch'); if (clear) clear.style.display = query.length > 0 ? 'inline-block' : 'none'; }); }
-        const registerAccountType = document.getElementById('registerAccountType');
-        const deliveryCenterField = document.getElementById('deliveryCenterField');
-        if (registerAccountType && deliveryCenterField) {
-            registerAccountType.addEventListener('change', function() { deliveryCenterField.style.display = this.value === 'delivery' ? 'block' : 'none'; });
-        }
-    }
+    function setupEventListeners() { const saveBtn = document.getElementById('saveLocationBtn'); if (saveBtn) saveBtn.addEventListener('click', saveLocation); const centerSelect = document.getElementById('centerSelect'); if (centerSelect) { centerSelect.addEventListener('change', function(e) { const center = e.target.value; const villageSelect = document.getElementById('villageSelect'); villageSelect.innerHTML = '<option value="">اختر القرية</option>'; if (center && appState.villagesByCenter[center]) { appState.villagesByCenter[center].forEach(v => { const opt = document.createElement('option'); opt.value = v; opt.textContent = v; villageSelect.appendChild(opt); }); } }); } const googleBtn = document.getElementById('googleLoginBtn'); if (googleBtn) googleBtn.addEventListener('click', signInWithGoogle); const loginBtn = document.getElementById('loginBtn'); if (loginBtn) loginBtn.addEventListener('click', signInWithEmail); const showRegisterLink = document.getElementById('showRegisterLink'); if (showRegisterLink) showRegisterLink.addEventListener('click', (e) => { e.preventDefault(); showScreen('registerScreen'); }); const showLoginLink = document.getElementById('showLoginLink'); if (showLoginLink) showLoginLink.addEventListener('click', (e) => { e.preventDefault(); showScreen('loginScreen'); }); const registerBtn = document.getElementById('registerBtn'); if (registerBtn) registerBtn.addEventListener('click', signUpWithEmail); const marketSearch = document.getElementById('marketSearchInput'); if (marketSearch) { marketSearch.addEventListener('input', function(e) { const query = e.target.value.toLowerCase().trim(); filterMarketProducts(query); const clear = document.getElementById('clearSearch'); if (clear) clear.style.display = query.length > 0 ? 'inline-block' : 'none'; }); } const registerAccountType = document.getElementById('registerAccountType'); const deliveryCenterField = document.getElementById('deliveryCenterField'); if (registerAccountType && deliveryCenterField) { registerAccountType.addEventListener('change', function() { deliveryCenterField.style.display = this.value === 'delivery' ? 'block' : 'none'; }); } }
     window.addEventListener('DOMContentLoaded', async () => {
         const savedLocation = localStorage.getItem('misarUserLocation');
         if (savedLocation) appState.location = JSON.parse(savedLocation);
@@ -1693,6 +1241,7 @@
     window.refreshDeliveryDashboard = refreshDeliveryDashboard; window.switchDeliveryTab = switchDeliveryTab; window.claimOrder = claimOrder; window.startDelivery = startDelivery; window.completeDelivery = completeDelivery;
     window.cancelOrder = cancelOrder; window.loadBuyerOrdersWithTimeline = loadBuyerOrdersWithTimeline;
     window.approveDeliveryPerson = approveDeliveryPerson; window.rejectDeliveryPerson = rejectDeliveryPerson; window.loadPendingDeliveries = loadPendingDeliveries;
+    window.openFounderProfile = openFounderProfile; window.closeFounderProfile = closeFounderProfile; window.shareFounderPage = shareFounderPage; window.trackShare = trackShare; window.getFounderShareLink = getFounderShareLink;
 </script>
 </body>
 </html>
