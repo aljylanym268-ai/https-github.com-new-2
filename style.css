@@ -2470,4 +2470,41 @@ input:checked + .slider:before {
 .toggle-password:hover {
     color: #1a237e;
 }
+/* ========== إظهار/إخفاء كلمة المرور ========== */
+.password-wrapper {
+    position: relative;
+    width: 100%;
+}
 
+.password-wrapper .input-field {
+    padding-left: 48px; /* مساحة للأيقونة (لأن الاتجاه RTL) */
+    width: 100%;
+}
+
+.toggle-password {
+    position: absolute;
+    left: 16px;      /* في RTL، left تعني اليسار (نهاية الحقل) */
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #999;
+    font-size: 1.2rem;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: transparent;
+    transition: color 0.2s, background 0.2s;
+}
+
+.toggle-password:hover {
+    color: #1a237e;
+    background: rgba(26, 35, 126, 0.08);
+}
+
+.toggle-password i {
+    pointer-events: none; /* يمنع الأيقونة من أخذ الحدث بدلاً من الـ span */
+}
