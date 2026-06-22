@@ -236,22 +236,126 @@ function updateUserInfo(isGuest = false) {
         if (document.getElementById('editBio')) document.getElementById('editBio').value = appState.userData.bio || '';
     }
 }
-function saveLocation() {
+
+// =================== إصلاح المنطقة (الموقع) ===================
+
+// دالة مساعدة لتحميل القرى بناءً على المركز المختار
+function loadVillagesForCenter(center, selectedVillage = '') {
+    const villageSelect = document.getElementById('villageSelect');
+    if (!villageSelect) return;
+    villageSelect.innerHTML = '<option value="">اختر القرية</option>';
+    if (center && appState.villagesByCenter[center]) {
+        appState.villagesByCenter[center].forEach(v => {
+            const opt = document.createElement('option');
+            opt.value = v;
+            opt.textContent = v;
+            villageSelect.appendChild(opt);
+        });
+    }
+    if (selectedVillage) {
+        villageSelect.value = selectedVillage;
+    }
+}
+
+// حفظ الموقع (بشكل متزامن مع قاعدة البيانات و localStorage)
+async function saveLocation() {
     const governorate = document.getElementById('governorateSelect').value;
     const center = document.getElementById('centerSelect').value;
     const village = document.getElementById('villageSelect').value;
-    if (!center || !village) return showToast('يرجى اختيار المركز والقرية', 'warning');
+
+    if (!center || !village) {
+        showToast('يرجى اختيار المركز والقرية', 'warning');
+        return;
+    }
+
+    // تحديث الحالة العامة
     appState.location = { governorate, center, village };
-    if (appState.user) supabaseClient.from('user_data').upsert({ id: appState.user.id, governorate, center, village }).then();
-    else localStorage.setItem('misarUserLocation', JSON.stringify(appState.location));
-    if (appState.previousScreen === 'profileScreen') showScreen('profileScreen');
-    else showScreen('homeScreen');
-    updateWelcomeLocation(); updateProfileLocation();
+
+    // إذا كان المستخدم مسجل دخول، احفظ في قاعدة البيانات
+    if (appState.user) {
+        try {
+            const { error } = await supabaseClient.from('user_data').upsert({ 
+                id: appState.user.id, 
+                governorate, 
+                center, 
+                village 
+            });
+            if (error) throw error;
+            // تحديث userData محلياً
+            appState.userData.governorate = governorate;
+            appState.userData.center = center;
+            appState.userData.village = village;
+        } catch (error) {
+            showToast('فشل حفظ الموقع في قاعدة البيانات', 'error');
+            console.error(error);
+            return;
+        }
+    } else {
+        // إذا كان زائر، احفظ في localStorage
+        localStorage.setItem('misarUserLocation', JSON.stringify(appState.location));
+    }
+
+    // تحديث واجهة المستخدم
+    updateWelcomeLocation();
+    updateProfileLocation();
+
+    // إظهار رسالة نجاح
     showToast('تم حفظ موقعك بنجاح', 'success');
+
+    // العودة للشاشة السابقة
+    if (appState.previousScreen === 'profileScreen') {
+        showScreen('profileScreen');
+    } else {
+        showScreen('homeScreen');
+    }
 }
-function openLocationSettings() { showScreen('locationScreen'); setTimeout(() => { if (appState.location) { document.getElementById('centerSelect').value = appState.location.center; const villageSelect = document.getElementById('villageSelect'); villageSelect.innerHTML = '<option value="">اختر القرية</option>'; if (appState.location.center && appState.villagesByCenter[appState.location.center]) { appState.villagesByCenter[appState.location.center].forEach(v => { const opt = document.createElement('option'); opt.value = v; opt.textContent = v; villageSelect.appendChild(opt); }); } villageSelect.value = appState.location.village; } }, 100); }
-function updateWelcomeLocation() { const loc = appState.user ? appState.userData : appState.location; if (loc) { const el = document.getElementById('welcomeLocation'); if (el) el.textContent = `موقعك: ${loc.governorate || 'قنا'} - ${loc.center || ''} - ${loc.village || ''}`; } }
-function updateProfileLocation() { const loc = appState.user ? appState.userData : appState.location; const el = document.getElementById('profileLocation'); if (el) { if (loc && (loc.center || loc.village)) el.textContent = `المنطقة: ${loc.governorate || 'قنا'} - ${loc.center || ''} - ${loc.village || ''}`; else el.textContent = 'المنطقة: غير محددة'; } }
+
+// فتح إعدادات الموقع مع تحميل البيانات المخزنة
+function openLocationSettings() {
+    showScreen('locationScreen');
+    setTimeout(() => {
+        // جلب الموقع المخزن
+        const loc = appState.user ? appState.userData : appState.location;
+        if (!loc) return;
+
+        const center = loc.center || '';
+        const village = loc.village || '';
+
+        // تعيين المركز
+        const centerSelect = document.getElementById('centerSelect');
+        if (centerSelect) centerSelect.value = center;
+
+        // تحميل القرى واختيار القرية المخزنة
+        loadVillagesForCenter(center, village);
+    }, 100);
+}
+
+// تحديث عرض الموقع في الترحيب
+function updateWelcomeLocation() {
+    const loc = appState.user ? appState.userData : appState.location;
+    const el = document.getElementById('welcomeLocation');
+    if (el && loc) {
+        const parts = [loc.governorate || 'قنا', loc.center || '', loc.village || ''].filter(Boolean);
+        el.textContent = `موقعك: ${parts.join(' - ')}`;
+    } else if (el) {
+        el.textContent = 'موقعك: غير محدد';
+    }
+}
+
+// تحديث عرض الموقع في الملف الشخصي
+function updateProfileLocation() {
+    const loc = appState.user ? appState.userData : appState.location;
+    const el = document.getElementById('profileLocation');
+    if (el && loc && (loc.center || loc.village)) {
+        const parts = [loc.governorate || 'قنا', loc.center || '', loc.village || ''].filter(Boolean);
+        el.textContent = `المنطقة: ${parts.join(' - ')}`;
+    } else if (el) {
+        el.textContent = 'المنطقة: غير محددة';
+    }
+}
+
+// =================== نهاية إصلاح المنطقة ===================
+
 async function saveProfile() {
     if (!appState.user) return showToast('يجب تسجيل الدخول أولاً', 'warning');
     const name = document.getElementById('editName').value.trim();

@@ -321,7 +321,83 @@ input:checked + .slider:before { transform: translateX(26px); }
 .pending-item { background: white; border-radius: 18px; padding: 15px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
 .pending-info { flex: 1; }
 .pending-name { font-weight: 700; color: #1a237e; }
-.pending-email { font-size: 0.85rem; color: #666; }
+.pending-email { font-size: 0.85rem; color: #666; }/* ========== أنماط شاشة اختيار الموقع ========== */
+.location-screen {
+    background: linear-gradient(135deg, #1a237e, #0d47a1);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 30px 5%;
+    width: 100%;
+}
+.location-card {
+    background: rgba(255,255,255,0.95);
+    border-radius: 25px;
+    padding: 35px 25px;
+    max-width: 500px;
+    width: 100%;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+    backdrop-filter: blur(10px);
+    margin-top: 20px;
+}
+.location-title {
+    text-align: center;
+    color: #1a237e;
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin-bottom: 8px;
+}
+.location-subtitle {
+    text-align: center;
+    color: #666;
+    margin-bottom: 25px;
+    font-size: 1rem;
+}
+.location-select {
+    width: 100%;
+    padding: 16px 20px;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    font-size: 1rem;
+    background: white;
+    appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>");
+    background-repeat: no-repeat;
+    background-position: left 20px center;
+    background-size: 16px;
+}
+.location-btn {
+    width: 100%;
+    padding: 18px;
+    background: linear-gradient(135deg, #ff6d00, #ff9100);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+    transition: transform 0.1s;
+}
+.location-btn:active {
+    transform: scale(0.97);
+}
+.location-note {
+    margin-top: 20px;
+    text-align: center;
+    color: #888;
+    font-size: 0.85rem;
+}
+.location-note i {
+    color: #1a237e;
+    margin-left: 5px;
+}
 .pending-actions { display: flex; gap: 10px; }
 .approve-btn { background: #4caf50; color: white; border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer; }
 .reject-btn { background: #f44336; color: white; border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer; }
