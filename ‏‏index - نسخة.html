@@ -20,20 +20,54 @@
     <div class="loading" id="loadingScreen"><div class="loading-spinner"></div><p>جاري تحميل التطبيق...</p></div>
 
     <!-- شاشة اختيار الموقع -->
-    <div class="screen hidden" id="locationScreen">
-        <div class="location-screen">
-            <img src="https://i.ibb.co/XktM4crn/1767120438295.png" alt="Misar Systems" class="login-logo" loading="lazy">
-            <div class="location-card">
-                <h1 class="location-title">اختر موقعك</h1>
-                <p class="location-subtitle">لتقديم خدمات أفضل في منطقتك</p>
-                <div class="input-group"><label class="input-label">المحافظة</label><select class="location-select" id="governorateSelect" disabled><option value="قنا" selected>قنا</option></select></div>
-                <div class="input-group"><label class="input-label">المركز</label><select class="location-select" id="centerSelect"><option value="">اختر المركز</option><option value="قنا">قنا</option><option value="نقادة">نقادة</option><option value="قوص">قوص</option><option value="دشنا">دشنا</option><option value="فرشوط">فرشوط</option><option value="أبو تشت">أبو تشت</option><option value="نجع حمادي">نجع حمادي</option><option value="قفط">قفط</option></select></div>
-                <div class="input-group"><label class="input-label">القرية</label><select class="location-select" id="villageSelect"><option value="">اختر القرية</option></select></div>
-                <button class="location-btn" id="saveLocationBtn"><i class="fas fa-check-circle"></i> حفظ وبدء الاستخدام</button>
-                <div class="location-note"><i class="fas fa-info-circle"></i> يمكنك تغيير الموقع لاحقاً من الإعدادات</div>
+<div class="screen hidden" id="locationScreen">
+    <div class="location-screen">
+        <img src="https://i.ibb.co/XktM4crn/1767120438295.png" alt="Misar Systems" class="login-logo" loading="lazy">
+        <div class="location-card">
+            <h1 class="location-title">📍 اختر موقعك</h1>
+            <p class="location-subtitle">لتقديم خدمات أفضل في منطقتك</p>
+            
+            <div class="input-group">
+                <label class="input-label">المحافظة</label>
+                <select class="location-select" id="governorateSelect" disabled>
+                    <option value="قنا" selected>قنا</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">المركز</label>
+                <select class="location-select" id="centerSelect">
+                    <option value="">اختر المركز</option>
+                    <option value="قنا">قنا</option>
+                    <option value="نقادة">نقادة</option>
+                    <option value="قوص">قوص</option>
+                    <option value="دشنا">دشنا</option>
+                    <option value="فرشوط">فرشوط</option>
+                    <option value="أبو تشت">أبو تشت</option>
+                    <option value="نجع حمادي">نجع حمادي</option>
+                    <option value="قفط">قفط</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">القرية</label>
+                <select class="location-select" id="villageSelect">
+                    <option value="">اختر القرية</option>
+                </select>
+            </div>
+
+            <button class="location-btn" id="saveLocationBtn">
+                <i class="fas fa-check-circle"></i>
+                حفظ وبدء الاستخدام
+            </button>
+
+            <div class="location-note">
+                <i class="fas fa-info-circle"></i>
+                يمكنك تغيير الموقع لاحقاً من الإعدادات
             </div>
         </div>
     </div>
+</div>
 
     <!-- شاشات الدخول والتسجيل -->
     <div class="screen hidden" id="loginScreen"><div class="login-screen"><img src="https://i.ibb.co/XktM4crn/1767120438295.png" alt="Misar Systems" class="login-logo" loading="lazy"><div class="login-card"><div class="bear-wrapper"><div class="bear-backdrop"></div><div class="bear-avatar" id="loginBear"><div class="bear-ear left"><div class="bear-ear-inner"></div></div><div class="bear-ear right"><div class="bear-ear-inner"></div></div><div class="bear-face"><div class="brows"><div class="brow"></div><div class="brow"></div></div><div class="bear-eyes"><div class="eye"><div class="pupil"></div></div><div class="eye"><div class="pupil"></div></div></div><div class="bear-nose"><div class="nose-shine"></div></div><div class="bear-mouth"></div></div><div class="cover-paws"><div class="paw"><i class="fas fa-paw"></i></div><div class="paw"><i class="fas fa-paw"></i></div></div></div></div><h1 class="login-title">تسجيل الدخول</h1><select class="account-type-select" id="loginAccountType"><option value="client" selected>عميل</option><option value="seller">بائع</option><option value="delivery">مندوب</option></select><button class="google-btn" id="googleLoginBtn"><i class="fab fa-google"></i> تسجيل الدخول عبر Google</button><div style="text-align:center; margin:15px 0; color:#aaa;">أو</div><div class="input-group"><label class="input-label">البريد الإلكتروني</label><input type="email" class="input-field" id="loginEmail" placeholder="example@email.com"></div><div class="input-group"><label class="input-label">كلمة المرور</label><input type="password" class="input-field" id="loginPassword" placeholder="أدخل كلمة المرور"></div><button class="login-btn" id="loginBtn"><i class="fas fa-sign-in-alt"></i> تسجيل الدخول</button><div class="skip-login"><button onclick="skipLogin()">تخطي التسجيل ومتابعة التصفح</button></div><div class="login-footer"><p>ليس لديك حساب؟ <a href="#" id="showRegisterLink">سجل الآن</a></p></div></div></div></div>
