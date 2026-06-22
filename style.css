@@ -1,6 +1,7 @@
 /* ========== الأنماط العامة ========== */
 * {
     margin: 0;
+
     padding: 0;
     box-sizing: border-box;
     -webkit-tap-highlight-color: transparent;
@@ -73,8 +74,13 @@ body {
     display: block;
 }
 .app-logo {
-    height: 40px;
+    height: 45px;
+    width: auto;
+    max-height: 50px;
+    object-fit: contain;
     filter: brightness(0) invert(1);
+    display: inline-block;
+    vertical-align: middle;
 }
 .header-title {
     font-size: 1.3rem;
@@ -2280,40 +2286,68 @@ input:checked + .slider:before {
     width: 100%;
 }
 .location-card {
-    background: rgba(255,255,255,0.95);
-    border-radius: 25px;
-    padding: 35px 25px;
+    background: rgba(255,255,255,0.96);
+    border-radius: 28px;
+    padding: 40px 30px;
     max-width: 500px;
     width: 100%;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.2);
-    backdrop-filter: blur(10px);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+    backdrop-filter: blur(12px);
     margin-top: 20px;
+    transition: all 0.3s ease;
 }
 .location-title {
     text-align: center;
     color: #1a237e;
-    font-size: 1.8rem;
+    font-size: 2rem;
     font-weight: 800;
     margin-bottom: 8px;
+    letter-spacing: -0.5px;
+}
+.location-title i {
+    margin-left: 8px;
 }
 .location-subtitle {
     text-align: center;
-    color: #666;
-    margin-bottom: 25px;
-    font-size: 1rem;
+    color: #555;
+    margin-bottom: 30px;
+    font-size: 1.05rem;
+    font-weight: 400;
 }
 .location-select {
     width: 100%;
     padding: 16px 20px;
+    padding-left: 45px;
     border: 2px solid #e0e0e0;
-    border-radius: 12px;
+    border-radius: 14px;
     font-size: 1rem;
-    background: white;
+    background: #fff;
     appearance: none;
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>");
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%231a237e' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
     background-repeat: no-repeat;
-    background-position: left 20px center;
-    background-size: 16px;
+    background-position: left 18px center;
+    background-size: 20px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    cursor: pointer;
+    color: #1a237e;
+    font-weight: 500;
+}
+.location-select:focus {
+    outline: none;
+    border-color: #1a237e;
+    box-shadow: 0 0 0 4px rgba(26,35,126,0.15);
+}
+.location-select option {
+    font-weight: 400;
+    color: #333;
+    padding: 10px;
+}
+.location-select:disabled {
+    background-color: #f5f5f5;
+    opacity: 0.7;
+    cursor: not-allowed;
 }
 .location-btn {
     width: 100%;
@@ -2321,29 +2355,38 @@ input:checked + .slider:before {
     background: linear-gradient(135deg, #ff6d00, #ff9100);
     color: white;
     border: none;
-    border-radius: 12px;
-    font-size: 1.1rem;
+    border-radius: 14px;
+    font-size: 1.15rem;
     font-weight: 700;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 12px;
     margin-top: 10px;
-    transition: transform 0.1s;
+    transition: transform 0.15s, box-shadow 0.3s;
+    box-shadow: 0 6px 20px rgba(255,109,0,0.35);
 }
 .location-btn:active {
-    transform: scale(0.97);
+    transform: scale(0.96);
+}
+.location-btn i {
+    font-size: 1.4rem;
 }
 .location-note {
-    margin-top: 20px;
+    margin-top: 22px;
     text-align: center;
-    color: #888;
-    font-size: 0.85rem;
+    color: #777;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    direction: rtl;
 }
 .location-note i {
     color: #1a237e;
-    margin-left: 5px;
+    font-size: 1.1rem;
 }
 
 /* ========== استجابة الشاشات ========== */
@@ -2402,161 +2445,29 @@ input:checked + .slider:before {
     .section-title {
         font-size: 1.6rem;
     }
-}/* ========== شاشة اختيار الموقع (نسخة محسّنة) ========== */
-.location-screen {
-    background: linear-gradient(135deg, #1a237e, #0d47a1);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 30px 5%;
-    width: 100%;
 }
 
-.location-card {
-    background: rgba(255, 255, 255, 0.96);
-    border-radius: 28px;
-    padding: 40px 30px;
-    max-width: 500px;
-    width: 100%;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
-    backdrop-filter: blur(12px);
-    margin-top: 20px;
-    transition: all 0.3s ease;
+/* ========== إظهار/إخفاء كلمة المرور (Login) ========== */
+.password-wrapper {
+    position: relative;
 }
 
-.location-title {
-    text-align: center;
-    color: #1a237e;
-    font-size: 2rem;
-    font-weight: 800;
-    margin-bottom: 8px;
-    letter-spacing: -0.5px;
+.password-wrapper .input-field {
+    padding-left: 45px;
 }
 
-.location-title i {
-    margin-left: 8px;
-}
-
-.location-subtitle {
-    text-align: center;
-    color: #555;
-    margin-bottom: 30px;
-    font-size: 1.05rem;
-    font-weight: 400;
-}
-
-/* ===== القوائم المنسدلة ===== */
-.location-select {
-    width: 100%;
-    padding: 16px 20px;
-    padding-left: 45px; /* مساحة للسهم */
-    border: 2px solid #e0e0e0;
-    border-radius: 14px;
-    font-size: 1rem;
-    background: #fff;
-    appearance: none; /* إخفاء السهم الافتراضي */
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%231a237e' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
-    background-repeat: no-repeat;
-    background-position: left 18px center;
-    background-size: 20px;
-    transition: border-color 0.3s, box-shadow 0.3s;
+.toggle-password {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
     cursor: pointer;
+    color: #888;
+    z-index: 5;
+    font-size: 1.2rem;
+}
+
+.toggle-password:hover {
     color: #1a237e;
-    font-weight: 500;
 }
 
-.location-select:focus {
-    outline: none;
-    border-color: #1a237e;
-    box-shadow: 0 0 0 4px rgba(26, 35, 126, 0.15);
-}
-
-.location-select option {
-    font-weight: 400;
-    color: #333;
-    padding: 10px;
-}
-
-.location-select:disabled {
-    background-color: #f5f5f5;
-    opacity: 0.7;
-    cursor: not-allowed;
-}
-
-/* ===== زر الحفظ ===== */
-.location-btn {
-    width: 100%;
-    padding: 18px;
-    background: linear-gradient(135deg, #ff6d00, #ff9100);
-    color: white;
-    border: none;
-    border-radius: 14px;
-    font-size: 1.15rem;
-    font-weight: 700;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    margin-top: 10px;
-    transition: transform 0.15s, box-shadow 0.3s;
-    box-shadow: 0 6px 20px rgba(255, 109, 0, 0.35);
-}
-
-.location-btn:active {
-    transform: scale(0.96);
-}
-
-.location-btn i {
-    font-size: 1.4rem;
-}
-
-/* ===== ملاحظة الأسفل ===== */
-.location-note {
-    margin-top: 22px;
-    text-align: center;
-    color: #777;
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    direction: rtl; /* تأكيد الاتجاه */
-}
-
-.location-note i {
-    color: #1a237e;
-    font-size: 1.1rem;
-}
-
-/* ===== تحسين الإدخالات العامة (اختياري) ===== */
-.input-group {
-    margin-bottom: 22px;
-}
-
-.input-label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 700;
-    color: #1a237e;
-    font-size: 0.95rem;
-    text-align: right; /* RTL */
-}
-
-/* ===== أيقونات في العنوان والزر ===== */
-.location-title i,
-.location-btn i,
-.location-note i {
-    display: inline-block;
-    vertical-align: middle;
-}
-
-/* ===== ضبط المسافات والهوامش لتناسب RTL ===== */
-.location-btn i {
-    margin-left: 0;
-    margin-right: 0;
-}

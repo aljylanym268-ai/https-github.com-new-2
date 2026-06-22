@@ -2,8 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Misar Systems | مسار سيستمز</title>
+<img src="https://via.placeholder.com/40x40/1a237e/ffffff?text=M" alt="Misar Systems" class="app-logo">    <title>Misar Systems | مسار سيستمز</title>
     <meta name="theme-color" content="#1a237e">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -70,7 +69,13 @@
 </div>
 
     <!-- شاشات الدخول والتسجيل -->
-    <div class="screen hidden" id="loginScreen"><div class="login-screen"><img src="https://i.ibb.co/XktM4crn/1767120438295.png" alt="Misar Systems" class="login-logo" loading="lazy"><div class="login-card"><div class="bear-wrapper"><div class="bear-backdrop"></div><div class="bear-avatar" id="loginBear"><div class="bear-ear left"><div class="bear-ear-inner"></div></div><div class="bear-ear right"><div class="bear-ear-inner"></div></div><div class="bear-face"><div class="brows"><div class="brow"></div><div class="brow"></div></div><div class="bear-eyes"><div class="eye"><div class="pupil"></div></div><div class="eye"><div class="pupil"></div></div></div><div class="bear-nose"><div class="nose-shine"></div></div><div class="bear-mouth"></div></div><div class="cover-paws"><div class="paw"><i class="fas fa-paw"></i></div><div class="paw"><i class="fas fa-paw"></i></div></div></div></div><h1 class="login-title">تسجيل الدخول</h1><select class="account-type-select" id="loginAccountType"><option value="client" selected>عميل</option><option value="seller">بائع</option><option value="delivery">مندوب</option></select><button class="google-btn" id="googleLoginBtn"><i class="fab fa-google"></i> تسجيل الدخول عبر Google</button><div style="text-align:center; margin:15px 0; color:#aaa;">أو</div><div class="input-group"><label class="input-label">البريد الإلكتروني</label><input type="email" class="input-field" id="loginEmail" placeholder="example@email.com"></div><div class="input-group"><label class="input-label">كلمة المرور</label><input type="password" class="input-field" id="loginPassword" placeholder="أدخل كلمة المرور"></div><button class="login-btn" id="loginBtn"><i class="fas fa-sign-in-alt"></i> تسجيل الدخول</button><div class="skip-login"><button onclick="skipLogin()">تخطي التسجيل ومتابعة التصفح</button></div><div class="login-footer"><p>ليس لديك حساب؟ <a href="#" id="showRegisterLink">سجل الآن</a></p></div></div></div></div>
+<div class="input-group password-wrapper">
+    <label class="input-label">كلمة المرور</label>
+    <input type="password" class="input-field" id="loginPassword" placeholder="أدخل كلمة المرور">
+    <span class="toggle-password" onclick="togglePasswordVisibility('loginPassword', this)">
+        <i class="fas fa-eye"></i>
+    </span>
+</div>
 
     <div class="screen hidden" id="registerScreen"><div class="register-screen"><img src="https://i.ibb.co/XktM4crn/1767120438295.png" alt="Misar Systems" class="login-logo" loading="lazy"><div class="register-card"><div class="bear-wrapper"><div class="bear-backdrop"></div><div class="bear-avatar" id="registerBear"><div class="bear-ear left"><div class="bear-ear-inner"></div></div><div class="bear-ear right"><div class="bear-ear-inner"></div></div><div class="bear-face"><div class="brows"><div class="brow"></div><div class="brow"></div></div><div class="bear-eyes"><div class="eye"><div class="pupil"></div></div><div class="eye"><div class="pupil"></div></div></div><div class="bear-nose"><div class="nose-shine"></div></div><div class="bear-mouth"></div></div><div class="cover-paws"><div class="paw"><i class="fas fa-paw"></i></div><div class="paw"><i class="fas fa-paw"></i></div></div></div></div><h1 class="register-title">إنشاء حساب جديد</h1><p class="register-subtitle">أدخل بياناتك للتسجيل</p><select class="account-type-select" id="registerAccountType"><option value="client" selected>عميل</option><option value="seller">بائع</option><option value="delivery">مندوب</option></select><div id="deliveryCenterField" style="display:none;"><div class="input-group"><label class="input-label">المركز (للمندوبين)</label><select id="deliveryCenterSelect" class="input-field"><option value="">اختر المركز</option><option value="قنا">قنا</option><option value="نقادة">نقادة</option><option value="قوص">قوص</option><option value="دشنا">دشنا</option><option value="فرشوط">فرشوط</option><option value="أبو تشت">أبو تشت</option><option value="نجع حمادي">نجع حمادي</option><option value="قفط">قفط</option></select></div></div><div class="input-group"><label class="input-label">الاسم (اختياري)</label><input type="text" class="input-field" id="registerName" placeholder="محمد أحمد"></div><div class="input-group"><label class="input-label">البريد الإلكتروني</label><input type="email" class="input-field" id="registerEmail" placeholder="example@email.com"></div><div class="input-group"><label class="input-label">كلمة المرور</label><input type="password" class="input-field" id="registerPassword" placeholder="أدخل كلمة المرور"></div><div class="input-group"><label class="input-label">تأكيد كلمة المرور</label><input type="password" class="input-field" id="registerConfirmPassword" placeholder="أعد إدخال كلمة المرور"></div><button class="login-btn" id="registerBtn"><i class="fas fa-user-plus"></i> إنشاء حساب</button><div class="login-footer"><p>لديك حساب بالفعل؟ <a href="#" id="showLoginLink">تسجيل الدخول</a></p></div></div></div></div>
 
@@ -295,6 +300,25 @@
         if (storeParam) setTimeout(() => showStorePage(storeParam), 1000);
         checkFounderParam();
     });
+</script>
+
+<script>
+    function togglePasswordVisibility(inputId, toggleEl) {
+        const input = document.getElementById(inputId);
+        if (!input || !toggleEl) return;
+
+        const isPassword = input.type === 'password';
+        input.type = isPassword ? 'text' : 'password';
+
+        const icon = toggleEl.querySelector('i');
+        if (icon) {
+            icon.classList.toggle('fa-eye', isPassword);
+            icon.classList.toggle('fa-eye-slash', !isPassword);
+            // لو الأيقونة نفسها مش مطابقة، خلي الافتراضي:
+            if (isPassword) icon.classList.add('fa-eye');
+            else icon.classList.add('fa-eye-slash');
+        }
+    }
 </script>
 </body>
 </html>
