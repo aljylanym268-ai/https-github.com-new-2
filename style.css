@@ -2388,17 +2388,15 @@ input:checked + .slider:before {
     font-size: 1.1rem;
 }
 
-/* ========== إظهار/إخفاء كلمة المرور (أيقونة العين) - الحل النهائي ========== */
+/* ========== إظهار/إخفاء كلمة المرور ========== */
 .password-wrapper {
     position: relative;
     width: 100%;
 }
-
 .password-wrapper .input-field {
     padding-left: 48px !important;
     width: 100%;
 }
-
 .toggle-password {
     position: absolute;
     left: 16px;
@@ -2420,12 +2418,10 @@ input:checked + .slider:before {
     opacity: 1 !important;
     visibility: visible !important;
 }
-
 .toggle-password i {
     pointer-events: none;
     font-size: 1.3rem;
 }
-
 .toggle-password:hover {
     color: #ff6d00 !important;
     background: rgba(255, 109, 0, 0.1);
@@ -2433,58 +2429,21 @@ input:checked + .slider:before {
 
 /* ========== استجابة الشاشات ========== */
 @media (min-width: 768px) {
-    .actions-grid {
-        gap: 20px;
-    }
-    .categories-grid {
-        grid-template-columns: repeat(4, 1fr);
-        gap: 20px;
-    }
-    .products-grid {
-        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-        gap: 25px;
-    }
-    .services-list {
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 20px;
-    }
-    .orders-list {
-        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-        gap: 20px;
-    }
-    .product-management {
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 20px;
-    }
-    .product-item {
-        flex-direction: column;
-        text-align: center;
-    }
-    .product-item-image {
-        margin-left: 0;
-        margin-bottom: 15px;
-    }
-    .profile-stats {
-        gap: 25px;
-    }
-    .welcome-text h1 {
-        font-size: 2rem;
-    }
-    .section-title {
-        font-size: 1.5rem;
-    }
+    .actions-grid { gap: 20px; }
+    .categories-grid { grid-template-columns: repeat(4, 1fr); gap: 20px; }
+    .products-grid { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 25px; }
+    .services-list { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+    .orders-list { grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
+    .product-management { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+    .product-item { flex-direction: column; text-align: center; }
+    .product-item-image { margin-left: 0; margin-bottom: 15px; }
+    .profile-stats { gap: 25px; }
+    .welcome-text h1 { font-size: 2rem; }
+    .section-title { font-size: 1.5rem; }
 }
 @media (min-width: 1200px) {
-    .products-grid {
-        grid-template-columns: repeat(4, 1fr);
-    }
-    .categories-grid {
-        grid-template-columns: repeat(4, 1fr);
-    }
-    .welcome-text h1 {
-        font-size: 2.2rem;
-    }
-    .section-title {
-        font-size: 1.6rem;
-    }
+    .products-grid { grid-template-columns: repeat(4, 1fr); }
+    .categories-grid { grid-template-columns: repeat(4, 1fr); }
+    .welcome-text h1 { font-size: 2.2rem; }
+    .section-title { font-size: 1.6rem; }
 }

@@ -116,22 +116,42 @@ async function uploadProductImages(files) {
     return urls;
 }
 
-// ========== المصادقة ==========
+// ========== المصادقة (محسنة) ==========
 async function signInWithGoogle() {
     const accountType = document.getElementById('loginAccountType').value;
     sessionStorage.setItem('pendingAccountType', accountType);
-    const { error } = await supabaseClient.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } });
-    if (error) showToast(error.message, 'error');
+    const { error } = await supabaseClient.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+            redirectTo: window.location.origin + window.location.pathname
+        }
+    });
+    if (error) {
+        showToast(error.message, 'error');
+        showBearReaction(false);
+    }
 }
+
 async function signInWithEmail() {
     const email = document.getElementById('loginEmail').value.trim();
     const password = document.getElementById('loginPassword').value;
-    if (!email || !password) return showToast('يرجى إدخال البريد وكلمة المرور', 'warning');
+    if (!email || !password) {
+        showToast('يرجى إدخال البريد وكلمة المرور', 'warning');
+        return;
+    }
     showLoading(true);
-    const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-    showLoading(false);
-    if (error) { showToast(error.message, 'error'); showBearReaction(false); } else { showBearReaction(true); }
+    try {
+        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        showBearReaction(true);
+    } catch (error) {
+        showToast(error.message, 'error');
+        showBearReaction(false);
+    } finally {
+        showLoading(false);
+    }
 }
+
 async function signUpWithEmail() {
     const name = document.getElementById('registerName').value.trim();
     const email = document.getElementById('registerEmail').value.trim();
@@ -141,31 +161,95 @@ async function signUpWithEmail() {
     let deliveryCenter = '';
     if (accountType === 'delivery') {
         deliveryCenter = document.getElementById('deliveryCenterSelect').value;
-        if (!deliveryCenter) { showToast('يرجى اختيار المركز للمندوب', 'warning'); return; }
+        if (!deliveryCenter) {
+            showToast('يرجى اختيار المركز للمندوب', 'warning');
+            return;
+        }
     }
-    if (!email || !password || !confirm) return showToast('يرجى ملء جميع الحقول المطلوبة', 'warning');
-    if (password !== confirm) return showToast('كلمة المرور غير متطابقة', 'error');
-    if (password.length < 6) return showToast('كلمة المرور يجب أن تكون 6 أحرف على الأقل', 'warning');
-    if (email === 'sa3dgelany@gmail.com') { accountType = 'founder'; if (password !== '123456') { showToast('كلمة المرور الخاصة بحساب المؤسس غير صحيحة (يجب أن تكون 123456)', 'error'); return; } }
-    const metadata = { account_type: accountType };
-    if (name) metadata.full_name = name;
-    if (accountType === 'delivery') { metadata.center = deliveryCenter; metadata.status = 'pending'; }
+    if (!email || !password || !confirm) {
+        showToast('يرجى ملء جميع الحقول المطلوبة', 'warning');
+        return;
+    }
+    if (password !== confirm) {
+        showToast('كلمة المرور غير متطابقة', 'error');
+        return;
+    }
+    if (password.length < 6) {
+        showToast('كلمة المرور يجب أن تكون 6 أحرف على الأقل', 'warning');
+        return;
+    }
+    if (email === 'sa3dgelany@gmail.com') {
+        accountType = 'founder';
+        if (password !== '123456') {
+            showToast('كلمة المرور الخاصة بحساب المؤسس غير صحيحة (يجب أن تكون 123456)', 'error');
+            return;
+        }
+    }
+    const metadata = {
+        account_type: accountType,
+        full_name: name || undefined
+    };
+    if (accountType === 'delivery') {
+        metadata.center = deliveryCenter;
+        metadata.status = 'pending';
+    }
     showLoading(true);
-    const { error } = await supabaseClient.auth.signUp({ email, password, options: { data: metadata, emailRedirectTo: window.location.origin } });
-    showLoading(false);
-    if (error) { showToast(error.message, 'error'); showBearReaction(false); }
-    else { showBearReaction(true); showToast('تم إنشاء الحساب بنجاح. يرجى تفعيل البريد الإلكتروني (إذا لزم الأمر)', 'success'); showScreen('loginScreen'); if (accountType === 'founder') setTimeout(() => initFounderSettings(), 2000); }
+    try {
+        const { data, error } = await supabaseClient.auth.signUp({
+            email,
+            password,
+            options: {
+                data: metadata,
+                emailRedirectTo: window.location.origin + window.location.pathname
+            }
+        });
+        if (error) throw error;
+        if (data?.user?.identities?.length === 0) {
+            showToast('هذا البريد مسجل بالفعل، يرجى تسجيل الدخول', 'warning');
+        } else {
+            showToast('تم إنشاء الحساب بنجاح. يرجى تفعيل البريد الإلكتروني (إذا لزم الأمر)', 'success');
+            showBearReaction(true);
+            showScreen('loginScreen');
+            if (accountType === 'founder') {
+                setTimeout(() => initFounderSettings(), 2000);
+            }
+        }
+    } catch (error) {
+        showToast(error.message, 'error');
+        showBearReaction(false);
+    } finally {
+        showLoading(false);
+    }
 }
+
 async function logout(showConfirm = true) {
     if (showConfirm && !confirm('هل أنت متأكد من تسجيل الخروج؟')) return;
     showLoading(true);
-    const { error } = await supabaseClient.auth.signOut();
-    showLoading(false);
-    if (error) showToast(error.message, 'error');
-    else { appState.user = null; appState.userData = {}; toggleLoginMenu(false); toggleSellerMenuItem(false); toggleDeliveryMenuItem(false); toggleFounderMenuItem(false); updateUserInfo(true); await loadCart(); await updateCartBadgeFromDB(); showScreen('homeScreen'); showToast('تم تسجيل الخروج', 'success'); }
+    try {
+        const { error } = await supabaseClient.auth.signOut();
+        if (error) throw error;
+        sessionStorage.removeItem('pendingAccountType');
+        appState.user = null;
+        appState.userData = {};
+        toggleLoginMenu(false);
+        toggleSellerMenuItem(false);
+        toggleDeliveryMenuItem(false);
+        toggleFounderMenuItem(false);
+        updateUserInfo(true);
+        await loadCart();
+        await updateCartBadgeFromDB();
+        showScreen('homeScreen');
+        showToast('تم تسجيل الخروج', 'success');
+    } catch (error) {
+        showToast(error.message, 'error');
+    } finally {
+        showLoading(false);
+    }
 }
+
 async function switchAccount() { if (appState.user) await logout(false); showScreen('loginScreen'); }
 function confirmLogout() { logout(true); }
+
 function toggleLoginMenu(isLoggedIn) {
     const loginItem = document.getElementById('loginMenuItem');
     const logoutItem = document.getElementById('logoutMenuItem');
@@ -175,30 +259,95 @@ function toggleSellerMenuItem(isSeller) { const sellerItem = document.getElement
 function toggleDeliveryMenuItem(isDelivery) { const deliveryItem = document.getElementById('deliveryDashboardMenuItem'); if (deliveryItem) deliveryItem.style.display = isDelivery ? 'flex' : 'none'; }
 function toggleFounderMenuItem(isFounder) { const founderItem = document.getElementById('founderDashboardMenuItem'); if (founderItem) founderItem.style.display = isFounder ? 'flex' : 'none'; }
 
-// ========== تحميل بيانات المستخدم ==========
+// ========== تحميل بيانات المستخدم (محسنة) ==========
 async function loadUserData() {
     if (!appState.user) return;
-    const { data, error } = await supabaseClient.from('user_data').select('*').eq('id', appState.user.id).single();
-    if (error && error.code !== 'PGRST116') { console.error(error); return; }
-    if (data) { appState.userData = data; appState.location = { governorate: data.governorate || 'قنا', center: data.center || '', village: data.village || '' }; }
-    else {
-        const defaultData = { id: appState.user.id, name: appState.user.user_metadata?.full_name || appState.user.email?.split('@')[0] || '', phone: '', governorate: 'قنا', center: appState.user.user_metadata?.center || '', village: '', image_url: appState.user.user_metadata?.avatar_url || '', account_type: appState.user.user_metadata?.account_type || 'client', status: appState.user.user_metadata?.status || 'approved' };
-        await supabaseClient.from('user_data').upsert(defaultData);
-        appState.userData = defaultData;
+    try {
+        const { data, error } = await supabaseClient
+            .from('user_data')
+            .select('*')
+            .eq('id', appState.user.id)
+            .maybeSingle();
+
+        if (error) {
+            console.error('خطأ في جلب بيانات المستخدم:', error);
+            const defaultData = {
+                id: appState.user.id,
+                name: appState.user.user_metadata?.full_name || appState.user.email?.split('@')[0] || '',
+                phone: '',
+                governorate: 'قنا',
+                center: appState.user.user_metadata?.center || '',
+                village: '',
+                image_url: appState.user.user_metadata?.avatar_url || '',
+                account_type: appState.user.user_metadata?.account_type || 'client',
+                status: appState.user.user_metadata?.status || 'approved'
+            };
+            const { error: upsertError } = await supabaseClient
+                .from('user_data')
+                .upsert(defaultData);
+            if (upsertError) {
+                console.error('فشل إنشاء سجل المستخدم:', upsertError);
+                appState.userData = defaultData;
+            } else {
+                appState.userData = defaultData;
+            }
+        } else if (data) {
+            appState.userData = data;
+        } else {
+            const defaultData = {
+                id: appState.user.id,
+                name: appState.user.user_metadata?.full_name || appState.user.email?.split('@')[0] || '',
+                phone: '',
+                governorate: 'قنا',
+                center: appState.user.user_metadata?.center || '',
+                village: '',
+                image_url: appState.user.user_metadata?.avatar_url || '',
+                account_type: appState.user.user_metadata?.account_type || 'client',
+                status: appState.user.user_metadata?.status || 'approved'
+            };
+            await supabaseClient.from('user_data').upsert(defaultData);
+            appState.userData = defaultData;
+        }
+
+        if (appState.userData) {
+            appState.location = {
+                governorate: appState.userData.governorate || 'قنا',
+                center: appState.userData.center || '',
+                village: appState.userData.village || ''
+            };
+        }
+
+        updateUserInfo();
+        updateWelcomeLocation();
+        updateProfileLocation();
+
+        const isSeller = appState.userData.account_type === 'seller';
+        const isDelivery = appState.userData.account_type === 'delivery';
+        const isFounder = appState.userData.account_type === 'founder';
+
+        toggleSellerMenuItem(isSeller);
+        toggleDeliveryMenuItem(isDelivery);
+        toggleFounderMenuItem(isFounder);
+
+        if (isSeller) {
+            setTimeout(() => addSellerStoreTools(), 500);
+        }
+        if (isFounder) {
+            await initFounderSettings();
+            await loadFounderStats();
+            await loadPendingDeliveries();
+        }
+
+        await updateCartBadgeFromDB();
+        await loadUnreadNotificationsCount();
+        setupRealtimeSubscriptions();
+
+    } catch (error) {
+        console.error('loadUserData error:', error);
+        showToast('حدث خطأ في تحميل بيانات المستخدم', 'error');
     }
-    updateUserInfo(); updateWelcomeLocation(); updateProfileLocation();
-    const isSeller = appState.userData.account_type === 'seller';
-    const isDelivery = appState.userData.account_type === 'delivery';
-    const isFounder = appState.userData.account_type === 'founder';
-    toggleSellerMenuItem(isSeller);
-    toggleDeliveryMenuItem(isDelivery);
-    toggleFounderMenuItem(isFounder);
-    if (isSeller) setTimeout(() => addSellerStoreTools(), 500);
-    if (isFounder) { await initFounderSettings(); await loadFounderStats(); await loadPendingDeliveries(); }
-    await updateCartBadgeFromDB();
-    await loadUnreadNotificationsCount();
-    setupRealtimeSubscriptions();
 }
+
 function updateUserInfo(isGuest = false) {
     const welcomeName = document.getElementById('welcomeName');
     const welcomeAvatar = document.getElementById('welcomeAvatar');
@@ -238,8 +387,6 @@ function updateUserInfo(isGuest = false) {
 }
 
 // =================== إصلاح المنطقة (الموقع) ===================
-
-// دالة مساعدة لتحميل القرى بناءً على المركز المختار
 function loadVillagesForCenter(center, selectedVillage = '') {
     const villageSelect = document.getElementById('villageSelect');
     if (!villageSelect) return;
@@ -256,32 +403,16 @@ function loadVillagesForCenter(center, selectedVillage = '') {
         villageSelect.value = selectedVillage;
     }
 }
-
-// حفظ الموقع (بشكل متزامن مع قاعدة البيانات و localStorage)
 async function saveLocation() {
     const governorate = document.getElementById('governorateSelect').value;
     const center = document.getElementById('centerSelect').value;
     const village = document.getElementById('villageSelect').value;
-
-    if (!center || !village) {
-        showToast('يرجى اختيار المركز والقرية', 'warning');
-        return;
-    }
-
-    // تحديث الحالة العامة
+    if (!center || !village) { showToast('يرجى اختيار المركز والقرية', 'warning'); return; }
     appState.location = { governorate, center, village };
-
-    // إذا كان المستخدم مسجل دخول، احفظ في قاعدة البيانات
     if (appState.user) {
         try {
-            const { error } = await supabaseClient.from('user_data').upsert({ 
-                id: appState.user.id, 
-                governorate, 
-                center, 
-                village 
-            });
+            const { error } = await supabaseClient.from('user_data').upsert({ id: appState.user.id, governorate, center, village });
             if (error) throw error;
-            // تحديث userData محلياً
             appState.userData.governorate = governorate;
             appState.userData.center = center;
             appState.userData.village = village;
@@ -291,46 +422,26 @@ async function saveLocation() {
             return;
         }
     } else {
-        // إذا كان زائر، احفظ في localStorage
         localStorage.setItem('misarUserLocation', JSON.stringify(appState.location));
     }
-
-    // تحديث واجهة المستخدم
     updateWelcomeLocation();
     updateProfileLocation();
-
-    // إظهار رسالة نجاح
     showToast('تم حفظ موقعك بنجاح', 'success');
-
-    // العودة للشاشة السابقة
-    if (appState.previousScreen === 'profileScreen') {
-        showScreen('profileScreen');
-    } else {
-        showScreen('homeScreen');
-    }
+    if (appState.previousScreen === 'profileScreen') showScreen('profileScreen');
+    else showScreen('homeScreen');
 }
-
-// فتح إعدادات الموقع مع تحميل البيانات المخزنة
 function openLocationSettings() {
     showScreen('locationScreen');
     setTimeout(() => {
-        // جلب الموقع المخزن
         const loc = appState.user ? appState.userData : appState.location;
         if (!loc) return;
-
         const center = loc.center || '';
         const village = loc.village || '';
-
-        // تعيين المركز
         const centerSelect = document.getElementById('centerSelect');
         if (centerSelect) centerSelect.value = center;
-
-        // تحميل القرى واختيار القرية المخزنة
         loadVillagesForCenter(center, village);
     }, 100);
 }
-
-// تحديث عرض الموقع في الترحيب
 function updateWelcomeLocation() {
     const loc = appState.user ? appState.userData : appState.location;
     const el = document.getElementById('welcomeLocation');
@@ -341,8 +452,6 @@ function updateWelcomeLocation() {
         el.textContent = 'موقعك: غير محدد';
     }
 }
-
-// تحديث عرض الموقع في الملف الشخصي
 function updateProfileLocation() {
     const loc = appState.user ? appState.userData : appState.location;
     const el = document.getElementById('profileLocation');
@@ -353,8 +462,6 @@ function updateProfileLocation() {
         el.textContent = 'المنطقة: غير محددة';
     }
 }
-
-// =================== نهاية إصلاح المنطقة ===================
 
 async function saveProfile() {
     if (!appState.user) return showToast('يجب تسجيل الدخول أولاً', 'warning');
@@ -490,10 +597,8 @@ function addInputInteractions() {
 function togglePasswordVisibility(inputId, toggleEl) {
     const input = document.getElementById(inputId);
     if (!input || !toggleEl) return;
-
     const isPassword = input.type === 'password';
     input.type = isPassword ? 'text' : 'password';
-
     const icon = toggleEl.querySelector('i');
     if (icon) {
         icon.className = isPassword ? 'fas fa-eye-slash' : 'fas fa-eye';
