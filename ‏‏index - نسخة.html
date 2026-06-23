@@ -13,6 +13,42 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/x-icon" href="https://i.ibb.co/XktM4crn/1767120438295.png">
     <link rel="stylesheet" href="style.css">
+    
+    <!-- أنماط إضافية للعين (للتأكد) -->
+    <style>
+        .password-wrapper {
+            position: relative;
+            width: 100%;
+        }
+        .password-wrapper .input-field {
+            padding-left: 48px !important;
+            width: 100%;
+        }
+        .toggle-password {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #1a237e;
+            font-size: 1.3rem;
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: transparent;
+            transition: color 0.2s, background 0.2s;
+        }
+        .toggle-password:hover {
+            background: rgba(26, 35, 126, 0.08);
+        }
+        .toggle-password i {
+            pointer-events: none;
+        }
+    </style>
 </head>
 <body>
 <div class="app-container">
@@ -69,7 +105,7 @@
         </div>
     </div>
 
-    <!-- ================= شاشة تسجيل الدخول ================= -->
+    <!-- ================= شاشة تسجيل الدخول (تم إصلاح هيكلها) ================= -->
     <div class="screen hidden" id="loginScreen">
         <div class="login-screen">
             <img src="https://i.ibb.co/XktM4crn/1767120438295.png" alt="Misar Systems" class="login-logo" loading="lazy">
@@ -100,18 +136,19 @@
                     <label class="input-label">البريد الإلكتروني</label>
                     <input type="email" class="input-field" id="loginEmail" placeholder="example@email.com">
                 </div>
+                <!-- ✅ حقل كلمة المرور مع عين -->
                 <div class="input-group password-wrapper">
-    <label class="input-label">كلمة المرور</label>
-    <input type="password" class="input-field" id="loginPassword" placeholder="أدخل كلمة المرور">
-    <span class="toggle-password" onclick="togglePasswordVisibility('loginPassword', this)">
-        <i class="fas fa-eye"></i>
-    </span>
-</div>
+                    <label class="input-label">كلمة المرور</label>
+                    <input type="password" class="input-field" id="loginPassword" placeholder="أدخل كلمة المرور">
+                    <span class="toggle-password" onclick="togglePasswordVisibility('loginPassword', this)">
+                        <i class="fas fa-eye"></i>
+                    </span>
                 </div>
+                <!-- ✅ زر تسجيل الدخول وباقي المحتوى داخل login-card -->
                 <button class="login-btn" id="loginBtn"><i class="fas fa-sign-in-alt"></i> تسجيل الدخول</button>
                 <div class="skip-login"><button onclick="skipLogin()">تخطي التسجيل ومتابعة التصفح</button></div>
                 <div class="login-footer"><p>ليس لديك حساب؟ <a href="#" id="showRegisterLink">سجل الآن</a></p></div>
-            </div>
+            </div> <!-- نهاية login-card -->
         </div>
     </div>
 
@@ -570,19 +607,22 @@
             <div class="input-group password-wrapper">
                 <label class="input-label">كلمة المرور الجديدة</label>
                 <input type="password" id="newPassword" class="input-field" placeholder="أدخل كلمة المرور الجديدة">
-                <span class="toggle-password" onclick="togglePasswordVisibility('loginPassword', this)" style="color: red !important; font-size: 2rem !important; left: 10px;">
-    <i class="fas fa-eye"></i>
-</span>
+                <span class="toggle-password" onclick="togglePasswordVisibility('newPassword', this)">
+                    <i class="fas fa-eye"></i>
+                </span>
             </div>
             <!-- ✅ حقل تأكيد كلمة المرور الجديدة مع عين -->
             <div class="input-group password-wrapper">
                 <label class="input-label">تأكيد كلمة المرور الجديدة</label>
                 <input type="password" id="confirmNewPassword" class="input-field" placeholder="أعد إدخال كلمة المرور الجديدة">
-               <span class="toggle-password" onclick="togglePasswordVisibility('loginPassword', this)" style="color: red !important; font-size: 2rem !important; left: 10px;">
-    <i class="fas fa-eye"></i>
-</span>
+                <span class="toggle-password" onclick="togglePasswordVisibility('confirmNewPassword', this)">
+                    <i class="fas fa-eye"></i>
+                </span>
             </div>
-            <div style="display:flex; gap:10px; margin-top:20px;"><button class="login-btn" style="flex:1;" onclick="changePassword()">تغيير</button><button class="google-btn" style="flex:1;" onclick="closeModal('changePasswordModal')">إلغاء</button></div>
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button class="login-btn" style="flex:1;" onclick="changePassword()">تغيير</button>
+                <button class="google-btn" style="flex:1;" onclick="closeModal('changePasswordModal')">إلغاء</button>
+            </div>
         </div>
     </div>
 
@@ -679,7 +719,7 @@
 <script src="js/cart.js"></script>
 
 <script>
-    // ================= دالة إظهار/إخفاء كلمة المرور =================
+    // ================= دالة إظهار/إخفاء كلمة المرور (مع دعم الأيقونات) =================
     function togglePasswordVisibility(inputId, toggleEl) {
         const input = document.getElementById(inputId);
         if (!input || !toggleEl) return;
@@ -687,6 +727,7 @@
         const isPassword = input.type === 'password';
         input.type = isPassword ? 'text' : 'password';
 
+        // تغيير الأيقونة (إذا كانت موجودة)
         const icon = toggleEl.querySelector('i');
         if (icon) {
             icon.className = isPassword ? 'fas fa-eye-slash' : 'fas fa-eye';
