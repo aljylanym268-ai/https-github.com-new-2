@@ -2505,6 +2505,14 @@ input:checked + .slider:before {
     background: rgba(26, 35, 126, 0.08);
 }
 
+/* ضمان ظهور زر العين وعدم اختفائه بسبب أي تراكب */
+.toggle-password {
+    z-index: 9999;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto;
+}
+
 .toggle-password i {
     pointer-events: none; /* يمنع الأيقونة من أخذ الحدث بدلاً من الـ span */
 }
