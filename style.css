@@ -1,7 +1,6 @@
 /* ========== الأنماط العامة ========== */
 * {
     margin: 0;
-
     padding: 0;
     box-sizing: border-box;
     -webkit-tap-highlight-color: transparent;
@@ -338,7 +337,7 @@ body {
     font-weight: 700;
 }
 
-/* ========== الدب (التمساح) ========== */
+/* ========== الدب ========== */
 .bear-wrapper {
     display: flex;
     justify-content: center;
@@ -2389,6 +2388,49 @@ input:checked + .slider:before {
     font-size: 1.1rem;
 }
 
+/* ========== إظهار/إخفاء كلمة المرور (أيقونة العين) - الحل النهائي ========== */
+.password-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.password-wrapper .input-field {
+    padding-left: 48px !important;
+    width: 100%;
+}
+
+.toggle-password {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #1a237e !important;
+    font-size: 1.4rem !important;
+    z-index: 9999 !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: transparent;
+    border-radius: 50%;
+    transition: all 0.2s;
+    pointer-events: auto !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.toggle-password i {
+    pointer-events: none;
+    font-size: 1.3rem;
+}
+
+.toggle-password:hover {
+    color: #ff6d00 !important;
+    background: rgba(255, 109, 0, 0.1);
+}
+
 /* ========== استجابة الشاشات ========== */
 @media (min-width: 768px) {
     .actions-grid {
@@ -2445,108 +2487,4 @@ input:checked + .slider:before {
     .section-title {
         font-size: 1.6rem;
     }
-}
-
-/* ========== إظهار/إخفاء كلمة المرور (Login) ========== */
-.password-wrapper {
-    position: relative;
-}
-
-.password-wrapper .input-field {
-    padding-left: 45px;
-}
-
-.toggle-password {
-    position: absolute;
-    left: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    cursor: pointer;
-    color: #888;
-    z-index: 5;
-    font-size: 1.2rem;
-}
-
-.toggle-password:hover {
-    color: #1a237e;
-}
-/* ========== إظهار/إخفاء كلمة المرور ========== */
-.password-wrapper {
-    position: relative;
-    width: 100%;
-}
-
-.password-wrapper .input-field {
-    padding-left: 48px; /* مساحة للأيقونة (لأن الاتجاه RTL) */
-    width: 100%;
-}
-
-.toggle-password {
-    position: absolute;
-    left: 16px;      /* في RTL، left تعني اليسار (نهاية الحقل) */
-    top: 50%;
-    transform: translateY(-50%);
-    cursor: pointer;
-    color: #999;
-    font-size: 1.2rem;
-    z-index: 5;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    background: transparent;
-    transition: color 0.2s, background 0.2s;
-}
-
-.toggle-password:hover {
-    color: #1a237e;
-    background: rgba(26, 35, 126, 0.08);
-}
-
-/* ضمان ظهور زر العين وعدم اختفائه بسبب أي تراكب */
-.toggle-password {
-    z-index: 9999;
-    opacity: 1 !important;
-    visibility: visible !important;
-    pointer-events: auto;
-}
-
-.toggle-password i {
-    pointer-events: none; /* يمنع الأيقونة من أخذ الحدث بدلاً من الـ span */
-}
-/* ========== إظهار وإخفاء كلمة المرور (أيقونة العين) ========== */
-.password-wrapper {
-    position: relative;
-    width: 100%;
-}
-
-.password-wrapper .input-field {
-    padding-left: 48px !important; /* عشان النص ميتغطيش */
-}
-
-.toggle-password {
-    position: absolute;
-    left: 16px;
-    top: 50%;
-    transform: translateY(-50%);
-    cursor: pointer;
-    color: #1a237e !important;
-    font-size: 1.4rem !important;
-    z-index: 999 !important; /* عشان تبقى فوق كل حاجة */
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-    width: 30px;
-    height: 30px;
-    background: transparent;
-}
-
-.toggle-password i {
-    pointer-events: none;
-}
-
-.toggle-password:hover {
-    color: #ff6d00 !important;
 }
