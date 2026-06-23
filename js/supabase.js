@@ -486,7 +486,20 @@ function addInputInteractions() {
         pw.addEventListener('blur', () => setBearExpression(''));
     });
 }
+// ========== دالة إظهار وإخفاء كلمة المرور ==========
+function togglePasswordVisibility(inputId, toggleEl) {
+    const input = document.getElementById(inputId);
+    if (!input || !toggleEl) return;
 
+    const isPassword = input.type === 'password';
+    input.type = isPassword ? 'text' : 'password';
+
+    const icon = toggleEl.querySelector('i');
+    if (icon) {
+        icon.className = isPassword ? 'fas fa-eye-slash' : 'fas fa-eye';
+    }
+}
+window.togglePasswordVisibility = togglePasswordVisibility;
 // ========== دوال الدردشة ==========
 function openChatbot() { document.getElementById('chatbotScreen').classList.add('active'); document.getElementById('chatbotBadge').style.display = 'none'; document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight; }
 function closeChatbot() { document.getElementById('chatbotScreen').classList.remove('active'); }

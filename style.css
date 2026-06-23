@@ -2516,3 +2516,37 @@ input:checked + .slider:before {
 .toggle-password i {
     pointer-events: none; /* يمنع الأيقونة من أخذ الحدث بدلاً من الـ span */
 }
+/* ========== إظهار وإخفاء كلمة المرور (أيقونة العين) ========== */
+.password-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.password-wrapper .input-field {
+    padding-left: 48px !important; /* عشان النص ميتغطيش */
+}
+
+.toggle-password {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #1a237e !important;
+    font-size: 1.4rem !important;
+    z-index: 999 !important; /* عشان تبقى فوق كل حاجة */
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    background: transparent;
+}
+
+.toggle-password i {
+    pointer-events: none;
+}
+
+.toggle-password:hover {
+    color: #ff6d00 !important;
+}
