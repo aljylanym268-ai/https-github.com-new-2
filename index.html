@@ -733,12 +733,13 @@
     }
     window.togglePasswordVisibility = togglePasswordVisibility;
 
-    // ================= تهيئة التطبيق =================
+    // ================= تهيئة التطبيق مع مستمعات الأحداث =================
     document.addEventListener('DOMContentLoaded', async () => {
+        // ---- تحميل الموقع المخزن ----
         const savedLocation = localStorage.getItem('misarUserLocation');
         if (savedLocation) appState.location = JSON.parse(savedLocation);
 
-        // جلسة المستخدم الحالية
+        // ---- جلسة المستخدم الحالية ----
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (session) {
             const user = session.user;
@@ -755,7 +756,7 @@
             appState.currentScreen = appState.location ? 'homeScreen' : 'locationScreen';
         }
 
-        // تحميل البيانات الأساسية
+        // ---- تحميل البيانات الأساسية ----
         await loadProductsFromDB();
         loadFeaturedProducts();
         loadMarketProducts();
@@ -763,6 +764,7 @@
         loadCart();
         await updateCartBadgeFromDB();
 
+        // ---- إظهار الشاشة المناسبة ----
         setTimeout(() => {
             document.getElementById('loadingScreen').style.display = 'none';
             showScreen(appState.currentScreen);
@@ -777,7 +779,72 @@
             addInputInteractions();
         }, 1500);
 
-        // ========== مستمع حدث المصادقة (محسن) ==========
+        // ========== مستمعات الأحداث للأزرار (الحل الأساسي) ==========
+        // 1. زر تسجيل الدخول بالبريد
+        const loginBtn = document.getElementById('loginBtn');
+        if (loginBtn) {
+            loginBtn.addEventListener('click', function(e) {
+                e.preventDefault();   // منع أي سلوك افتراضي
+                console.log('🟢 زر تسجيل الدخول تم الضغط عليه');
+                if (typeof signInWithEmail === 'function') {
+                    signInWithEmail();
+                } else {
+                    console.error('❌ الدالة signInWithEmail غير معرفة');
+                    showToast('حدث خطأ في النظام، حاول مرة أخرى', 'error');
+                }
+            });
+        } else {
+            console.warn('⚠️ لم يتم العثور على الزر loginBtn');
+        }
+
+        // 2. زر إنشاء حساب
+        const registerBtn = document.getElementById('registerBtn');
+        if (registerBtn) {
+            registerBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('🟢 زر إنشاء حساب تم الضغط عليه');
+                if (typeof signUpWithEmail === 'function') {
+                    signUpWithEmail();
+                } else {
+                    console.error('❌ الدالة signUpWithEmail غير معرفة');
+                    showToast('حدث خطأ في النظام، حاول مرة أخرى', 'error');
+                }
+            });
+        } else {
+            console.warn('⚠️ لم يتم العثور على الزر registerBtn');
+        }
+
+        // 3. زر Google
+        const googleBtn = document.getElementById('googleLoginBtn');
+        if (googleBtn) {
+            googleBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('🟢 زر Google تم الضغط عليه');
+                if (typeof signInWithGoogle === 'function') {
+                    signInWithGoogle();
+                } else {
+                    console.error('❌ الدالة signInWithGoogle غير معرفة');
+                    showToast('حدث خطأ في النظام، حاول مرة أخرى', 'error');
+                }
+            });
+        } else {
+            console.warn('⚠️ لم يتم العثور على الزر googleLoginBtn');
+        }
+
+        // ========== روابط التبديل بين تسجيل الدخول والتسجيل ==========
+        document.getElementById('showRegisterLink')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            showScreen('registerScreen');
+        });
+        document.getElementById('showLoginLink')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            showScreen('loginScreen');
+        });
+
+        // ========== حفظ الموقع ==========
+        document.getElementById('saveLocationBtn')?.addEventListener('click', saveLocation);
+
+        // ========== مستمع حدث المصادقة (لتحديث الواجهة تلقائياً) ==========
         supabaseClient.auth.onAuthStateChange(async (event, session) => {
             if (event === 'SIGNED_IN' && session) {
                 const user = session.user;
@@ -787,7 +854,6 @@
                     user_metadata: user.user_metadata
                 };
 
-                // قراءة نوع الحساب المخزن مؤقتاً
                 const pendingType = sessionStorage.getItem('pendingAccountType');
                 if (pendingType) {
                     try {
@@ -803,10 +869,7 @@
                     sessionStorage.removeItem('pendingAccountType');
                 }
 
-                // تحميل بيانات المستخدم
                 await loadUserData();
-
-                // تحديث واجهة المستخدم
                 toggleLoginMenu(true);
                 const isSeller = appState.userData?.account_type === 'seller';
                 const isDelivery = appState.userData?.account_type === 'delivery';
@@ -816,14 +879,9 @@
                 toggleFounderMenuItem(isFounder);
                 await updateCartBadgeFromDB();
 
-                // توجيه المستخدم إلى الصفحة المناسبة
-                if (isSeller) {
-                    showScreen('sellerDashboardScreen');
-                } else if (isDelivery) {
-                    showScreen('deliveryDashboardScreen');
-                } else {
-                    showScreen('homeScreen');
-                }
+                if (isSeller) showScreen('sellerDashboardScreen');
+                else if (isDelivery) showScreen('deliveryDashboardScreen');
+                else showScreen('homeScreen');
                 showToast('تم تسجيل الدخول بنجاح', 'success');
                 showBearReaction(true);
 
@@ -842,13 +900,12 @@
             }
         });
 
-        // تحقق من بارامترات الـ URL
+        // ========== تحقق من بارامترات URL ==========
         const params = new URLSearchParams(window.location.search);
         const storeParam = params.get('store');
         if (storeParam) setTimeout(() => showStorePage(storeParam), 1000);
         checkFounderParam();
     });
 </script>
-
 </body>
 </html>
