@@ -50,7 +50,10 @@ function setBearExpression(expression) {
     else if (expression === 'blink') { bear.classList.add('blink'); setTimeout(() => bear.classList.remove('blink'), 300); }
 }
 function showBearReaction(success) { setBearExpression(success ? 'happy' : 'sad'); setTimeout(() => setBearExpression(''), 1500); }
-function showLoading(show = true) { document.getElementById('loadingOverlay').classList.toggle('active', show); }
+function showLoading(show = true) {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.classList.toggle('active', show);
+}
 function showToast(message, type = 'success') {
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
@@ -116,10 +119,14 @@ async function uploadProductImages(files) {
     return urls;
 }
 
-// ========== المصادقة (محسنة) ==========
+// ========== المصادقة ==========
 async function signInWithGoogle() {
-    const accountType = document.getElementById('loginAccountType').value;
-    sessionStorage.setItem('pendingAccountType', accountType);
+    const loginAccountType = document.getElementById('loginAccountType');
+    if (!loginAccountType) {
+        showToast('خطأ في النموذج', 'error');
+        return;
+    }
+    sessionStorage.setItem('pendingAccountType', loginAccountType.value);
     const { error } = await supabaseClient.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -133,8 +140,14 @@ async function signInWithGoogle() {
 }
 
 async function signInWithEmail() {
-    const email = document.getElementById('loginEmail').value.trim();
-    const password = document.getElementById('loginPassword').value;
+    const emailInput = document.getElementById('loginEmail');
+    const passwordInput = document.getElementById('loginPassword');
+    if (!emailInput || !passwordInput) {
+        showToast('النموذج غير متوفر', 'error');
+        return;
+    }
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
     if (!email || !password) {
         showToast('يرجى إدخال البريد وكلمة المرور', 'warning');
         return;
@@ -152,20 +165,63 @@ async function signInWithEmail() {
     }
 }
 
+function extractErrorMessage(error) {
+    if (!error) return 'حدث خطأ غير معروف (الخطأ فارغ).';
+    if (typeof error === 'string') return error;
+    if (error.message) return error.message;
+    if (error.error_description) return error.error_description;
+    if (error.details) return error.details;
+    if (error.code) {
+        const codeMap = {
+            'user_already_exists': 'هذا البريد الإلكتروني مسجل بالفعل.',
+            'weak_password': 'كلمة المرور ضعيفة جداً. استخدم 8 أحرف على الأقل مع أرقام ورموز.',
+            'invalid_email': 'البريد الإلكتروني غير صحيح.',
+            'email_not_confirmed': 'يجب تأكيد البريد الإلكتروني أولاً.',
+            'signup_disabled': 'التسجيل معطل حالياً، حاول لاحقاً.'
+        };
+        return codeMap[error.code] || `خطأ برمز: ${error.code}`;
+    }
+    try {
+        const str = JSON.stringify(error);
+        if (str && str !== '{}') return str;
+    } catch (e) {}
+    const props = Object.getOwnPropertyNames(error).filter(p => p !== 'stack').map(p => `${p}: ${error[p]}`).join(', ');
+    if (props) return `خطأ (${error.constructor?.name || 'Unknown'}): ${props}`;
+    return 'حدث خطأ غير معروف (لم نتمكن من استخراج رسالة).';
+}
+
 async function signUpWithEmail() {
-    const name = document.getElementById('registerName').value.trim();
-    const email = document.getElementById('registerEmail').value.trim();
-    const password = document.getElementById('registerPassword').value;
-    const confirm = document.getElementById('registerConfirmPassword').value;
-    let accountType = document.getElementById('registerAccountType').value;
+    const nameInput = document.getElementById('registerName');
+    const emailInput = document.getElementById('registerEmail');
+    const passwordInput = document.getElementById('registerPassword');
+    const confirmInput = document.getElementById('registerConfirmPassword');
+    const accountTypeSelect = document.getElementById('registerAccountType');
+
+    if (!emailInput || !passwordInput || !confirmInput || !accountTypeSelect) {
+        showToast('النموذج غير مكتمل، أعد تحميل الصفحة', 'error');
+        return;
+    }
+
+    const name = nameInput ? nameInput.value.trim() : '';
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+    const confirm = confirmInput.value;
+    let accountType = accountTypeSelect.value;
     let deliveryCenter = '';
+
     if (accountType === 'delivery') {
-        deliveryCenter = document.getElementById('deliveryCenterSelect').value;
+        const centerSelect = document.getElementById('deliveryCenterSelect');
+        if (!centerSelect) {
+            showToast('النموذج غير مكتمل', 'error');
+            return;
+        }
+        deliveryCenter = centerSelect.value;
         if (!deliveryCenter) {
             showToast('يرجى اختيار المركز للمندوب', 'warning');
             return;
         }
     }
+
     if (!email || !password || !confirm) {
         showToast('يرجى ملء جميع الحقول المطلوبة', 'warning');
         return;
@@ -178,6 +234,7 @@ async function signUpWithEmail() {
         showToast('كلمة المرور يجب أن تكون 6 أحرف على الأقل', 'warning');
         return;
     }
+
     if (email === 'sa3dgelany@gmail.com') {
         accountType = 'founder';
         if (password !== '123456') {
@@ -185,6 +242,7 @@ async function signUpWithEmail() {
             return;
         }
     }
+
     const metadata = {
         account_type: accountType,
         full_name: name || undefined
@@ -193,29 +251,107 @@ async function signUpWithEmail() {
         metadata.center = deliveryCenter;
         metadata.status = 'pending';
     }
+
     showLoading(true);
+
     try {
         const { data, error } = await supabaseClient.auth.signUp({
             email,
             password,
             options: {
                 data: metadata,
-                emailRedirectTo: window.location.origin + window.location.pathname
+                emailRedirectTo: window.location.origin
             }
         });
-        if (error) throw error;
-        if (data?.user?.identities?.length === 0) {
-            showToast('هذا البريد مسجل بالفعل، يرجى تسجيل الدخول', 'warning');
-        } else {
-            showToast('تم إنشاء الحساب بنجاح. يرجى تفعيل البريد الإلكتروني (إذا لزم الأمر)', 'success');
-            showBearReaction(true);
-            showScreen('loginScreen');
-            if (accountType === 'founder') {
-                setTimeout(() => initFounderSettings(), 2000);
-            }
+
+        if (error) {
+            console.group('❌ خطأ Supabase أثناء التسجيل');
+            console.error('نوع الخطأ:', typeof error);
+            console.error('منشئ الخطأ:', error.constructor?.name);
+            console.dir(error, { depth: null, colors: true });
+            console.groupEnd();
+            const userMessage = extractErrorMessage(error);
+            showToast(userMessage, 'error');
+            showBearReaction(false);
+            showLoading(false);
+            return;
         }
-    } catch (error) {
-        showToast(error.message, 'error');
+
+        if (!data?.user) {
+            showToast('فشل إنشاء الحساب، يرجى المحاولة مرة أخرى', 'error');
+            showLoading(false);
+            return;
+        }
+
+        if (data.user.identities?.length === 0) {
+            showToast('هذا البريد مسجل بالفعل، يرجى تسجيل الدخول', 'warning');
+            showScreen('loginScreen');
+            showLoading(false);
+            return;
+        }
+
+        try {
+            const userDataToInsert = {
+                id: data.user.id,
+                name: name || data.user.email?.split('@')[0] || '',
+                account_type: accountType,
+                center: deliveryCenter || '',
+                status: accountType === 'delivery' ? 'pending' : 'approved',
+            };
+            const { error: insertError } = await supabaseClient
+                .from('user_data')
+                .upsert(userDataToInsert, { onConflict: 'id' });
+            if (insertError) {
+                console.warn('⚠️ فشل إدراج بيانات المستخدم في user_data:', insertError);
+                showToast('تم إنشاء الحساب ولكن فشل حفظ البيانات الشخصية، يمكنك تحديثها لاحقاً من الملف الشخصي.', 'warning');
+            } else {
+                console.log('✅ تم حفظ بيانات المستخدم في user_data بنجاح.');
+            }
+        } catch (insertErr) {
+            console.warn('⚠️ خطأ غير متوقع أثناء إدراج user_data:', insertErr);
+        }
+
+        try {
+            const { error: signInError } = await supabaseClient.auth.signInWithPassword({ email, password });
+            if (signInError) {
+                showToast('تم إنشاء الحساب ولكن فشل تسجيل الدخول التلقائي. سجل دخول يدوياً.', 'info');
+                showScreen('loginScreen');
+            } else {
+                showToast('تم إنشاء الحساب وتسجيل الدخول بنجاح!', 'success');
+                showBearReaction(true);
+                appState.user = { id: data.user.id, email: data.user.email, user_metadata: data.user.user_metadata };
+                await loadUserData();
+                toggleLoginMenu(true);
+                const isSeller = appState.userData?.account_type === 'seller';
+                const isDelivery = appState.userData?.account_type === 'delivery';
+                const isFounder = appState.userData?.account_type === 'founder';
+                toggleSellerMenuItem(isSeller);
+                toggleDeliveryMenuItem(isDelivery);
+                toggleFounderMenuItem(isFounder);
+                await updateCartBadgeFromDB();
+                if (isSeller) showScreen('sellerDashboardScreen');
+                else if (isDelivery) showScreen('deliveryDashboardScreen');
+                else showScreen('homeScreen');
+            }
+        } catch (autoLoginErr) {
+            console.warn('فشل تسجيل الدخول التلقائي:', autoLoginErr);
+            showToast('تم التسجيل، يرجى تسجيل الدخول', 'info');
+            showScreen('loginScreen');
+        }
+
+        if (accountType === 'founder') {
+            setTimeout(() => initFounderSettings(), 2000);
+        }
+
+    } catch (unexpectedError) {
+        console.error('❌ خطأ غير متوقع أثناء التسجيل:', unexpectedError);
+        let msg = 'حدث خطأ غير متوقع. حاول مرة أخرى.';
+        if (unexpectedError.message) {
+            msg = unexpectedError.message;
+        } else if (typeof unexpectedError === 'string') {
+            msg = unexpectedError;
+        }
+        showToast(msg, 'error');
         showBearReaction(false);
     } finally {
         showLoading(false);
@@ -253,13 +389,25 @@ function confirmLogout() { logout(true); }
 function toggleLoginMenu(isLoggedIn) {
     const loginItem = document.getElementById('loginMenuItem');
     const logoutItem = document.getElementById('logoutMenuItem');
-    if (loginItem && logoutItem) { loginItem.style.display = isLoggedIn ? 'none' : 'flex'; logoutItem.style.display = isLoggedIn ? 'flex' : 'none'; }
+    if (loginItem) loginItem.style.display = isLoggedIn ? 'none' : 'flex';
+    if (logoutItem) logoutItem.style.display = isLoggedIn ? 'flex' : 'none';
 }
-function toggleSellerMenuItem(isSeller) { const sellerItem = document.getElementById('sellerDashboardMenuItem'); if (sellerItem) sellerItem.style.display = isSeller ? 'flex' : 'none'; const sellerExtra = document.getElementById('sellerExtraFields'); if (sellerExtra) sellerExtra.style.display = isSeller ? 'block' : 'none'; }
-function toggleDeliveryMenuItem(isDelivery) { const deliveryItem = document.getElementById('deliveryDashboardMenuItem'); if (deliveryItem) deliveryItem.style.display = isDelivery ? 'flex' : 'none'; }
-function toggleFounderMenuItem(isFounder) { const founderItem = document.getElementById('founderDashboardMenuItem'); if (founderItem) founderItem.style.display = isFounder ? 'flex' : 'none'; }
+function toggleSellerMenuItem(isSeller) {
+    const sellerItem = document.getElementById('sellerDashboardMenuItem');
+    if (sellerItem) sellerItem.style.display = isSeller ? 'flex' : 'none';
+    const sellerExtra = document.getElementById('sellerExtraFields');
+    if (sellerExtra) sellerExtra.style.display = isSeller ? 'block' : 'none';
+}
+function toggleDeliveryMenuItem(isDelivery) {
+    const deliveryItem = document.getElementById('deliveryDashboardMenuItem');
+    if (deliveryItem) deliveryItem.style.display = isDelivery ? 'flex' : 'none';
+}
+function toggleFounderMenuItem(isFounder) {
+    const founderItem = document.getElementById('founderDashboardMenuItem');
+    if (founderItem) founderItem.style.display = isFounder ? 'flex' : 'none';
+}
 
-// ========== تحميل بيانات المستخدم (محسنة) ==========
+// ========== تحميل بيانات المستخدم ==========
 async function loadUserData() {
     if (!appState.user) return;
     try {
@@ -269,22 +417,21 @@ async function loadUserData() {
             .eq('id', appState.user.id)
             .maybeSingle();
 
+        const defaultData = {
+            id: appState.user.id,
+            name: appState.user.user_metadata?.full_name || appState.user.email?.split('@')[0] || '',
+            phone: '',
+            governorate: 'قنا',
+            center: appState.user.user_metadata?.center || '',
+            village: '',
+            image_url: appState.user.user_metadata?.avatar_url || '',
+            account_type: appState.user.user_metadata?.account_type || 'client',
+            status: appState.user.user_metadata?.status || 'approved'
+        };
+
         if (error) {
             console.error('خطأ في جلب بيانات المستخدم:', error);
-            const defaultData = {
-                id: appState.user.id,
-                name: appState.user.user_metadata?.full_name || appState.user.email?.split('@')[0] || '',
-                phone: '',
-                governorate: 'قنا',
-                center: appState.user.user_metadata?.center || '',
-                village: '',
-                image_url: appState.user.user_metadata?.avatar_url || '',
-                account_type: appState.user.user_metadata?.account_type || 'client',
-                status: appState.user.user_metadata?.status || 'approved'
-            };
-            const { error: upsertError } = await supabaseClient
-                .from('user_data')
-                .upsert(defaultData);
+            const { error: upsertError } = await supabaseClient.from('user_data').upsert(defaultData);
             if (upsertError) {
                 console.error('فشل إنشاء سجل المستخدم:', upsertError);
                 appState.userData = defaultData;
@@ -294,18 +441,11 @@ async function loadUserData() {
         } else if (data) {
             appState.userData = data;
         } else {
-            const defaultData = {
-                id: appState.user.id,
-                name: appState.user.user_metadata?.full_name || appState.user.email?.split('@')[0] || '',
-                phone: '',
-                governorate: 'قنا',
-                center: appState.user.user_metadata?.center || '',
-                village: '',
-                image_url: appState.user.user_metadata?.avatar_url || '',
-                account_type: appState.user.user_metadata?.account_type || 'client',
-                status: appState.user.user_metadata?.status || 'approved'
-            };
             await supabaseClient.from('user_data').upsert(defaultData);
+            appState.userData = defaultData;
+        }
+
+        if (!appState.userData || Object.keys(appState.userData).length === 0) {
             appState.userData = defaultData;
         }
 
@@ -330,7 +470,9 @@ async function loadUserData() {
         toggleFounderMenuItem(isFounder);
 
         if (isSeller) {
-            setTimeout(() => addSellerStoreTools(), 500);
+            if (typeof addSellerStoreTools === 'function') {
+                setTimeout(() => addSellerStoreTools(), 500);
+            }
         }
         if (isFounder) {
             await initFounderSettings();
@@ -345,9 +487,18 @@ async function loadUserData() {
     } catch (error) {
         console.error('loadUserData error:', error);
         showToast('حدث خطأ في تحميل بيانات المستخدم', 'error');
+        if (!appState.userData || Object.keys(appState.userData).length === 0) {
+            appState.userData = {
+                id: appState.user.id,
+                name: appState.user.email?.split('@')[0] || 'مستخدم',
+                account_type: 'client'
+            };
+            updateUserInfo();
+        }
     }
 }
 
+// ========== تحديث معلومات المستخدم في الواجهة (مع دعم onerror للصور) ==========
 function updateUserInfo(isGuest = false) {
     const welcomeName = document.getElementById('welcomeName');
     const welcomeAvatar = document.getElementById('welcomeAvatar');
@@ -356,37 +507,64 @@ function updateUserInfo(isGuest = false) {
     const profileAvatar = document.getElementById('profileAvatar');
     const editAvatarImg = document.getElementById('editAvatarImg');
     const editAvatarIcon = document.getElementById('editAvatarIcon');
+
     if (isGuest || !appState.user) {
-        welcomeName.textContent = 'مرحباً، زائر';
-        welcomeAvatar.innerHTML = '<i class="fas fa-user"></i>';
-        profileName.textContent = 'زائر';
-        profileEmail.textContent = 'غير مسجل';
-        profileAvatar.innerHTML = '<i class="fas fa-user"></i>';
-        if (editAvatarImg) { editAvatarImg.style.display = 'none'; editAvatarIcon.style.display = 'block'; }
+        if (welcomeName) welcomeName.textContent = 'مرحباً، زائر';
+        if (welcomeAvatar) welcomeAvatar.innerHTML = '<i class="fas fa-user"></i>';
+        if (profileName) profileName.textContent = 'زائر';
+        if (profileEmail) profileEmail.textContent = 'غير مسجل';
+        if (profileAvatar) profileAvatar.innerHTML = '<i class="fas fa-user"></i>';
+        if (editAvatarImg) { editAvatarImg.style.display = 'none'; if (editAvatarIcon) editAvatarIcon.style.display = 'block'; }
     } else {
         const name = appState.userData.name || appState.user.user_metadata?.full_name || appState.user.email?.split('@')[0] || 'مستخدم';
         const email = appState.user.email;
         const avatar = appState.userData.image_url || appState.user.user_metadata?.avatar_url;
-        welcomeName.textContent = `مرحباً، ${name}`;
-        profileName.textContent = name;
-        profileEmail.textContent = email;
+
+        // تحديث النصوص
+        if (welcomeName) welcomeName.textContent = `مرحباً، ${name}`;
+        if (profileName) profileName.textContent = name;
+        if (profileEmail) profileEmail.textContent = email;
+
+        // تحديث الصورة مع onerror
         if (avatar) {
-            welcomeAvatar.innerHTML = `<img src="${avatar}" alt="صورة المستخدم">`;
-            profileAvatar.innerHTML = `<img src="${avatar}" alt="صورة المستخدم">`;
-            if (editAvatarImg) { editAvatarImg.src = avatar; editAvatarImg.style.display = 'block'; editAvatarIcon.style.display = 'none'; }
-        } else { welcomeAvatar.innerHTML = '<i class="fas fa-user"></i>'; profileAvatar.innerHTML = '<i class="fas fa-user"></i>'; if (editAvatarImg) { editAvatarImg.style.display = 'none'; editAvatarIcon.style.display = 'block'; } }
+            const imgHtml = `<img src="${avatar}" alt="صورة المستخدم" onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\\'fas fa-user\\'></i>';">`;
+            if (welcomeAvatar) welcomeAvatar.innerHTML = imgHtml;
+            if (profileAvatar) profileAvatar.innerHTML = imgHtml;
+            if (editAvatarImg) {
+                editAvatarImg.src = avatar;
+                editAvatarImg.style.display = 'block';
+                if (editAvatarIcon) editAvatarIcon.style.display = 'none';
+                // معالجة خطأ تحميل الصورة في التعديل أيضاً
+                editAvatarImg.onerror = function() {
+                    this.style.display = 'none';
+                    if (editAvatarIcon) editAvatarIcon.style.display = 'block';
+                };
+            }
+        } else {
+            if (welcomeAvatar) welcomeAvatar.innerHTML = '<i class="fas fa-user"></i>';
+            if (profileAvatar) profileAvatar.innerHTML = '<i class="fas fa-user"></i>';
+            if (editAvatarImg) { editAvatarImg.style.display = 'none'; if (editAvatarIcon) editAvatarIcon.style.display = 'block'; }
+        }
     }
+
+    // تعبئة حقول التعديل
     if (appState.user) {
-        document.getElementById('editName').value = appState.userData.name || '';
-        document.getElementById('editPhone').value = appState.userData.phone || '';
-        document.getElementById('editCenter').value = appState.userData.center || '';
-        document.getElementById('editVillage').value = appState.userData.village || '';
-        if (document.getElementById('editUsername')) document.getElementById('editUsername').value = appState.userData.username || '';
-        if (document.getElementById('editBio')) document.getElementById('editBio').value = appState.userData.bio || '';
+        const editName = document.getElementById('editName');
+        if (editName) editName.value = appState.userData.name || '';
+        const editPhone = document.getElementById('editPhone');
+        if (editPhone) editPhone.value = appState.userData.phone || '';
+        const editCenter = document.getElementById('editCenter');
+        if (editCenter) editCenter.value = appState.userData.center || '';
+        const editVillage = document.getElementById('editVillage');
+        if (editVillage) editVillage.value = appState.userData.village || '';
+        const editUsername = document.getElementById('editUsername');
+        if (editUsername) editUsername.value = appState.userData.username || '';
+        const editBio = document.getElementById('editBio');
+        if (editBio) editBio.value = appState.userData.bio || '';
     }
 }
 
-// =================== إصلاح المنطقة (الموقع) ===================
+// =================== المنطقة (الموقع) ===================
 function loadVillagesForCenter(center, selectedVillage = '') {
     const villageSelect = document.getElementById('villageSelect');
     if (!villageSelect) return;
@@ -404,9 +582,16 @@ function loadVillagesForCenter(center, selectedVillage = '') {
     }
 }
 async function saveLocation() {
-    const governorate = document.getElementById('governorateSelect').value;
-    const center = document.getElementById('centerSelect').value;
-    const village = document.getElementById('villageSelect').value;
+    const governorateSelect = document.getElementById('governorateSelect');
+    const centerSelect = document.getElementById('centerSelect');
+    const villageSelect = document.getElementById('villageSelect');
+    if (!centerSelect || !villageSelect) {
+        showToast('النموذج غير متوفر', 'error');
+        return;
+    }
+    const governorate = governorateSelect ? governorateSelect.value : 'قنا';
+    const center = centerSelect.value;
+    const village = villageSelect.value;
     if (!center || !village) { showToast('يرجى اختيار المركز والقرية', 'warning'); return; }
     appState.location = { governorate, center, village };
     if (appState.user) {
@@ -443,37 +628,51 @@ function openLocationSettings() {
     }, 100);
 }
 function updateWelcomeLocation() {
-    const loc = appState.user ? appState.userData : appState.location;
     const el = document.getElementById('welcomeLocation');
-    if (el && loc) {
+    if (!el) return;
+    const loc = appState.user ? appState.userData : appState.location;
+    if (loc) {
         const parts = [loc.governorate || 'قنا', loc.center || '', loc.village || ''].filter(Boolean);
         el.textContent = `موقعك: ${parts.join(' - ')}`;
-    } else if (el) {
+    } else {
         el.textContent = 'موقعك: غير محدد';
     }
 }
 function updateProfileLocation() {
-    const loc = appState.user ? appState.userData : appState.location;
     const el = document.getElementById('profileLocation');
-    if (el && loc && (loc.center || loc.village)) {
+    if (!el) return;
+    const loc = appState.user ? appState.userData : appState.location;
+    if (loc && (loc.center || loc.village)) {
         const parts = [loc.governorate || 'قنا', loc.center || '', loc.village || ''].filter(Boolean);
         el.textContent = `المنطقة: ${parts.join(' - ')}`;
-    } else if (el) {
+    } else {
         el.textContent = 'المنطقة: غير محددة';
     }
 }
 
 async function saveProfile() {
     if (!appState.user) return showToast('يجب تسجيل الدخول أولاً', 'warning');
-    const name = document.getElementById('editName').value.trim();
-    const phone = document.getElementById('editPhone').value.trim();
-    const username = document.getElementById('editUsername')?.value.trim();
-    const bio = document.getElementById('editBio')?.value.trim();
+    const editName = document.getElementById('editName');
+    const editPhone = document.getElementById('editPhone');
+    if (!editName || !editPhone) {
+        showToast('النموذج غير مكتمل', 'error');
+        return;
+    }
+    const name = editName.value.trim();
+    const phone = editPhone.value.trim();
+    const editUsername = document.getElementById('editUsername');
+    const editBio = document.getElementById('editBio');
+    const username = editUsername ? editUsername.value.trim() : null;
+    const bio = editBio ? editBio.value.trim() : null;
     const updates = { id: appState.user.id };
     if (name) updates.name = name;
     if (phone) updates.phone = phone;
     if (appState.userData.account_type === 'seller') {
-        if (username) { const { data: existing } = await supabaseClient.from('user_data').select('id').eq('username', username).neq('id', appState.user.id).maybeSingle(); if (existing) { showToast('اسم المستخدم مستخدم بالفعل', 'error'); return; } updates.username = username; }
+        if (username) {
+            const { data: existing } = await supabaseClient.from('user_data').select('id').eq('username', username).neq('id', appState.user.id).maybeSingle();
+            if (existing) { showToast('اسم المستخدم مستخدم بالفعل', 'error'); return; }
+            updates.username = username;
+        }
         if (bio) updates.bio = bio;
     }
     if (Object.keys(updates).length === 1) return showToast('لا توجد تغييرات', 'info');
@@ -481,13 +680,39 @@ async function saveProfile() {
     const { error } = await supabaseClient.from('user_data').upsert(updates);
     showLoading(false);
     if (error) showToast(error.message, 'error');
-    else { appState.userData = { ...appState.userData, ...updates }; updateUserInfo(); showToast('تم حفظ التغييرات', 'success'); goBack(); if (appState.userData.account_type === 'seller') { addSellerStoreTools(); updateStoreTools(); } }
+    else {
+        appState.userData = { ...appState.userData, ...updates };
+        updateUserInfo();
+        showToast('تم حفظ التغييرات', 'success');
+        goBack();
+        if (appState.userData.account_type === 'seller') {
+            if (typeof addSellerStoreTools === 'function') {
+                addSellerStoreTools();
+                if (typeof updateStoreTools === 'function') updateStoreTools();
+            }
+        }
+    }
 }
+
+// ========== رفع الصورة الشخصية (مع تحسين المعاينة والتحديث) ==========
 document.getElementById('avatarUpload')?.addEventListener('change', async function(e) {
     const file = e.target.files[0];
     if (!file || !appState.user) return;
     if (!file.type.startsWith('image/')) return showToast('يرجى اختيار صورة', 'warning');
     if (file.size > 5 * 1024 * 1024) return showToast('الحد الأقصى 5 ميجابايت', 'warning');
+
+    // معاينة الصورة قبل الرفع
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+        const preview = document.getElementById('editAvatarImg');
+        if (preview) {
+            preview.src = ev.target.result;
+            preview.style.display = 'block';
+            document.getElementById('editAvatarIcon').style.display = 'none';
+        }
+    };
+    reader.readAsDataURL(file);
+
     showLoading(true);
     try {
         const compressed = await compressImage(file, 512, 512, 0.8);
@@ -496,21 +721,37 @@ document.getElementById('avatarUpload')?.addEventListener('change', async functi
         const { error: uploadError } = await supabaseClient.storage.from('user-images').upload(path, compressed);
         if (uploadError) throw uploadError;
         const { data: { publicUrl } } = supabaseClient.storage.from('user-images').getPublicUrl(path);
-        await supabaseClient.from('user_data').upsert({ id: appState.user.id, image_url: publicUrl });
+
+        // تحديث قاعدة البيانات
+        const { error: updateError } = await supabaseClient
+            .from('user_data')
+            .upsert({ id: appState.user.id, image_url: publicUrl });
+        if (updateError) throw updateError;
+
+        // تحديث الحالة المحلية والواجهة
         appState.userData.image_url = publicUrl;
-        updateUserInfo();
+        updateUserInfo();  // تحديث كل عناصر الصورة في الواجهة
         showToast('تم رفع الصورة الشخصية بنجاح', 'success');
-    } catch (err) { showToast(err.message, 'error'); }
-    finally { showLoading(false); }
+    } catch (err) {
+        showToast(err.message, 'error');
+        console.error(err);
+    } finally {
+        showLoading(false);
+    }
 });
 
 // ========== دوال المؤسس ==========
 async function loadGlobalFounderVisibility() {
-    try { const { data, error } = await supabaseClient.from('founder_settings').select('page_visible').eq('id', 1).single(); if (!error && data) { appState.founderPageVisible = data.page_visible; } else { const saved = localStorage.getItem('founder_page_visible'); appState.founderPageVisible = saved !== null ? saved === 'true' : true; } } catch(e) { const saved = localStorage.getItem('founder_page_visible'); appState.founderPageVisible = saved !== null ? saved === 'true' : true; } const toggleSwitch = document.getElementById('toggleFounderPage'); if (toggleSwitch && appState.user && appState.userData.account_type === 'founder') { toggleSwitch.checked = appState.founderPageVisible; } }
+    try { const { data, error } = await supabaseClient.from('founder_settings').select('page_visible').eq('id', 1).single(); if (!error && data) { appState.founderPageVisible = data.page_visible; } else { const saved = localStorage.getItem('founder_page_visible'); appState.founderPageVisible = saved !== null ? saved === 'true' : true; } } catch(e) { const saved = localStorage.getItem('founder_page_visible'); appState.founderPageVisible = saved !== null ? saved === 'true' : true; }
+    const toggleSwitch = document.getElementById('toggleFounderPage');
+    if (toggleSwitch && appState.user && appState.userData.account_type === 'founder') { toggleSwitch.checked = appState.founderPageVisible; }
+}
 async function initFounderSettings() { await loadGlobalFounderVisibility(); const toggleSwitch = document.getElementById('toggleFounderPage'); if (toggleSwitch && appState.user && appState.userData.account_type === 'founder') { toggleSwitch.removeEventListener('change', handleToggleChange); toggleSwitch.addEventListener('change', handleToggleChange); } }
 async function handleToggleChange(e) { appState.founderPageVisible = e.target.checked; try { await supabaseClient.from('founder_settings').upsert({ id: 1, page_visible: appState.founderPageVisible, updated_at: new Date() }); } catch(error) { console.warn('فشل حفظ الإعدادات في قاعدة البيانات', error); } localStorage.setItem('founder_page_visible', appState.founderPageVisible); showToast(appState.founderPageVisible ? 'تم إظهار صفحة المؤسس للجميع' : 'تم إخفاء صفحة المؤسس عن الجميع', 'success'); }
 async function loadFounderStats() {
-    try { const { data, error } = await supabaseClient.from('founder_views').select('count').eq('id',1).single(); if (!error && data) appState.founderViews = data.count || 0; else appState.founderViews = parseInt(localStorage.getItem('founder_views') || '0'); } catch(e) { appState.founderViews = parseInt(localStorage.getItem('founder_views') || '0'); } const viewsEl = document.getElementById('founderViewsCount'); if (viewsEl) viewsEl.textContent = appState.founderViews;
+    try { const { data, error } = await supabaseClient.from('founder_views').select('count').eq('id',1).single(); if (!error && data) appState.founderViews = data.count || 0; else appState.founderViews = parseInt(localStorage.getItem('founder_views') || '0'); } catch(e) { appState.founderViews = parseInt(localStorage.getItem('founder_views') || '0'); }
+    const viewsEl = document.getElementById('founderViewsCount');
+    if (viewsEl) viewsEl.textContent = appState.founderViews;
     try { const { data, error } = await supabaseClient.from('founder_shares').select('count'); if (!error && data) { const total = data.reduce((sum, s) => sum + (s.count || 0), 0); const sharesEl = document.getElementById('founderSharesTotal'); if (sharesEl) sharesEl.textContent = total; } else { let total = 0; ['whatsapp','facebook','twitter','copy'].forEach(t => { total += parseInt(localStorage.getItem(`share_${t}`) || '0'); }); const sharesEl = document.getElementById('founderSharesTotal'); if (sharesEl) sharesEl.textContent = total; } } catch(e) { let total = 0; ['whatsapp','facebook','twitter','copy'].forEach(t => { total += parseInt(localStorage.getItem(`share_${t}`) || '0'); }); const sharesEl = document.getElementById('founderSharesTotal'); if (sharesEl) sharesEl.textContent = total; }
 }
 async function refreshFounderStats() { await loadFounderStats(); showToast('تم تحديث الإحصائيات', 'success'); }
@@ -539,16 +780,16 @@ async function shareFounderPage(method) {
     trackShare(method);
 }
 function checkFounderParam() { const params = new URLSearchParams(window.location.search); const founder = params.get('founder'); if (founder && founder === 'mohamed_saad') { setTimeout(async () => { await loadGlobalFounderVisibility(); if (appState.founderPageVisible) { openFounderProfile(); } else { showToast('صفحة المؤسس غير متاحة حالياً', 'warning'); } const newUrl = window.location.origin + window.location.pathname; window.history.replaceState({}, document.title, newUrl); }, 1000); } }
-function openFounderProfile() { closeChatbot(); document.getElementById('founderProfileScreen').classList.add('active'); loadShareCounts(); const shareLinkSpan = document.getElementById('founderShareLink'); if (shareLinkSpan) shareLinkSpan.textContent = getFounderShareLink(); trackFounderView(); }
-function closeFounderProfile() { document.getElementById('founderProfileScreen').classList.remove('active'); openChatbot(); }
+function openFounderProfile() { closeChatbot(); const founderScreen = document.getElementById('founderProfileScreen'); if (founderScreen) founderScreen.classList.add('active'); loadShareCounts(); const shareLinkSpan = document.getElementById('founderShareLink'); if (shareLinkSpan) shareLinkSpan.textContent = getFounderShareLink(); trackFounderView(); }
+function closeFounderProfile() { const founderScreen = document.getElementById('founderProfileScreen'); if (founderScreen) founderScreen.classList.remove('active'); openChatbot(); }
 function contactDeveloper() { window.open('https://app.fastbots.ai/embed/cmillclid07mep81pmwkjqyq6', '_blank'); }
-function openImageModal() { const img = document.querySelector('.founder-avatar img'); if (img) { document.getElementById('modalImage').src = img.src; document.getElementById('imageModal').classList.add('active'); } }
+function openImageModal() { const img = document.querySelector('.founder-avatar img'); if (!img) return; const modalImage = document.getElementById('modalImage'); const imageModal = document.getElementById('imageModal'); if (modalImage) modalImage.src = img.src; if (imageModal) imageModal.classList.add('active'); }
 function closeImageModal(event) { if (event.target === document.getElementById('imageModal') || event.target.classList.contains('close-modal')) { document.getElementById('imageModal').classList.remove('active'); } }
 
 // ========== طلبات انضمام المناديب ==========
 async function loadPendingDeliveries() {
     if (!appState.user || appState.userData.account_type !== 'founder') return;
-    try { const { data, error } = await supabaseClient.from('user_data').select('id, name, email, phone, center, created_at').eq('account_type', 'delivery').eq('status', 'pending'); if (error) throw error; const container = document.getElementById('pendingDeliveriesList'); if (!container) return; if (!data || data.length === 0) { container.innerHTML = '<p>لا توجد طلبات انضمام حالياً</p>'; return; } container.innerHTML = ''; data.forEach(del => { const div = document.createElement('div'); div.className = 'pending-item'; div.innerHTML = `<div class="pending-info"><div class="pending-name">${escapeHTML(del.name || del.email)}</div><div class="pending-email">${del.email} | ${del.phone || 'لا يوجد هاتف'} | المركز: ${del.center || 'غير محدد'}</div></div><div class="pending-actions"><button class="approve-btn" onclick="approveDeliveryPerson('${del.id}')">قبول</button><button class="reject-btn" onclick="rejectDeliveryPerson('${del.id}')">رفض</button></div>`; container.appendChild(div); }); } catch(err) { console.error(err); document.getElementById('pendingDeliveriesList').innerHTML = '<p>حدث خطأ في تحميل الطلبات</p>'; }
+    try { const { data, error } = await supabaseClient.from('user_data').select('id, name, email, phone, center, created_at').eq('account_type', 'delivery').eq('status', 'pending'); if (error) throw error; const container = document.getElementById('pendingDeliveriesList'); if (!container) return; if (!data || data.length === 0) { container.innerHTML = '<p>لا توجد طلبات انضمام حالياً</p>'; return; } container.innerHTML = ''; data.forEach(del => { const div = document.createElement('div'); div.className = 'pending-item'; div.innerHTML = `<div class="pending-info"><div class="pending-name">${escapeHTML(del.name || del.email)}</div><div class="pending-email">${del.email} | ${del.phone || 'لا يوجد هاتف'} | المركز: ${del.center || 'غير محدد'}</div></div><div class="pending-actions"><button class="approve-btn" onclick="approveDeliveryPerson('${del.id}')">قبول</button><button class="reject-btn" onclick="rejectDeliveryPerson('${del.id}')">رفض</button></div>`; container.appendChild(div); }); } catch(err) { console.error(err); const container = document.getElementById('pendingDeliveriesList'); if (container) container.innerHTML = '<p>حدث خطأ في تحميل الطلبات</p>'; }
 }
 async function approveDeliveryPerson(userId) { showLoading(true); try { await supabaseClient.from('user_data').update({ status: 'approved' }).eq('id', userId); showToast('تم قبول المندوب', 'success'); await loadPendingDeliveries(); } catch(err) { showToast(err.message, 'error'); } finally { showLoading(false); } }
 async function rejectDeliveryPerson(userId) { if (!confirm('هل أنت متأكد من رفض هذا المندوب؟ سيتم حذف حسابه.')) return; showLoading(true); try { await supabaseClient.from('user_data').delete().eq('id', userId); showToast('تم رفض المندوب وحذف الحساب', 'success'); await loadPendingDeliveries(); } catch(err) { showToast(err.message, 'error'); } finally { showLoading(false); } }
@@ -559,23 +800,23 @@ async function sendNotification(userId, title, message, data = {}) {
     catch (error) { console.warn('فشل إرسال الإشعار', error); }
 }
 async function loadUnreadNotificationsCount() { if (!appState.user) return; try { const { count, error } = await supabaseClient.from('notifications').select('*', { count: 'exact', head: true }).eq('user_id', appState.user.id).eq('is_read', false); if (!error) { const badge = document.getElementById('notificationBadge'); if (badge) { badge.textContent = count || 0; badge.style.display = count > 0 ? 'flex' : 'none'; } } } catch(e) { console.warn('فشل تحميل عدد الإشعارات', e); } }
-function setupRealtimeSubscriptions() { if (!appState.user) return; if (appState.ordersSubscription) appState.ordersSubscription.unsubscribe(); appState.ordersSubscription = supabaseClient.channel('orders-channel').on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, (payload) => { console.log('Order change:', payload); if (appState.currentScreen === 'sellerDashboardScreen' && appState.userData.account_type === 'seller') refreshSellerDashboard(); else if (appState.currentScreen === 'deliveryDashboardScreen') refreshDeliveryDashboard(); else if (appState.currentScreen === 'ordersScreen') loadBuyerOrdersWithTimeline(); loadUnreadNotificationsCount(); }).subscribe(); if (appState.notificationsSubscription) appState.notificationsSubscription.unsubscribe(); appState.notificationsSubscription = supabaseClient.channel('notifications-channel').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${appState.user.id}` }, (payload) => { showToast(payload.new.title, 'info'); loadUnreadNotificationsCount(); }).subscribe(); }
+function setupRealtimeSubscriptions() { if (!appState.user) return; if (appState.ordersSubscription) appState.ordersSubscription.unsubscribe(); appState.ordersSubscription = supabaseClient.channel('orders-channel').on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, (payload) => { console.log('Order change:', payload); if (appState.currentScreen === 'sellerDashboardScreen' && appState.userData.account_type === 'seller') { if (typeof refreshSellerDashboard === 'function') refreshSellerDashboard(); } else if (appState.currentScreen === 'deliveryDashboardScreen') { if (typeof refreshDeliveryDashboard === 'function') refreshDeliveryDashboard(); } else if (appState.currentScreen === 'ordersScreen') { if (typeof loadBuyerOrdersWithTimeline === 'function') loadBuyerOrdersWithTimeline(); } loadUnreadNotificationsCount(); }).subscribe(); if (appState.notificationsSubscription) appState.notificationsSubscription.unsubscribe(); appState.notificationsSubscription = supabaseClient.channel('notifications-channel').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${appState.user.id}` }, (payload) => { showToast(payload.new.title, 'info'); loadUnreadNotificationsCount(); }).subscribe(); }
 
 // ========== التنقل ==========
 function showScreen(screenId) {
-    if (screenId === 'sellerDashboardScreen') { if (!appState.user || appState.userData.account_type !== 'seller') { showToast('هذه الصفحة مخصصة للبائعين فقط', 'error'); showScreen('homeScreen'); return; } refreshSellerDashboard(); }
-    if (screenId === 'deliveryDashboardScreen') { if (!appState.user || appState.userData.account_type !== 'delivery') { showToast('هذه الصفحة مخصصة للمندوبين فقط', 'error'); showScreen('homeScreen'); return; } refreshDeliveryDashboard(); }
+    if (screenId === 'sellerDashboardScreen') { if (!appState.user || appState.userData.account_type !== 'seller') { showToast('هذه الصفحة مخصصة للبائعين فقط', 'error'); showScreen('homeScreen'); return; } if (typeof refreshSellerDashboard === 'function') refreshSellerDashboard(); }
+    if (screenId === 'deliveryDashboardScreen') { if (!appState.user || appState.userData.account_type !== 'delivery') { showToast('هذه الصفحة مخصصة للمندوبين فقط', 'error'); showScreen('homeScreen'); return; } if (typeof refreshDeliveryDashboard === 'function') refreshDeliveryDashboard(); }
     if (screenId === 'founderDashboardScreen') { if (!appState.user || appState.userData.account_type !== 'founder') { showToast('هذه الصفحة مخصصة للمؤسس فقط', 'error'); showScreen('homeScreen'); return; } loadFounderStats(); loadPendingDeliveries(); }
-    if (screenId === 'ordersScreen') { loadBuyerOrdersWithTimeline(); }
+    if (screenId === 'ordersScreen') { if (typeof loadBuyerOrdersWithTimeline === 'function') loadBuyerOrdersWithTimeline(); }
     document.querySelectorAll('.screen').forEach(screen => { screen.classList.remove('active'); screen.classList.add('hidden'); });
     updateNavigation(screenId);
     const screen = document.getElementById(screenId);
     if (screen) { screen.classList.remove('hidden'); screen.classList.add('active'); appState.previousScreen = appState.currentScreen; appState.currentScreen = screenId; const backBtn = document.querySelector('.back-btn'); if (backBtn) backBtn.classList.toggle('active', screenId !== 'homeScreen' && screenId !== 'locationScreen'); }
-    if (screenId === 'marketScreen') { document.getElementById('marketSearchInput').value = ''; document.getElementById('clearSearch').style.display = 'none'; loadMarketProducts(); }
+    if (screenId === 'marketScreen') { const searchInput = document.getElementById('marketSearchInput'); if (searchInput) { searchInput.value = ''; } const clearSearch = document.getElementById('clearSearch'); if (clearSearch) clearSearch.style.display = 'none'; if (typeof loadMarketProducts === 'function') loadMarketProducts(); }
     if (screenId === 'profileScreen') updateProfileLocation();
     if (screenId === 'editProfileScreen' && appState.user) updateProfileLocation();
-    if (screenId === 'servicesScreen') loadServices();
-    if (screenId === 'cartScreen') loadCart();
+    if (screenId === 'servicesScreen') { if (typeof loadServices === 'function') loadServices(); }
+    if (screenId === 'cartScreen') { if (typeof loadCart === 'function') loadCart(); }
     if (screenId === 'loginScreen' || screenId === 'registerScreen') setTimeout(addInputInteractions, 50);
 }
 function goBack() { showScreen(appState.previousScreen || 'homeScreen'); }
@@ -593,7 +834,6 @@ function addInputInteractions() {
         pw.addEventListener('blur', () => setBearExpression(''));
     });
 }
-// ========== دالة إظهار وإخفاء كلمة المرور ==========
 function togglePasswordVisibility(inputId, toggleEl) {
     const input = document.getElementById(inputId);
     if (!input || !toggleEl) return;
@@ -605,20 +845,21 @@ function togglePasswordVisibility(inputId, toggleEl) {
     }
 }
 window.togglePasswordVisibility = togglePasswordVisibility;
+
 // ========== دوال الدردشة ==========
-function openChatbot() { document.getElementById('chatbotScreen').classList.add('active'); document.getElementById('chatbotBadge').style.display = 'none'; document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight; }
-function closeChatbot() { document.getElementById('chatbotScreen').classList.remove('active'); }
-function sendMessage() { const input = document.getElementById('chatInput'); const msg = input.value.trim(); if (!msg) return; addMessage(msg, 'user'); input.value = ''; setTimeout(() => { addMessage(getBotResponse(msg), 'bot'); document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight; }, 400); }
-function sendSuggestion(text) { addMessage(text, 'user'); setTimeout(() => { addMessage(getBotResponse(text), 'bot'); document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight; }, 400); }
-function addMessage(text, sender) { const container = document.getElementById('chatMessages'); const div = document.createElement('div'); div.className = `message ${sender}`; div.textContent = text; container.appendChild(div); container.scrollTop = container.scrollHeight; }
+function openChatbot() { const chatbotScreen = document.getElementById('chatbotScreen'); if (chatbotScreen) chatbotScreen.classList.add('active'); const badge = document.getElementById('chatbotBadge'); if (badge) badge.style.display = 'none'; const messages = document.getElementById('chatMessages'); if (messages) messages.scrollTop = messages.scrollHeight; }
+function closeChatbot() { const chatbotScreen = document.getElementById('chatbotScreen'); if (chatbotScreen) chatbotScreen.classList.remove('active'); }
+function sendMessage() { const input = document.getElementById('chatInput'); if (!input) return; const msg = input.value.trim(); if (!msg) return; addMessage(msg, 'user'); input.value = ''; setTimeout(() => { addMessage(getBotResponse(msg), 'bot'); const messages = document.getElementById('chatMessages'); if (messages) messages.scrollTop = messages.scrollHeight; }, 400); }
+function sendSuggestion(text) { addMessage(text, 'user'); setTimeout(() => { addMessage(getBotResponse(text), 'bot'); const messages = document.getElementById('chatMessages'); if (messages) messages.scrollTop = messages.scrollHeight; }, 400); }
+function addMessage(text, sender) { const container = document.getElementById('chatMessages'); if (!container) return; const div = document.createElement('div'); div.className = `message ${sender}`; div.textContent = text; container.appendChild(div); container.scrollTop = container.scrollHeight; }
 function getBotResponse(msg) { const m = msg.toLowerCase(); if (m.includes('السلام') || m.includes('اهلا')) return 'وعليكم السلام! كيف يمكنني مساعدتك؟ 😊'; if (m.includes('منتجات')) return 'لدينا إلكترونيات، أزياء، أثاث، أطعمة. تصفح المتجر!'; if (m.includes('اشتري') || m.includes('شراء')) return 'اذهب للمتجر، أضف المنتج للسلة ثم أكمل الطلب من صفحة السلة.'; if (m.includes('عروض')) return 'خصم 20% على الأثاث، وساعة هواوي بسعر مميز.'; if (m.includes('صيانة')) return 'خدمات الصيانة متوفرة: أجهزة، سباكة، كهرباء. احجز من قسم الخدمات.'; if (m.includes('طلب')) return 'تابع طلباتك من صفحة "طلباتي" في الملف الشخصي.'; if (m.includes('خدمة العملاء') || m.includes('الدعم')) return 'تواصل معنا: support@misar.com أو 19000.'; if (m.includes('شكرا')) return 'الشكر لله، دائمًا في خدمتك!'; return 'عذرًا، لم أفهم. جرب الاقتراحات أعلاه.'; }
 
 // ========== دوال الأمان ==========
-function showChangePasswordModal() { if (!appState.user) { showToast('يجب تسجيل الدخول أولاً', 'warning'); return; } document.getElementById('changePasswordModal').classList.add('active'); }
-function showSecurityModal() { if (!appState.user) { showToast('يجب تسجيل الدخول أولاً', 'warning'); return; } document.getElementById('securityModal').classList.add('active'); }
-function closeModal(modalId) { document.getElementById(modalId).classList.remove('active'); }
-function changePassword() { const oldPass = document.getElementById('oldPassword').value; const newPass = document.getElementById('newPassword').value; const confirmPass = document.getElementById('confirmNewPassword').value; if (!oldPass || !newPass || !confirmPass) { showToast('يرجى ملء جميع الحقول', 'warning'); return; } if (newPass !== confirmPass) { showToast('كلمة المرور الجديدة غير متطابقة', 'error'); return; } showToast('تم تغيير كلمة المرور (وهمي)', 'success'); closeModal('changePasswordModal'); document.getElementById('oldPassword').value = ''; document.getElementById('newPassword').value = ''; document.getElementById('confirmNewPassword').value = ''; }
-function saveSecuritySettings() { const twoFactor = document.getElementById('twoFactorCheck').checked; showToast(`تم حفظ إعدادات الأمان (المصادقة الثنائية: ${twoFactor ? 'مفعلة' : 'غير مفعلة'})`, 'success'); closeModal('securityModal'); }
+function showChangePasswordModal() { if (!appState.user) { showToast('يجب تسجيل الدخول أولاً', 'warning'); return; } const modal = document.getElementById('changePasswordModal'); if (modal) modal.classList.add('active'); }
+function showSecurityModal() { if (!appState.user) { showToast('يجب تسجيل الدخول أولاً', 'warning'); return; } const modal = document.getElementById('securityModal'); if (modal) modal.classList.add('active'); }
+function closeModal(modalId) { const modal = document.getElementById(modalId); if (modal) modal.classList.remove('active'); }
+function changePassword() { const oldPass = document.getElementById('oldPassword'); const newPass = document.getElementById('newPassword'); const confirmPass = document.getElementById('confirmNewPassword'); if (!oldPass || !newPass || !confirmPass) { showToast('يرجى ملء جميع الحقول', 'warning'); return; } if (newPass.value !== confirmPass.value) { showToast('كلمة المرور الجديدة غير متطابقة', 'error'); return; } showToast('تم تغيير كلمة المرور (وهمي)', 'success'); closeModal('changePasswordModal'); oldPass.value = ''; newPass.value = ''; confirmPass.value = ''; }
+function saveSecuritySettings() { const twoFactor = document.getElementById('twoFactorCheck'); const enabled = twoFactor ? twoFactor.checked : false; showToast(`تم حفظ إعدادات الأمان (المصادقة الثنائية: ${enabled ? 'مفعلة' : 'غير مفعلة'})`, 'success'); closeModal('securityModal'); }
 
 // ========== تصدير الدوال العامة ==========
 window.supabaseClient = supabaseClient;

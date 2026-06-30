@@ -75,7 +75,7 @@ async function deleteProduct(id) {
     if (error) throw error;
 }
 
-// ========== حفظ منتج (إضافة/تعديل) ==========
+// ========== حفظ منتج (إضافة/تعديل) - تم التعديل هنا ==========
 async function saveProduct() {
     const name = document.getElementById('productName').value.trim();
     const price = parseFloat(document.getElementById('productPrice').value);
@@ -85,37 +85,100 @@ async function saveProduct() {
     const discount = parseFloat(document.getElementById('productDiscount').value) || 0;
     const id = document.getElementById('editingProductId').value;
     const files = document.getElementById('productImages').files;
-    if (!name || isNaN(price) || price <= 0) { showToast('يرجى إدخال اسم المنتج وسعر صحيح', 'warning'); return; }
+
+    if (!name || isNaN(price) || price <= 0) {
+        showToast('يرجى إدخال اسم المنتج وسعر صحيح', 'warning');
+        return;
+    }
+
     showLoading(true);
+
     try {
+        // ========== التعديل الأساسي: جلب المستخدم الحالي من Supabase ==========
+        const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+        if (userError || !user) {
+            throw new Error('يجب تسجيل الدخول أولاً لإضافة منتج');
+        }
+        const userId = user.id; // هذا هو المعرف الصحيح للمستخدم المسجل
+
+        // رفع الصور (إن وجدت)
         let imageUrls = [];
-        if (files && files.length > 0) imageUrls = await uploadProductImages(Array.from(files));
-        const productData = { name, price, stock, description: desc, category: cat, discount, user_id: appState.user.id, updated_at: new Date() };
-        if (imageUrls.length > 0) { productData.image_url = imageUrls[0]; productData.images = imageUrls; }
-        if (id) await updateProduct(id, productData);
-        else await addProduct(productData);
+        if (files && files.length > 0) {
+            imageUrls = await uploadProductImages(Array.from(files));
+        }
+
+        // تحضير بيانات المنتج مع user_id الصحيح
+        const productData = {
+            name,
+            price,
+            stock,
+            description: desc,
+            category: cat,
+            discount,
+            user_id: userId,        // <-- المستخدم الحالي من Supabase
+            updated_at: new Date()
+        };
+
+        if (imageUrls.length > 0) {
+            productData.image_url = imageUrls[0];
+            productData.images = imageUrls;
+        }
+
+        // إدراج أو تحديث
+        if (id) {
+            await updateProduct(id, productData);
+        } else {
+            await addProduct(productData);
+        }
+
         showToast(`تم ${id ? 'تحديث' : 'إضافة'} المنتج بنجاح`, 'success');
         closeProductModal();
         await refreshSellerDashboard();
         await loadProductsFromDB();
-        loadMarketProducts(); loadFeaturedProducts();
+        loadMarketProducts();
+        loadFeaturedProducts();
+
     } catch (err) {
+        // معالجة الأخطاء (مثل عدم وجود عمود images)
         if (err.message && err.message.includes('column "images"')) {
             showToast('ملاحظة: تم حفظ الصورة الرئيسية فقط.', 'warning');
-            const files = document.getElementById('productImages').files;
-            let imageUrls = [];
-            if (files && files.length > 0) imageUrls = await uploadProductImages(Array.from(files));
-            const productData = { name, price, stock, description: desc, category: cat, discount, user_id: appState.user.id, updated_at: new Date() };
-            if (imageUrls.length > 0) productData.image_url = imageUrls[0];
-            if (id) await updateProduct(id, productData);
-            else await addProduct(productData);
-            closeProductModal();
-            await refreshSellerDashboard();
-            await loadProductsFromDB();
-            loadMarketProducts(); loadFeaturedProducts();
-            showToast('تم الحفظ بنجاح', 'success');
-        } else { showToast(err.message, 'error'); console.error(err); }
-    } finally { showLoading(false); }
+            try {
+                // نعيد جلب المستخدم مرة أخرى للتأكد
+                const { data: { user } } = await supabaseClient.auth.getUser();
+                if (!user) throw new Error('يجب تسجيل الدخول');
+
+                const productData = {
+                    name,
+                    price,
+                    stock,
+                    description: desc,
+                    category: cat,
+                    discount,
+                    user_id: user.id,
+                    updated_at: new Date()
+                };
+                // نستخدم فقط image_url وليس images
+                if (imageUrls.length > 0) productData.image_url = imageUrls[0];
+
+                if (id) await updateProduct(id, productData);
+                else await addProduct(productData);
+
+                closeProductModal();
+                await refreshSellerDashboard();
+                await loadProductsFromDB();
+                loadMarketProducts();
+                loadFeaturedProducts();
+                showToast('تم الحفظ بنجاح (بدون الصور المتعددة)', 'success');
+            } catch (fallbackErr) {
+                showToast(fallbackErr.message, 'error');
+            }
+        } else {
+            showToast(err.message, 'error');
+            console.error(err);
+        }
+    } finally {
+        showLoading(false);
+    }
 }
 
 // ========== معاينة الصور المتعددة ==========
