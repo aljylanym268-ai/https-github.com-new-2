@@ -75,7 +75,7 @@ async function deleteProduct(id) {
     if (error) throw error;
 }
 
-// ========== حفظ منتج (إضافة/تعديل) - تم التعديل هنا ==========
+// ========== حفظ منتج (إضافة/تعديل) - تم إضافة updated_at ==========
 async function saveProduct() {
     const name = document.getElementById('productName').value.trim();
     const price = parseFloat(document.getElementById('productPrice').value);
@@ -94,12 +94,12 @@ async function saveProduct() {
     showLoading(true);
 
     try {
-        // ========== التعديل الأساسي: جلب المستخدم الحالي من Supabase ==========
+        // جلب المستخدم الحالي من Supabase
         const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
         if (userError || !user) {
             throw new Error('يجب تسجيل الدخول أولاً لإضافة منتج');
         }
-        const userId = user.id; // هذا هو المعرف الصحيح للمستخدم المسجل
+        const userId = user.id;
 
         // رفع الصور (إن وجدت)
         let imageUrls = [];
@@ -115,8 +115,8 @@ async function saveProduct() {
             description: desc,
             category: cat,
             discount,
-            user_id: userId,        // <-- المستخدم الحالي من Supabase
-            updated_at: new Date()
+            user_id: userId,
+            updated_at: new Date() // ✅ إضافة updated_at مع الوقت الحالي
         };
 
         if (imageUrls.length > 0) {
@@ -155,7 +155,7 @@ async function saveProduct() {
                     category: cat,
                     discount,
                     user_id: user.id,
-                    updated_at: new Date()
+                    updated_at: new Date() // ✅ إضافة updated_at أيضاً في حالة الاسترجاع
                 };
                 // نستخدم فقط image_url وليس images
                 if (imageUrls.length > 0) productData.image_url = imageUrls[0];

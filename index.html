@@ -903,9 +903,20 @@
         // ========== تحقق من بارامترات URL ==========
         const params = new URLSearchParams(window.location.search);
         const storeParam = params.get('store');
-        if (storeParam) setTimeout(() => showStorePage(storeParam), 1000);
+        if (storeParam) {
+            console.log('🟢 store param detected:', storeParam);
+            setTimeout(() => {
+                if (typeof showStorePage === 'function') {
+                    showStorePage(storeParam);
+                } else {
+                    console.error('❌ showStorePage is not defined');
+                    showToast('تعذر فتح المتجر تلقائياً', 'error');
+                }
+            }, 500);
+        }
         checkFounderParam();
     });
 </script>
 </body>
 </html>
+

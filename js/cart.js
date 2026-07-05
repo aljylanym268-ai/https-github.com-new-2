@@ -22,7 +22,7 @@ async function addToCart(productId) {
     showLoading(true);
     try {
         const { data: existing } = await supabaseClient.from('cart_items').select('id, quantity').eq('user_id', appState.user.id).eq('product_id', productId).maybeSingle();
-        if (existing) await supabaseClient.from('cart_items').update({ quantity: existing.quantity + 1, updated_at: new Date() }).eq('id', existing.id);
+        if (existing) await supabaseClient.from('cart_items').update({ quantity: existing.quantity + 1 }).eq('id', existing.id);
         else await supabaseClient.from('cart_items').insert({ user_id: appState.user.id, product_id: productId, quantity: 1, created_at: new Date() });
         const product = appState.products.find(p => p.id === productId);
         showToast(`تم إضافة ${product?.name || 'المنتج'} إلى السلة`, 'success');
@@ -39,7 +39,7 @@ async function updateQuantity(productId, change) {
         const { data: item } = await supabaseClient.from('cart_items').select('id, quantity').eq('user_id', appState.user.id).eq('product_id', productId).single();
         const newQty = item.quantity + change;
         if (newQty <= 0) await supabaseClient.from('cart_items').delete().eq('id', item.id);
-        else await supabaseClient.from('cart_items').update({ quantity: newQty, updated_at: new Date() }).eq('id', item.id);
+        else await supabaseClient.from('cart_items').update({ quantity: newQty }).eq('id', item.id);
         await loadCart();
         await updateCartBadgeFromDB();
     } catch (err) { showToast(err.message, 'error'); }
@@ -206,7 +206,7 @@ async function loadSellerOrders(sellerId) {
 
 // ========== تحديث حالة الطلب ==========
 async function updateOrderStatus(orderId, status, extraData = {}) {
-    const updates = { status, updated_at: new Date(), ...extraData };
+    const updates = { status, ...extraData };
     const { data, error } = await supabaseClient.from('orders').update(updates).eq('id', orderId).select().single();
     if (error) throw error;
     return data;
