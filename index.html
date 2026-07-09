@@ -814,6 +814,29 @@
             console.warn('⚠️ لم يتم العثور على الزر registerBtn');
         }
 
+        // ========== إظهار/إخفاء حقل مركز المندوب عند تغيير نوع الحساب (الخيار التاني) ==========
+        const registerAccountType = document.getElementById('registerAccountType');
+        const deliveryCenterField = document.getElementById('deliveryCenterField');
+        const deliveryCenterSelect = document.getElementById('deliveryCenterSelect');
+
+        function syncDeliveryCenterVisibility() {
+            if (!registerAccountType || !deliveryCenterField) return;
+            const isDelivery = registerAccountType.value === 'delivery';
+            deliveryCenterField.style.display = isDelivery ? 'block' : 'none';
+
+            // إذا المستخدم رجع/تبدّل نوعه، نضمن الـ select يكون جاهز
+            if (isDelivery && deliveryCenterSelect) {
+                deliveryCenterSelect.disabled = false;
+            }
+        }
+
+        if (registerAccountType) {
+            registerAccountType.addEventListener('change', syncDeliveryCenterVisibility);
+            // تزامن أولي عند فتح الصفحة
+            syncDeliveryCenterVisibility();
+        }
+
+
         // 3. زر Google
         const googleBtn = document.getElementById('googleLoginBtn');
         if (googleBtn) {
@@ -843,6 +866,32 @@
 
         // ========== حفظ الموقع ==========
         document.getElementById('saveLocationBtn')?.addEventListener('click', saveLocation);
+
+        // ========== تحديث القرى عند تغيير المركز ==========
+        const centerSelect = document.getElementById('centerSelect');
+        const villageSelect = document.getElementById('villageSelect');
+        if (centerSelect && villageSelect) {
+            // عند تغيير المركز: أعد تعبئة القرى
+            centerSelect.addEventListener('change', () => {
+                const center = centerSelect.value;
+                if (!center) {
+                    villageSelect.innerHTML = '<option value="">اختر القرية</option>';
+                    villageSelect.disabled = true;
+                    return;
+                }
+                villageSelect.disabled = false;
+                loadVillagesForCenter(center, '');
+            });
+
+            // إذا كان المركز محفوظ مسبقاً في appState.location: فعّل التحميل
+            if (appState.location?.center) {
+                centerSelect.value = appState.location.center;
+                villageSelect.disabled = false;
+                loadVillagesForCenter(appState.location.center, appState.location.village || '');
+            } else {
+                villageSelect.disabled = true;
+            }
+        }
 
         // ========== مستمع حدث المصادقة (لتحديث الواجهة تلقائياً) ==========
         supabaseClient.auth.onAuthStateChange(async (event, session) => {

@@ -100,9 +100,11 @@ async function createOrder(productId, quantity, totalPrice, sellerId, customerNa
     const { data, error } = await supabaseClient.from('orders').insert({
         buyer_id: appState.user.id, seller_id: sellerId, product_id: productId, quantity, total_price: totalPrice,
         status: 'pending', customer_name: customerName, customer_phone: customerPhone, shipping_address: shippingAddress, center: center, created_at: new Date()
-    }).select().single();
+    }).select().maybeSingle();
     if (error) throw error;
-    await sendNotification(sellerId, 'طلب جديد', `لديك طلب جديد من ${customerName}`, { order_id: data.id });
+    if (data) {
+        await sendNotification(sellerId, 'طلب جديد', `لديك طلب جديد من ${customerName}`, { order_id: data.id });
+    }
     return data;
 }
 
@@ -204,10 +206,10 @@ async function loadSellerOrders(sellerId) {
     } catch (error) { console.error('Error loading seller orders:', error); return []; }
 }
 
-// ========== تحديث حالة الطلب ==========
+// ========== تحديث حالة الطلب (مع maybeSingle) ==========
 async function updateOrderStatus(orderId, status, extraData = {}) {
     const updates = { status, ...extraData };
-    const { data, error } = await supabaseClient.from('orders').update(updates).eq('id', orderId).select().single();
+    const { data, error } = await supabaseClient.from('orders').update(updates).eq('id', orderId).select().maybeSingle();
     if (error) throw error;
     return data;
 }
@@ -224,11 +226,32 @@ async function notifyDeliveryPersonsInCenter(center, orderId, title, message) {
 }
 
 // ========== لوحة المندوب ==========
-async function loadAvailableOrders() { if (!appState.user || !appState.userData.center) return []; try { const { data: orders, error } = await supabaseClient.from('orders').select('*').is('delivery_id', null).in('status', ['confirmed', 'prepared']).eq('center', appState.userData.center).order('created_at', { ascending: true }); if (error) throw error; if (!orders.length) return orders; const productIds = [...new Set(orders.map(o => o.product_id).filter(id => id))]; if (productIds.length) { const { data: products, error: prodError } = await supabaseClient.from('products').select('id, name, image_url').in('id', productIds); if (!prodError && products) { const productMap = new Map(products.map(p => [p.id, p])); orders.forEach(order => { if (order.product_id) order.products = productMap.get(order.product_id) || { name: 'منتج غير معروف', image_url: null }; }); } } return orders; } catch (error) { console.error('Error loading available orders:', error); return []; } }
+async function loadAvailableOrders() { 
+    if (!appState.user || !appState.userData.center) {
+        console.warn('⚠️ المندوب ليس لديه مركز محدد');
+        return [];
+    }
+    console.log('🔍 جلب الطلبات المتاحة للمركز:', appState.userData.center);
+    try { 
+        const { data: orders, error } = await supabaseClient.from('orders').select('*').is('delivery_id', null).in('status', ['confirmed', 'prepared']).eq('center', appState.userData.center).order('created_at', { ascending: true }); 
+        if (error) throw error; 
+        console.log(`✅ تم العثور على ${orders?.length || 0} طلب متاح`);
+        if (!orders || orders.length === 0) return orders; 
+        const productIds = [...new Set(orders.map(o => o.product_id).filter(id => id))]; 
+        if (productIds.length) { 
+            const { data: products, error: prodError } = await supabaseClient.from('products').select('id, name, image_url').in('id', productIds); 
+            if (!prodError && products) { 
+                const productMap = new Map(products.map(p => [p.id, p])); 
+                orders.forEach(order => { if (order.product_id) order.products = productMap.get(order.product_id) || { name: 'منتج غير معروف', image_url: null }; }); 
+            } 
+        } 
+        return orders; 
+    } catch (error) { console.error('Error loading available orders:', error); return []; } 
+}
 async function loadMyDeliveryOrders() { if (!appState.user) return []; try { const { data: orders, error } = await supabaseClient.from('orders').select('*').eq('delivery_id', appState.user.id).order('created_at', { ascending: false }); if (error) throw error; if (!orders.length) return orders; const productIds = [...new Set(orders.map(o => o.product_id).filter(id => id))]; if (productIds.length) { const { data: products, error: prodError } = await supabaseClient.from('products').select('id, name, image_url').in('id', productIds); if (!prodError && products) { const productMap = new Map(products.map(p => [p.id, p])); orders.forEach(order => { if (order.product_id) order.products = productMap.get(order.product_id) || { name: 'منتج غير معروف', image_url: null }; }); } } return orders; } catch (error) { console.error('Error loading my delivery orders:', error); return []; } }
-async function claimOrder(orderId) { if (!appState.user) return; showLoading(true); try { const order = await updateOrderStatus(orderId, 'picked_up', { delivery_id: appState.user.id }); await sendNotification(order.buyer_id, 'تم استلام طلبك', `المندوب ${appState.userData.name || ''} استلم طلبك #${orderId.slice(0,8)}`); showToast('تم استلام الطلب بنجاح', 'success'); await refreshDeliveryDashboard(); } catch (err) { showToast(err.message, 'error'); } finally { showLoading(false); } }
-async function startDelivery(orderId) { showLoading(true); try { const order = await updateOrderStatus(orderId, 'in_delivery'); await sendNotification(order.buyer_id, 'الطلب في الطريق', `طلبك #${orderId.slice(0,8)} في طريقه إليك`); showToast('تم بدء التوصيل', 'success'); await refreshDeliveryDashboard(); } catch (err) { showToast(err.message, 'error'); } finally { showLoading(false); } }
-async function completeDelivery(orderId) { showLoading(true); try { const order = await updateOrderStatus(orderId, 'delivered'); await sendNotification(order.buyer_id, 'تم توصيل الطلب', `طلبك #${orderId.slice(0,8)} تم توصيله بنجاح`); showToast('تم تأكيد التوصيل', 'success'); await refreshDeliveryDashboard(); } catch (err) { showToast(err.message, 'error'); } finally { showLoading(false); } }
+async function claimOrder(orderId) { if (!appState.user) return; showLoading(true); try { const order = await updateOrderStatus(orderId, 'picked_up', { delivery_id: appState.user.id }); if (order) { await sendNotification(order.buyer_id, 'تم استلام طلبك', `المندوب ${appState.userData.name || ''} استلم طلبك #${orderId.slice(0,8)}`); } showToast('تم استلام الطلب بنجاح', 'success'); await refreshDeliveryDashboard(); } catch (err) { showToast(err.message, 'error'); } finally { showLoading(false); } }
+async function startDelivery(orderId) { showLoading(true); try { const order = await updateOrderStatus(orderId, 'in_delivery'); if (order) { await sendNotification(order.buyer_id, 'الطلب في الطريق', `طلبك #${orderId.slice(0,8)} في طريقه إليك`); } showToast('تم بدء التوصيل', 'success'); await refreshDeliveryDashboard(); } catch (err) { showToast(err.message, 'error'); } finally { showLoading(false); } }
+async function completeDelivery(orderId) { showLoading(true); try { const order = await updateOrderStatus(orderId, 'delivered'); if (order) { await sendNotification(order.buyer_id, 'تم توصيل الطلب', `طلبك #${orderId.slice(0,8)} تم توصيله بنجاح`); } showToast('تم تأكيد التوصيل', 'success'); await refreshDeliveryDashboard(); } catch (err) { showToast(err.message, 'error'); } finally { showLoading(false); } }
 async function refreshDeliveryDashboard() { if (!appState.user || appState.userData.account_type !== 'delivery') return; showLoading(true); try { const [available, my] = await Promise.all([loadAvailableOrders(), loadMyDeliveryOrders()]); appState.delivery.availableOrders = available; appState.delivery.myOrders = my; document.getElementById('availableOrdersCount').textContent = available.length; document.getElementById('myOrdersCount').textContent = my.length; displayAvailableOrders(available); displayMyDeliveryOrders(my); } catch (err) { showToast(err.message, 'error'); } finally { showLoading(false); } }
 function displayAvailableOrders(orders) { const container = document.getElementById('availableOrdersList'); if (!container) return; if (orders.length === 0) { container.innerHTML = '<p style="text-align:center; padding:20px;">لا توجد طلبات متاحة حالياً</p>'; return; } container.innerHTML = ''; orders.forEach(order => { container.appendChild(createOrderCardForDelivery(order, true)); }); }
 function displayMyDeliveryOrders(orders) { const container = document.getElementById('myDeliveryOrdersList'); if (!container) return; if (orders.length === 0) { container.innerHTML = '<p style="text-align:center; padding:20px;">لم تقم باستلام أي طلبات بعد</p>'; return; } container.innerHTML = ''; orders.forEach(order => { container.appendChild(createOrderCardForDelivery(order, false)); }); }

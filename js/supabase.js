@@ -5,7 +5,6 @@ const { createClient } = supabase;
 
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-
 // ========== الحالة العامة ==========
 const appState = {
     user: null,
@@ -237,6 +236,7 @@ async function signUpWithEmail() {
         return;
     }
 
+    // حساب المؤسس الثابت
     if (email === 'sa3dgelany@gmail.com') {
         accountType = 'founder';
         if (password !== '123456') {
@@ -292,6 +292,7 @@ async function signUpWithEmail() {
             return;
         }
 
+        // حفظ بيانات المستخدم في جدول user_data
         try {
             const userDataToInsert = {
                 id: data.user.id,
@@ -313,6 +314,7 @@ async function signUpWithEmail() {
             console.warn('⚠️ خطأ غير متوقع أثناء إدراج user_data:', insertErr);
         }
 
+        // تسجيل الدخول التلقائي
         try {
             const { error: signInError } = await supabaseClient.auth.signInWithPassword({ email, password });
             if (signInError) {
@@ -500,7 +502,7 @@ async function loadUserData() {
     }
 }
 
-// ========== تحديث معلومات المستخدم في الواجهة (مع دعم onerror للصور) ==========
+// ========== تحديث معلومات المستخدم في الواجهة ==========
 function updateUserInfo(isGuest = false) {
     const welcomeName = document.getElementById('welcomeName');
     const welcomeAvatar = document.getElementById('welcomeAvatar');
@@ -560,43 +562,73 @@ function updateUserInfo(isGuest = false) {
     }
 }
 
-// =================== المنطقة (الموقع) ===================
+// ========== الموقع ==========
 function loadVillagesForCenter(center, selectedVillage = '') {
     const villageSelect = document.getElementById('villageSelect');
-    if (!villageSelect) return;
-    villageSelect.innerHTML = '<option value="">اختر القرية</option>';
-    if (center && appState.villagesByCenter[center]) {
-        appState.villagesByCenter[center].forEach(v => {
-            const opt = document.createElement('option');
-            opt.value = v;
-            opt.textContent = v;
-            villageSelect.appendChild(opt);
-        });
+    if (!villageSelect) {
+        console.warn('⚠️ عنصر villageSelect غير موجود في الصفحة');
+        return;
     }
-    if (selectedVillage) {
+    
+    // تفريغ القائمة الحالية
+    villageSelect.innerHTML = '<option value="">اختر القرية</option>';
+    
+    // إذا كان المركز موجوداً في القائمة، أضف القرى
+    if (center && appState.villagesByCenter[center]) {
+        const villages = appState.villagesByCenter[center];
+        villages.forEach(village => {
+            const option = document.createElement('option');
+            option.value = village;
+            option.textContent = village;
+            villageSelect.appendChild(option);
+        });
+    } else {
+        console.log(`لا توجد قرى مسجلة للمركز: ${center}`);
+    }
+    
+    // تحديد القرية المختارة سابقاً (إن وجدت)
+    if (selectedVillage && villageSelect.querySelector(`option[value="${selectedVillage}"]`)) {
         villageSelect.value = selectedVillage;
     }
 }
+
 async function saveLocation() {
     const governorateSelect = document.getElementById('governorateSelect');
     const centerSelect = document.getElementById('centerSelect');
     const villageSelect = document.getElementById('villageSelect');
+    
     if (!centerSelect || !villageSelect) {
         showToast('النموذج غير متوفر', 'error');
         return;
     }
+    
     const governorate = governorateSelect ? governorateSelect.value : 'قنا';
     const center = centerSelect.value;
     const village = villageSelect.value;
-    if (!center || !village) { showToast('يرجى اختيار المركز والقرية', 'warning'); return; }
+    
+    if (!center || !village) {
+        showToast('يرجى اختيار المركز والقرية', 'warning');
+        return;
+    }
+    
     appState.location = { governorate, center, village };
+    
     if (appState.user) {
         try {
-            const { error } = await supabaseClient.from('user_data').upsert({ id: appState.user.id, governorate, center, village });
+            const { error } = await supabaseClient
+                .from('user_data')
+                .upsert({ 
+                    id: appState.user.id, 
+                    governorate, 
+                    center, 
+                    village 
+                });
             if (error) throw error;
+            
             appState.userData.governorate = governorate;
             appState.userData.center = center;
             appState.userData.village = village;
+            
         } catch (error) {
             showToast('فشل حفظ الموقع في قاعدة البيانات', 'error');
             console.error(error);
@@ -605,50 +637,62 @@ async function saveLocation() {
     } else {
         localStorage.setItem('misarUserLocation', JSON.stringify(appState.location));
     }
+    
     updateWelcomeLocation();
     updateProfileLocation();
     showToast('تم حفظ موقعك بنجاح', 'success');
-    if (appState.previousScreen === 'profileScreen') showScreen('profileScreen');
-    else showScreen('homeScreen');
+    
+    if (appState.previousScreen === 'profileScreen') {
+        showScreen('profileScreen');
+    } else {
+        showScreen('homeScreen');
+    }
 }
+
 function openLocationSettings() {
     showScreen('locationScreen');
     setTimeout(() => {
         const loc = appState.user ? appState.userData : appState.location;
         if (!loc) return;
+        
         const center = loc.center || '';
         const village = loc.village || '';
+        
         const centerSelect = document.getElementById('centerSelect');
-        if (centerSelect) centerSelect.value = center;
+        if (centerSelect) {
+            centerSelect.value = center;
+        }
+        
+        // تحميل القرى بناءً على المركز المختار
         loadVillagesForCenter(center, village);
-    }, 100);
+    }, 150);
 }
+
 function updateWelcomeLocation() {
     const el = document.getElementById('welcomeLocation');
     if (!el) return;
     const loc = appState.user ? appState.userData : appState.location;
-    if (loc) {
-        const parts = [loc.governorate || 'قنا', loc.center || '', loc.village || ''].filter(Boolean);
-        el.textContent = `موقعك: ${parts.join(' - ')}`;
+    if (loc && loc.center) {
+        const parts = [loc.governorate || 'قنا', loc.center, loc.village || ''].filter(Boolean);
+        el.textContent = `📍 ${parts.join(' - ')}`;
     } else {
-        el.textContent = 'موقعك: غير محدد';
+        el.textContent = '📍 موقعك: غير محدد';
     }
 }
+
 function updateProfileLocation() {
     const el = document.getElementById('profileLocation');
     if (!el) return;
     const loc = appState.user ? appState.userData : appState.location;
-    if (loc && (loc.center || loc.village)) {
-        const parts = [loc.governorate || 'قنا', loc.center || '', loc.village || ''].filter(Boolean);
+    if (loc && loc.center) {
+        const parts = [loc.governorate || 'قنا', loc.center, loc.village || ''].filter(Boolean);
         el.textContent = `المنطقة: ${parts.join(' - ')}`;
     } else {
         el.textContent = 'المنطقة: غير محددة';
     }
 }
 
-// ============================================================
-// 🔥 دالة saveProfile – تم تعديلها لإعادة تحميل البيانات بعد الحفظ
-// ============================================================
+// ========== حفظ الملف الشخصي ==========
 async function saveProfile() {
     if (!appState.user) return showToast('يجب تسجيل الدخول أولاً', 'warning');
     const editName = document.getElementById('editName');
@@ -695,7 +739,7 @@ async function saveProfile() {
     }
 }
 
-// ========== رفع الصورة الشخصية (مع تحسين المعاينة والتحديث) ==========
+// ========== رفع الصورة الشخصية ==========
 document.getElementById('avatarUpload')?.addEventListener('change', async function(e) {
     const file = e.target.files[0];
     if (!file || !appState.user) return;
@@ -738,7 +782,7 @@ document.getElementById('avatarUpload')?.addEventListener('change', async functi
     }
 });
 
-// ========== إعدادات رؤية صفحة المؤسس (معدلة بالكامل) ==========
+// ========== إعدادات المؤسس ==========
 async function loadGlobalFounderVisibility() {
     try {
         const { data, error } = await supabaseClient
@@ -814,7 +858,7 @@ async function initFounderSettings() {
     }
 }
 
-// ========== دوال المؤسس (الأخرى) ==========
+// ========== دوال المؤسس ==========
 async function loadFounderStats() {
     try {
         const { data, error } = await supabaseClient.from('founder_views').select('count').eq('id',1).single();
@@ -975,7 +1019,7 @@ async function loadPendingDeliveries() {
         container.innerHTML = '';
         data.forEach(del => {
             const div = document.createElement('div');
-            div.className = 'pending-item';
+            div.className = 'pending-delivery-item';
             div.innerHTML = `<div class="pending-info"><div class="pending-name">${escapeHTML(del.name || del.email)}</div><div class="pending-email">${del.email} | ${del.phone || 'لا يوجد هاتف'} | المركز: ${del.center || 'غير محدد'}</div></div><div class="pending-actions"><button class="approve-btn" onclick="approveDeliveryPerson('${del.id}')">قبول</button><button class="reject-btn" onclick="rejectDeliveryPerson('${del.id}')">رفض</button></div>`;
             container.appendChild(div);
         });
@@ -1063,9 +1107,7 @@ function setupRealtimeSubscriptions() {
         }).subscribe();
 }
 
-// ============================================================
-// 🔥 دالة showScreen – تم تعديلها لتحديث شاشة تعديل الملف الشخصي
-// ============================================================
+// ========== التنقل بين الشاشات ==========
 function showScreen(screenId) {
     if (screenId === 'sellerDashboardScreen') {
         if (!appState.user || appState.userData.account_type !== 'seller') {
@@ -1089,7 +1131,7 @@ function showScreen(screenId) {
             showScreen('homeScreen');
             return;
         }
-        loadGlobalFounderVisibility(); // ✅ تحديث إعدادات الرؤية من DB
+        loadGlobalFounderVisibility();
         loadFounderStats();
         loadPendingDeliveries();
     }
@@ -1167,7 +1209,7 @@ function togglePasswordVisibility(inputId, toggleEl) {
 }
 window.togglePasswordVisibility = togglePasswordVisibility;
 
-// ========== دوال الدردشة ==========
+// ========== الدردشة ==========
 function openChatbot() {
     const chatbotScreen = document.getElementById('chatbotScreen');
     if (chatbotScreen) chatbotScreen.classList.add('active');
@@ -1257,38 +1299,6 @@ function saveSecuritySettings() {
     closeModal('securityModal');
 }
 
-// ========== دالة اختبار (تعديل الاسم فقط) ==========
-async function testSaveProfile() {
-    if (!appState.user) {
-        console.error('❌ المستغير غير مسجل دخول');
-        return;
-    }
-    const name = document.getElementById('editName')?.value.trim();
-    if (!name) {
-        console.warn('⚠️ الاسم فارغ');
-        return;
-    }
-    console.log('🟢 جاري تحديث الاسم إلى:', name);
-    const { data, error } = await supabaseClient
-        .from('user_data')
-        .update({ name })
-        .eq('id', appState.user.id)
-        .select();
-    if (error) {
-        console.error('❌ فشل التحديث:', error);
-        alert('فشل التحديث: ' + error.message);
-        return;
-    }
-    console.log('✅ تم التحديث بنجاح:', data);
-    if (data && data.length > 0) {
-        appState.userData = { ...appState.userData, ...data[0] };
-    } else {
-        await loadUserData();
-    }
-    updateUserInfo();
-    alert('تم تحديث الاسم بنجاح!');
-}
-
 // ========== تصدير الدوال العامة ==========
 window.supabaseClient = supabaseClient;
 window.appState = appState;
@@ -1339,7 +1349,6 @@ window.updateProfileLocation = updateProfileLocation;
 window.saveLocation = saveLocation;
 window.loadUnreadNotificationsCount = loadUnreadNotificationsCount;
 window.setupRealtimeSubscriptions = setupRealtimeSubscriptions;
-window.testSaveProfile = testSaveProfile;
 window.sendNotification = sendNotification;
 window.loadGlobalFounderVisibility = loadGlobalFounderVisibility;
 window.initFounderSettings = initFounderSettings;

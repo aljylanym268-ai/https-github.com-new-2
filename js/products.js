@@ -75,7 +75,7 @@ async function deleteProduct(id) {
     if (error) throw error;
 }
 
-// ========== حفظ منتج (إضافة/تعديل) - تم إضافة updated_at ==========
+// ========== حفظ منتج (إضافة/تعديل) ==========
 async function saveProduct() {
     const name = document.getElementById('productName').value.trim();
     const price = parseFloat(document.getElementById('productPrice').value);
@@ -94,20 +94,17 @@ async function saveProduct() {
     showLoading(true);
 
     try {
-        // جلب المستخدم الحالي من Supabase
         const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
         if (userError || !user) {
             throw new Error('يجب تسجيل الدخول أولاً لإضافة منتج');
         }
         const userId = user.id;
 
-        // رفع الصور (إن وجدت)
         let imageUrls = [];
         if (files && files.length > 0) {
             imageUrls = await uploadProductImages(Array.from(files));
         }
 
-        // تحضير بيانات المنتج مع user_id الصحيح
         const productData = {
             name,
             price,
@@ -116,7 +113,7 @@ async function saveProduct() {
             category: cat,
             discount,
             user_id: userId,
-            updated_at: new Date() // ✅ إضافة updated_at مع الوقت الحالي
+            updated_at: new Date()
         };
 
         if (imageUrls.length > 0) {
@@ -124,7 +121,6 @@ async function saveProduct() {
             productData.images = imageUrls;
         }
 
-        // إدراج أو تحديث
         if (id) {
             await updateProduct(id, productData);
         } else {
@@ -139,11 +135,9 @@ async function saveProduct() {
         loadFeaturedProducts();
 
     } catch (err) {
-        // معالجة الأخطاء (مثل عدم وجود عمود images)
         if (err.message && err.message.includes('column "images"')) {
             showToast('ملاحظة: تم حفظ الصورة الرئيسية فقط.', 'warning');
             try {
-                // نعيد جلب المستخدم مرة أخرى للتأكد
                 const { data: { user } } = await supabaseClient.auth.getUser();
                 if (!user) throw new Error('يجب تسجيل الدخول');
 
@@ -155,9 +149,8 @@ async function saveProduct() {
                     category: cat,
                     discount,
                     user_id: user.id,
-                    updated_at: new Date() // ✅ إضافة updated_at أيضاً في حالة الاسترجاع
+                    updated_at: new Date()
                 };
-                // نستخدم فقط image_url وليس images
                 if (imageUrls.length > 0) productData.image_url = imageUrls[0];
 
                 if (id) await updateProduct(id, productData);
