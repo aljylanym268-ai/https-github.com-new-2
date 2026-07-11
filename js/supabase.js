@@ -64,6 +64,16 @@ function showToast(message, type = 'success') {
 }
 function escapeHTML(str) { return String(str).replace(/[&<>"]/g, function(m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; if (m === '"') return '&quot;'; return m; }); }
 
+// ========== توليد رمز OTP ==========
+function generateOTP(length = 6) {
+    const digits = '0123456789';
+    let otp = '';
+    for (let i = 0; i < length; i++) {
+        otp += digits[Math.floor(Math.random() * 10)];
+    }
+    return otp;
+}
+
 // ========== ضغط الصور ==========
 async function compressImage(file, maxWidth = 1024, maxHeight = 1024, quality = 0.8) {
     return new Promise((resolve, reject) => {
@@ -197,6 +207,7 @@ async function signUpWithEmail() {
     const passwordInput = document.getElementById('registerPassword');
     const confirmInput = document.getElementById('registerConfirmPassword');
     const accountTypeSelect = document.getElementById('registerAccountType');
+    const governorateSelect = document.getElementById('registerGovernorate');
 
     if (!emailInput || !passwordInput || !confirmInput || !accountTypeSelect) {
         showToast('النموذج غير مكتمل، أعد تحميل الصفحة', 'error');
@@ -209,6 +220,7 @@ async function signUpWithEmail() {
     const confirm = confirmInput.value;
     let accountType = accountTypeSelect.value;
     let deliveryCenter = '';
+    let governorate = governorateSelect ? governorateSelect.value : 'قنا';
 
     if (accountType === 'delivery') {
         const centerSelect = document.getElementById('deliveryCenterSelect');
@@ -247,7 +259,8 @@ async function signUpWithEmail() {
 
     const metadata = {
         account_type: accountType,
-        full_name: name || undefined
+        full_name: name || undefined,
+        governorate: governorate
     };
     if (accountType === 'delivery') {
         metadata.center = deliveryCenter;
@@ -298,6 +311,7 @@ async function signUpWithEmail() {
                 id: data.user.id,
                 name: name || data.user.email?.split('@')[0] || '',
                 account_type: accountType,
+                governorate: governorate || 'قنا',
                 center: deliveryCenter || '',
                 status: accountType === 'delivery' ? 'pending' : 'approved',
             };
@@ -425,7 +439,7 @@ async function loadUserData() {
             id: appState.user.id,
             name: appState.user.user_metadata?.full_name || appState.user.email?.split('@')[0] || '',
             phone: '',
-            governorate: 'قنا',
+            governorate: appState.user.user_metadata?.governorate || 'قنا',
             center: appState.user.user_metadata?.center || '',
             village: '',
             image_url: appState.user.user_metadata?.avatar_url || '',
@@ -1035,6 +1049,7 @@ async function approveDeliveryPerson(userId) {
         await supabaseClient.from('user_data').update({ status: 'approved' }).eq('id', userId);
         showToast('تم قبول المندوب', 'success');
         await loadPendingDeliveries();
+        if (typeof displayAllDeliveryPersons === 'function') await displayAllDeliveryPersons();
     } catch(err) {
         showToast(err.message, 'error');
     } finally {
@@ -1048,6 +1063,7 @@ async function rejectDeliveryPerson(userId) {
         await supabaseClient.from('user_data').delete().eq('id', userId);
         showToast('تم رفض المندوب وحذف الحساب', 'success');
         await loadPendingDeliveries();
+        if (typeof displayAllDeliveryPersons === 'function') await displayAllDeliveryPersons();
     } catch(err) {
         showToast(err.message, 'error');
     } finally {
@@ -1134,6 +1150,7 @@ function showScreen(screenId) {
         loadGlobalFounderVisibility();
         loadFounderStats();
         loadPendingDeliveries();
+        if (typeof displayAllDeliveryPersons === 'function') displayAllDeliveryPersons();
     }
     if (screenId === 'ordersScreen') {
         if (typeof loadBuyerOrdersWithTimeline === 'function') loadBuyerOrdersWithTimeline();
@@ -1353,3 +1370,4 @@ window.sendNotification = sendNotification;
 window.loadGlobalFounderVisibility = loadGlobalFounderVisibility;
 window.initFounderSettings = initFounderSettings;
 window.handleToggleChange = handleToggleChange;
+window.generateOTP = generateOTP;

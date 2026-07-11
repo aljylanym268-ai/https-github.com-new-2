@@ -267,14 +267,41 @@ function showAddProductForm() { if (!appState.user || appState.userData.account_
 function editProduct(id) { const p = appState.seller.products.find(p => p.id === id); if (!p) return; document.getElementById('productModalTitle').textContent = 'تعديل المنتج'; document.getElementById('productName').value = p.name || ''; document.getElementById('productPrice').value = p.price || ''; document.getElementById('productStock').value = p.stock || 1; document.getElementById('productDescription').value = p.description || ''; document.getElementById('productCategory').value = p.category || ''; document.getElementById('productDiscount').value = p.discount || ''; document.getElementById('editingProductId').value = id; document.getElementById('multiImagePreview').innerHTML = ''; document.getElementById('productImages').value = ''; document.getElementById('productModal').classList.add('active'); }
 function confirmDelete(id) { if (confirm('هل أنت متأكد من حذف هذا المنتج؟')) { showLoading(true); deleteProduct(id).then(async () => { showToast('تم الحذف', 'success'); await refreshSellerDashboard(); await loadProductsFromDB(); loadMarketProducts(); loadFeaturedProducts(); }).catch(err => showToast(err.message, 'error')).finally(() => showLoading(false)); } }
 function adjustStock(id) { const p = appState.seller.products.find(p => p.id === id); if (!p) return; const newStock = prompt('أدخل الكمية الجديدة:', p.stock || 0); if (newStock !== null && !isNaN(parseInt(newStock))) { showLoading(true); updateProduct(id, { stock: parseInt(newStock) }).then(() => { showToast('تم تحديث الكمية', 'success'); refreshSellerDashboard(); }).catch(err => showToast(err.message, 'error')).finally(() => showLoading(false)); } }
-function viewOrderDetails(orderId) { const order = appState.seller.orders.find(o => o.id === orderId); if (!order) return; let html = `<p><strong>العميل:</strong> ${order.customer_name || 'غير محدد'}</p><p><strong>الهاتف:</strong> ${order.customer_phone || 'غير محدد'}</p><p><strong>العنوان:</strong> ${order.shipping_address || 'غير محدد'}</p><p><strong>التاريخ:</strong> ${new Date(order.created_at).toLocaleString('ar-EG')}</p><h4 style="margin:15px 0 10px;">المنتجات:</h4>`; const product = order.products || {}; html += `<div style="display:flex; justify-content:space-between;"><span>${escapeHTML(product.name)} x${order.quantity}</span><span>${order.total_price} ج.م</span></div>`; html += `<h3 style="margin-top:15px; color:#1a237e;">الإجمالي: ${order.total_price} ج.م</h3>`; document.getElementById('orderDetails').innerHTML = html; const select = document.getElementById('orderStatusSelect'); select.innerHTML = ['pending','confirmed','prepared','picked_up','in_delivery','delivered','cancelled'].map(s => `<option value="${s}" ${order.status === s ? 'selected' : ''}>${getStatusText(s)}</option>`).join(''); select.dataset.orderId = orderId; document.getElementById('orderModal').classList.add('active'); }
+function viewOrderDetails(orderId) { const order = appState.seller.orders.find(o => o.id === orderId); if (!order) return; let html = `<p><strong>العميل:</strong> ${order.customer_name || 'غير محدد'}</p><p><strong>الهاتف:</strong> ${order.customer_phone || 'غير محدد'}</p><p><strong>العنوان:</strong> ${order.shipping_address || 'غير محدد'}</p><p><strong>التاريخ:</strong> ${new Date(order.created_at).toLocaleString('ar-EG')}</p><h4 style="margin:15px 0 10px;">المنتجات:</h4>`; const product = order.products || {}; html += `<div style="display:flex; justify-content:space-between;"><span>${escapeHTML(product.name)} x${order.quantity}</span><span>${order.total_price} ج.م</span></div>`; html += `<h3 style="margin-top:15px; color:#1a237e;">الإجمالي: ${order.total_price} ج.م</h3>`; document.getElementById('orderDetails').innerHTML = html; const select = document.getElementById('orderStatusSelect'); select.innerHTML = ['pending','confirmed','prepared','picked_up','picked_up_from_seller','in_delivery','delivered','cancelled'].map(s => `<option value="${s}" ${order.status === s ? 'selected' : ''}>${getStatusText(s)}</option>`).join(''); select.dataset.orderId = orderId; document.getElementById('orderModal').classList.add('active'); }
 async function updateOrderStatusFromModal() { const select = document.getElementById('orderStatusSelect'); const orderId = select.dataset.orderId; const newStatus = select.value; showLoading(true); try { await updateOrderStatus(orderId, newStatus); showToast('تم تحديث الحالة', 'success'); closeOrderModal(); await refreshSellerDashboard(); } catch (err) { showToast(err.message, 'error'); } finally { showLoading(false); } }
 function closeOrderModal() { document.getElementById('orderModal').classList.remove('active'); }
 function closeProductModal() { document.getElementById('productModal').classList.remove('active'); }
 function showNotifications() { const newOrders = appState.seller.orders.filter(o => o.status === 'pending'); if (newOrders.length === 0) { showToast('لا توجد إشعارات جديدة', 'info'); return; } let msg = 'طلبات جديدة:\n'; newOrders.forEach(o => msg += `- طلب #${o.id.slice(0,8)} بمبلغ ${o.total_price} ج.م\n`); alert(msg); document.getElementById('sellerNotificationBadge').style.display = 'none'; }
 function exportOrdersCSV() { const orders = appState.seller.orders; let csv = 'رقم الطلب,العميل,الهاتف,العنوان,التاريخ,الحالة,الإجمالي\n'; orders.forEach(o => { csv += `${o.id},${o.customer_name || ''},${o.customer_phone || ''},${o.shipping_address || ''},${new Date(o.created_at).toLocaleDateString()},${o.status},${o.total_price}\n`; }); const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = 'orders.csv'; link.click(); }
 async function confirmOrderSeller(orderId) { showLoading(true); try { const order = await updateOrderStatus(orderId, 'confirmed'); await sendNotification(order.buyer_id, 'تم تأكيد طلبك', `تم تأكيد طلبك #${orderId.slice(0,8)}`); showToast('تم تأكيد الطلب', 'success'); await refreshSellerDashboard(); } catch (err) { showToast(err.message, 'error'); } finally { showLoading(false); } }
-async function prepareOrderSeller(orderId) { showLoading(true); try { const { data: order, error: fetchError } = await supabaseClient.from('orders').select('*, buyer_id, center').eq('id', orderId).single(); if (fetchError) throw fetchError; await updateOrderStatus(orderId, 'prepared'); await sendNotification(order.buyer_id, 'تم تجهيز طلبك', `طلبك #${orderId.slice(0,8)} جاهز وسيتم توصيله قريباً`); if (order.center) await notifyDeliveryPersonsInCenter(order.center, orderId, 'شحنة جاهزة في منطقتك', `طلب #${orderId.slice(0,8)} جاهز للتوصيل في ${order.center}`); showToast('تم تحديث الحالة إلى "تم التجهيز" وإشعار المناديب', 'success'); await refreshSellerDashboard(); } catch (err) { showToast(err.message, 'error'); } finally { showLoading(false); } }
+async function prepareOrderSeller(orderId) {
+    showLoading(true);
+    try {
+        const { data: order, error: fetchError } = await supabaseClient
+            .from('orders')
+            .select('*, buyer_id, center')
+            .eq('id', orderId)
+            .single();
+        if (fetchError) throw fetchError;
+
+        await updateOrderStatus(orderId, 'prepared');
+
+        // إشعار للعميل
+        await sendNotification(order.buyer_id, 'تم تجهيز طلبك', `طلبك #${orderId.slice(0,8)} جاهز وسيتم توصيله قريباً`);
+
+        // إشعار للمناديب المعتمدين في نفس المركز
+        if (order.center) {
+            await notifyDeliveryPersonsInCenter(order.center, orderId, 'شحنة جاهزة في منطقتك', `طلب #${orderId.slice(0,8)} جاهز للتوصيل في ${order.center}`);
+        }
+
+        showToast('تم تحديث الحالة إلى "تم التجهيز" وإشعار المناديب', 'success');
+        await refreshSellerDashboard();
+    } catch (err) {
+        showToast(err.message, 'error');
+    } finally {
+        showLoading(false);
+    }
+}
 
 // ========== خدمات ==========
 function loadServices() {
@@ -320,6 +347,88 @@ async function refreshUserDataManually() {
 }
 window.refreshUserDataManually = refreshUserDataManually;
 
+// ========== إدارة المناديب من لوحة المؤسس ==========
+async function loadAllDeliveryPersons() {
+    if (!appState.user || appState.userData.account_type !== 'founder') return [];
+    try {
+        const { data, error } = await supabaseClient
+            .from('user_data')
+            .select('id, name, email, phone, center, created_at, status')
+            .eq('account_type', 'delivery')
+            .order('created_at', { ascending: false });
+        if (error) throw error;
+        return data || [];
+    } catch (error) {
+        console.error('Error loading delivery persons:', error);
+        return [];
+    }
+}
+
+async function displayAllDeliveryPersons() {
+    const container = document.getElementById('allDeliveryPersonsList');
+    if (!container) return;
+    const persons = await loadAllDeliveryPersons();
+    if (!persons.length) {
+        container.innerHTML = '<p>لا يوجد مناديب مسجلين.</p>';
+        return;
+    }
+    container.innerHTML = '';
+    persons.forEach(p => {
+        const div = document.createElement('div');
+        div.className = 'pending-delivery-item';
+        const statusText = p.status === 'pending' ? 'قيد الانتظار' :
+                           p.status === 'approved' ? 'معتمد' :
+                           p.status === 'suspended' ? 'موقوف' :
+                           p.status === 'rejected' ? 'مرفوض' : 'غير معروف';
+        let actions = '';
+        if (p.status === 'pending') {
+            actions = `<button class="approve-btn" onclick="approveDeliveryPerson('${p.id}')">قبول</button>
+                       <button class="reject-btn" onclick="rejectDeliveryPerson('${p.id}')">رفض</button>`;
+        } else if (p.status === 'approved') {
+            actions = `<button class="suspend-btn" onclick="suspendDeliveryPerson('${p.id}')">إيقاف</button>`;
+        } else if (p.status === 'suspended') {
+            actions = `<button class="approve-btn" onclick="reactivateDeliveryPerson('${p.id}')">إعادة تفعيل</button>`;
+        }
+        div.innerHTML = `<div class="pending-info">
+                            <div class="pending-name">${escapeHTML(p.name || p.email)}</div>
+                            <div class="pending-email">${p.email} | ${p.phone || 'لا يوجد هاتف'} | المركز: ${p.center || 'غير محدد'}</div>
+                            <div class="pending-status">الحالة: <strong>${statusText}</strong></div>
+                         </div>
+                         <div class="pending-actions">${actions}</div>`;
+        container.appendChild(div);
+    });
+}
+
+async function suspendDeliveryPerson(userId) {
+    if (!confirm('هل أنت متأكد من إيقاف هذا المندوب؟')) return;
+    showLoading(true);
+    try {
+        await supabaseClient.from('user_data').update({ status: 'suspended' }).eq('id', userId);
+        showToast('تم إيقاف المندوب', 'success');
+        await displayAllDeliveryPersons();
+        await loadPendingDeliveries();
+    } catch (err) {
+        showToast(err.message, 'error');
+    } finally {
+        showLoading(false);
+    }
+}
+
+async function reactivateDeliveryPerson(userId) {
+    if (!confirm('هل أنت متأكد من إعادة تفعيل هذا المندوب؟')) return;
+    showLoading(true);
+    try {
+        await supabaseClient.from('user_data').update({ status: 'approved' }).eq('id', userId);
+        showToast('تم إعادة تفعيل المندوب', 'success');
+        await displayAllDeliveryPersons();
+        await loadPendingDeliveries();
+    } catch (err) {
+        showToast(err.message, 'error');
+    } finally {
+        showLoading(false);
+    }
+}
+
 // ===================== تصدير الدوال العامة =====================
 window.loadProductsFromDB = loadProductsFromDB;
 window.loadFeaturedProducts = loadFeaturedProducts;
@@ -363,3 +472,7 @@ window.copyStoreLink = copyStoreLink;
 window.shareStoreLink = shareStoreLink;
 window.showStorePage = showStorePage;
 window.openProductDetailFromStore = openProductDetailFromStore;
+window.loadAllDeliveryPersons = loadAllDeliveryPersons;
+window.displayAllDeliveryPersons = displayAllDeliveryPersons;
+window.suspendDeliveryPerson = suspendDeliveryPerson;
+window.reactivateDeliveryPerson = reactivateDeliveryPerson;

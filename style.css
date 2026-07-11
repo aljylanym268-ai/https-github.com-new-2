@@ -1338,6 +1338,7 @@ body {
 .order-status.confirmed { background: #2196f3; color: #fff; }
 .order-status.prepared { background: #9c27b0; color: #fff; }
 .order-status.picked_up { background: #00bcd4; color: #fff; }
+.order-status.picked_up_from_seller { background: #009688; color: #fff; }
 .order-status.in_delivery { background: #ff9800; color: #fff; }
 .order-status.delivered { background: #4caf50; color: #fff; }
 .order-status.cancelled { background: #f44336; color: #fff; }
@@ -1921,6 +1922,7 @@ body {
 }
 .approve-btn { background: #4CAF50; color: white; }
 .reject-btn { background: #f44336; color: white; }
+.suspend-btn { background: #ff9800; color: white; }
 
 /* ===== شاشة الموقع ===== */
 .location-screen {
@@ -2371,4 +2373,29 @@ body {
 }
 .suspend-btn:hover {
     opacity: 0.85;
+}
+
+/* ===== عرض بيانات المندوب للعميل ===== */
+.delivery-person-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+    padding: 8px;
+    background: #f5f7fa;
+    border-radius: 8px;
+}
+.delivery-person-info img {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+.delivery-person-info a {
+    color: #1a237e;
+    margin-right: 8px;
+    font-size: 1.2rem;
+}
+.delivery-person-info a.whatsapp {
+    color: #25D366;
 }
