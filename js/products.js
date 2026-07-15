@@ -286,10 +286,8 @@ async function prepareOrderSeller(orderId) {
 
         await updateOrderStatus(orderId, 'prepared');
 
-        // إشعار للعميل
         await sendNotification(order.buyer_id, 'تم تجهيز طلبك', `طلبك #${orderId.slice(0,8)} جاهز وسيتم توصيله قريباً`);
 
-        // إشعار للمناديب المعتمدين في نفس المركز
         if (order.center) {
             await notifyDeliveryPersonsInCenter(order.center, orderId, 'شحنة جاهزة في منطقتك', `طلب #${orderId.slice(0,8)} جاهز للتوصيل في ${order.center}`);
         }

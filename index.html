@@ -334,16 +334,37 @@
         </div>
     </div>
 
-    <!-- ================= شاشة السلة ================= -->
+    <!-- ================= شاشة السلة (معدلة) ================= -->
     <div class="screen hidden" id="cartScreen">
         <div class="app-header">
             <div class="header-content">
                 <div class="header-left"><button class="back-btn active" onclick="goBack()"><i class="fas fa-arrow-right"></i></button><div class="header-title">سلة التسوق</div></div>
+                <div class="header-actions">
+                    <button class="header-icon" onclick="loadCart()"><i class="fas fa-sync-alt"></i></button>
+                </div>
             </div>
+        </div>
+        <!-- شريط أدوات السلة -->
+        <div class="cart-toolbar">
+            <button class="cart-tool-btn" onclick="toggleSelectAll()"><i class="fas fa-check-double"></i> تحديد الكل</button>
+            <button class="cart-tool-btn" onclick="deselectAll()"><i class="fas fa-times"></i> إلغاء التحديد</button>
+            <button class="cart-tool-btn danger" onclick="deleteSelected()"><i class="fas fa-trash"></i> حذف المحدد</button>
+            <span class="selected-count" id="selectedCount">0</span>
         </div>
         <div class="cart-items" id="cartItems"></div>
         <div class="cart-summary">
-            <div class="cart-total"><div class="total-label">الإجمالي:</div><div class="total-amount" id="cartTotal">0 ج.م</div></div>
+            <div class="cart-total">
+                <div class="total-label">المجموع الفرعي:</div>
+                <div class="total-amount" id="cartSubtotal">0 ج.م</div>
+            </div>
+            <div class="cart-total">
+                <div class="total-label">رسوم التوصيل:</div>
+                <div class="total-amount" id="cartDeliveryFee">0 ج.م</div>
+            </div>
+            <div class="cart-total" style="border-top:2px solid var(--gold); padding-top:10px;">
+                <div class="total-label" style="font-size:1.2rem;">الإجمالي:</div>
+                <div class="total-amount" id="cartTotal" style="font-size:1.8rem;">0 ج.م</div>
+            </div>
             <button class="checkout-btn" onclick="openCheckout()"><i class="fas fa-shopping-bag"></i> إتمام الشراء</button>
         </div>
     </div>
@@ -685,6 +706,52 @@
             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;"><span>المصادقة الثنائية</span><label class="switch"><input type="checkbox" id="twoFactorCheck"><span class="slider round"></span></label></div>
             <p style="color:#666; font-size:0.9rem;">عند التفعيل، سيتم إرسال رمز إلى هاتفك عند كل تسجيل دخول.</p>
             <div style="display:flex; gap:10px; margin-top:20px;"><button class="login-btn" style="flex:1;" onclick="saveSecuritySettings()">حفظ</button><button class="google-btn" style="flex:1;" onclick="closeModal('securityModal')">إغلاق</button></div>
+        </div>
+    </div>
+
+    <!-- ================= مودال الشراء المباشر (الجديد) ================= -->
+    <div id="directCheckoutModal" class="modal" onclick="if(event.target===this) closeDirectCheckout()">
+        <div class="modal-content">
+            <h3 style="color:#1a237e; margin-bottom:15px;">
+                <i class="fas fa-bolt" style="color:#D4AF37;"></i> شراء الآن
+            </h3>
+            <div class="input-group">
+                <label class="input-label">الاسم الكامل *</label>
+                <input type="text" id="directName" class="input-field" placeholder="أدخل اسمك">
+            </div>
+            <div class="input-group">
+                <label class="input-label">رقم الهاتف *</label>
+                <input type="tel" id="directPhone" class="input-field" placeholder="أدخل رقم الهاتف">
+            </div>
+            <div class="input-group">
+                <label class="input-label">المحافظة *</label>
+                <select id="directGovernorate" class="input-field">
+                    <option value="قنا">قنا</option>
+                    <option value="الأقصر">الأقصر</option>
+                    <option value="أسوان">أسوان</option>
+                    <option value="سوهاج">سوهاج</option>
+                    <option value="أسيوط">أسيوط</option>
+                    <option value="البحر الأحمر">البحر الأحمر</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label class="input-label">المدينة / المركز *</label>
+                <input type="text" id="directCity" class="input-field" placeholder="مثال: قنا، نقادة، ...">
+            </div>
+            <div class="input-group">
+                <label class="input-label">العنوان بالتفصيل *</label>
+                <textarea id="directAddress" class="input-field" rows="2" placeholder="العنوان الكامل (شارع، منزل، ...)"></textarea>
+            </div>
+            <div class="input-group">
+                <label class="input-label">ملاحظات (اختياري)</label>
+                <textarea id="directNotes" class="input-field" rows="2" placeholder="أي ملاحظات إضافية..."></textarea>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button class="login-btn" style="flex:1; background: #D4AF37; color:#1a237e;" onclick="confirmDirectOrder()">
+                    <i class="fas fa-check-circle"></i> تأكيد الطلب
+                </button>
+                <button class="google-btn" style="flex:1;" onclick="closeDirectCheckout()">إلغاء</button>
+            </div>
         </div>
     </div>
 
