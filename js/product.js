@@ -1,8 +1,7 @@
-// =============================================================
-// product.js – صفحة تفاصيل المنتج بتصميم احترافي (Amazon-style)
-// =============================================================
+// ========== ملف product.js الكامل (مع إضافة السحب على الصورة للتنقل) ==========
+// تم التعديل: إزالة الأزرار وإضافة خاصية السحب (Swipe) على الصورة نفسها
 
-// ========== فتح تفاصيل المنتج بالتصميم الجديد ==========
+// ========== فتح تفاصيل المنتج (معرض صورة واحد مع سحب) ==========
 async function openProductDetail(product) {
     if (!product) return;
     appState.currentProduct = product;
@@ -11,288 +10,300 @@ async function openProductDetail(product) {
     const reviews = await loadProductReviews(product.id);
     const avgRating = reviews.length ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length) : 0;
 
-    // تجهيز قائمة الصور (carousel)
-    let allImages = [];
-    if (product.animated_image) allImages.push(product.animated_image);
-    if (product.image_url && !allImages.includes(product.image_url)) allImages.push(product.image_url);
-    if (product.images && Array.isArray(product.images)) {
-        product.images.forEach(img => {
-            if (!allImages.includes(img)) allImages.push(img);
-        });
-    }
-    if (allImages.length === 0) allImages.push(''); // صورة افتراضية
+    // بناء نجوم التقييم
+    const fullStars = Math.floor(avgRating);
+    const hasHalfStar = avgRating % 1 >= 0.5;
+    let ratingStars = '★'.repeat(fullStars);
+    if (hasHalfStar) ratingStars += '★';
+    ratingStars += '☆'.repeat(5 - Math.ceil(avgRating));
+    while (ratingStars.length < 5) ratingStars += '☆';
 
-    // تخزين الصور في حالة عامة للاستخدام في carousel
-    window._productImages = allImages;
-    window._currentSlide = 0;
+    // تجهيز الصور (إزالة التكرار والروابط الفارغة)
+    let images = sanitizeImages(product.images, product.image_url);
+    const mainImage = images.length ? images[0] : '';
+
+    // حالة المخزون
+    const inStock = (product.stock !== undefined && product.stock > 0);
+    const stockText = inStock ? '✅ متوفر' : '❌ غير متوفر';
+    const stockColor = inStock ? '#4caf50' : '#e53935';
+
+    // الكمية الافتراضية
+    window._detailQuantity = 1;
+    currentImageIndex = 0;
 
     const container = document.getElementById('productDetailContent');
     if (!container) return;
 
-    // ===== بناء هيكل الصفحة الجديد =====
-    container.innerHTML = `
-        <div class="product-detail-wrapper-v2" id="productDetailWrapper">
-
-            <!-- 1. اسم المنتج -->
-            <h1 class="product-detail-name-v2">${escapeHTML(product.name)}</h1>
-
-            <!-- 2. التقييم بالنجوم مع عدد التقييمات -->
-            <div class="product-rating-summary-v2">
-                <span class="stars-v2">${generateStarRating(avgRating)}</span>
-                <span class="rating-value-v2">${avgRating.toFixed(1)}</span>
-                <span class="rating-count-v2">(${reviews.length} تقييم)</span>
-                ${product.seller_name ? `<span class="seller-badge-v2 verified">✓ ${escapeHTML(product.seller_name)}</span>` : ''}
-            </div>
-
-            <!-- 3. وصف المنتج بالكامل -->
-            <div class="product-description-full-v2">
-                <p>${escapeHTML(product.description || 'لا يوجد وصف متاح لهذا المنتج.')}</p>
-            </div>
-
-            <!-- 4. معرض الصور المتحرك (Carousel) -->
-            <div class="product-carousel-wrapper-v2" id="productCarousel">
-                <div class="carousel-container-v2" id="carouselContainer">
-                    ${allImages.map((img, idx) => `
-                        <div class="carousel-slide-v2 ${idx === 0 ? 'active' : ''}" data-index="${idx}">
-                            ${img ? (img.match(/\.(mp4|webm|mov|avi)$/i) ? `
-                                <video controls autoplay loop muted playsinline style="width:100%; height:100%; object-fit:contain;">
-                                    <source src="${img}" type="video/mp4">
-                                    <source src="${img}" type="video/webm">
-                                    متصفحك لا يدعم الفيديو.
-                                </video>
-                            ` : `
-                                <img src="${img}" alt="${escapeHTML(product.name)}" loading="lazy"
-                                     onclick="openImageZoom('${img}')"
-                                     onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\"no-image\">📦</div>';">
-                            `) : '<div class="no-image">📦</div>'}
-                        </div>
-                    `).join('')}
+    // بناء HTML مع معرض صور بسيط (صورة واحدة فقط + عداد)
+    let galleryHtml = '';
+    if (images.length > 0) {
+        galleryHtml = `
+            <div class="product-detail-image-section">
+                <div class="product-main-image-container" id="mainImageContainer">
+                    <img src="${mainImage}" id="detailMainImage" alt="${escapeHTML(product.name)}"
+                         onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\"no-image\">📦</div>';">
+                    <button class="zoom-btn" onclick="toggleZoom()"><i class="fas fa-search-plus"></i></button>
+                    ${images.length > 1 ? `<div class="image-counter-overlay">${currentImageIndex + 1} / ${images.length}</div>` : ''}
                 </div>
+            </div>
+        `;
+    } else {
+        galleryHtml = `<div class="product-detail-image-section"><div class="product-main-image-container"><div class="no-image">📦</div></div></div>`;
+    }
 
-                <!-- أزرار التنقل (تظهر فقط في حالة وجود أكثر من صورة) -->
-                ${allImages.length > 1 ? `
-                    <button class="carousel-btn-v2 prev" onclick="prevSlide()"><i class="fas fa-chevron-right"></i></button>
-                    <button class="carousel-btn-v2 next" onclick="nextSlide()"><i class="fas fa-chevron-left"></i></button>
-                ` : ''}
+    container.innerHTML = `
+        <div class="product-detail-wrapper" id="productDetailWrapper">
 
-                <!-- نقاط المؤشر (dots) -->
-                ${allImages.length > 1 ? `
-                    <div class="carousel-dots-v2" id="carouselDots">
-                        ${allImages.map((_, idx) => `
-                            <span class="dot-v2 ${idx === 0 ? 'active' : ''}" data-index="${idx}" onclick="goToSlide(${idx})"></span>
-                        `).join('')}
+            <!-- القسم العلوي -->
+            <div class="product-detail-top-section">
+                <h1 class="product-detail-name">${escapeHTML(product.name)}</h1>
+                <div class="product-detail-meta" onclick="toggleReviews()" style="cursor:pointer;">
+                    <div class="product-rating-row">
+                        <span class="stars">${ratingStars}</span>
+                        <span class="rating-value">${avgRating.toFixed(1)}</span>
+                        <span class="rating-count">(${reviews.length} تقييم)</span>
+                        <i class="fas fa-chevron-down" id="reviewsToggleIcon" style="font-size:0.8rem; margin-right:6px; transition: transform 0.3s;"></i>
                     </div>
-                ` : ''}
+                    ${product.seller_name ? `<span class="seller-badge verified">✓ ${escapeHTML(product.seller_name)}</span>` : ''}
+                </div>
+                <div class="product-detail-description">
+                    <p>${escapeHTML(product.description || 'لا يوجد وصف متاح لهذا المنتج.')}</p>
+                </div>
             </div>
 
-            <!-- 5. السعر والكمية والأزرار (أسفل المعرض) -->
-            <div class="product-actions-v2">
-                <div class="product-price-v2">
-                    <span class="price-current-v2">${(product.price * 1).toLocaleString()} ج.م</span>
+            <!-- معرض الصور (في المنتصف) -->
+            ${galleryHtml}
+
+            <!-- القسم السفلي -->
+            <div class="product-detail-bottom-section">
+                <div class="product-detail-price">
+                    <span class="price-main" id="detailPrice">${(product.price * 1).toLocaleString()} ج.م</span>
                     ${product.discount ? `
-                        <span class="price-original-v2">${(product.price / (1 - product.discount/100)).toFixed(0)} ج.م</span>
-                        <span class="discount-badge-v2">خصم ${product.discount}%</span>
+                        <span class="price-original">${(product.price / (1 - product.discount/100)).toFixed(0)} ج.م</span>
+                        <span class="discount-badge">خصم ${product.discount}%</span>
                     ` : ''}
                 </div>
-                <div class="product-stock-v2 ${(product.stock > 0) ? 'in-stock' : 'out-of-stock'}">
-                    ${(product.stock > 0) ? '✅ متوفر' : '❌ غير متوفر'}
+                <div class="product-stock" style="color:${stockColor}; font-weight:700; font-size:0.95rem;">
+                    ${stockText}
                 </div>
-                <div class="product-quantity-v2">
+                <div class="product-quantity-section">
                     <label>الكمية:</label>
-                    <div class="quantity-selector-v2">
-                        <button class="qty-btn-v2" onclick="changeQuantityV2(-1)">−</button>
-                        <span id="detailQuantityV2">1</span>
-                        <button class="qty-btn-v2" onclick="changeQuantityV2(1)">+</button>
+                    <div class="quantity-selector">
+                        <button class="qty-btn" onclick="changeQuantity(-1)">−</button>
+                        <span id="detailQuantity">1</span>
+                        <button class="qty-btn" onclick="changeQuantity(1)">+</button>
                     </div>
-                    <span id="totalPriceDisplayV2" class="total-price-v2">
+                    <span id="totalPriceDisplay" style="font-weight:700; color:#1a237e; margin-right:10px;">
                         الإجمالي: ${product.price.toLocaleString()} ج.م
                     </span>
                 </div>
-                <div class="product-buttons-v2">
-                    <button class="buy-now-btn-v2" onclick="openDirectCheckout()">
+                <div class="product-detail-actions desktop-actions">
+                    <button class="buy-now-btn" onclick="openDirectCheckout()">
                         <i class="fas fa-bolt"></i> شراء الآن
                     </button>
-                    <button class="add-to-cart-btn-v2" onclick="addToCartFromDetail()">
+                    <button class="add-to-cart-btn" onclick="addToCartFromDetail()">
                         <i class="fas fa-cart-plus"></i> إضافة إلى السلة
                     </button>
-                    <button class="share-btn-v2" onclick="shareProduct()" title="مشاركة">
+                    <button class="share-btn-icon" onclick="shareProduct()" title="مشاركة المنتج">
                         <i class="fas fa-share-alt"></i>
                     </button>
                 </div>
-            </div>
-
-            <!-- 7. تقييمات العملاء -->
-            <div class="product-reviews-v2" id="productReviewsV2">
-                <h3 class="reviews-title-v2">
-                    <i class="fas fa-star" style="color:#f5a623;"></i> 
-                    تقييمات العملاء 
-                    <span class="reviews-avg-v2">(${avgRating.toFixed(1)} من 5)</span>
-                </h3>
-                <div class="reviews-list-v2" id="reviewsListV2">
-                    ${reviews.length ? reviews.map(r => `
-                        <div class="review-item-v2">
-                            <div class="review-avatar-v2">
-                                ${r.user_image ? `<img src="${r.user_image}" alt="${escapeHTML(r.user_name)}">` : `<i class="fas fa-user"></i>`}
-                            </div>
-                            <div class="review-content-v2">
-                                <div class="review-header-v2">
-                                    <span class="review-name-v2">${escapeHTML(r.user_name || 'مستخدم')}</span>
-                                    <span class="review-stars-v2">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</span>
+                <div class="product-specifications">
+                    <h3>مواصفات المنتج</h3>
+                    <div class="spec-grid">
+                        <div class="spec-item"><span class="spec-label">التصنيف</span><span class="spec-value">${product.category || 'عام'}</span></div>
+                        <div class="spec-item"><span class="spec-label">المخزون</span><span class="spec-value">${product.stock || 'غير محدد'}</span></div>
+                        <div class="spec-item"><span class="spec-label">الحالة</span><span class="spec-value">جديد</span></div>
+                        ${product.brand ? `<div class="spec-item"><span class="spec-label">الماركة</span><span class="spec-value">${escapeHTML(product.brand)}</span></div>` : ''}
+                    </div>
+                </div>
+                <div class="product-reviews" id="productReviewsSection" style="display: none;">
+                    <h3>تقييمات العملاء</h3>
+                    <div class="reviews-list" id="reviewsList">
+                        ${reviews.length ? reviews.map(r => `
+                            <div class="review-item">
+                                <div class="review-avatar"><i class="fas fa-user"></i></div>
+                                <div class="review-content">
+                                    <div class="review-name">${escapeHTML(r.user_name || 'مستخدم')}</div>
+                                    <div class="review-stars">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</div>
+                                    <p class="review-text">${escapeHTML(r.comment)}</p>
+                                    <div class="review-date">${new Date(r.created_at).toLocaleDateString('ar-EG')}</div>
                                 </div>
-                                <p class="review-text-v2">${escapeHTML(r.comment)}</p>
-                                <span class="review-date-v2">${new Date(r.created_at).toLocaleDateString('ar-EG')}</span>
                             </div>
-                        </div>
-                    `).join('') : '<div class="no-reviews-v2">لا توجد تقييمات لهذا المنتج بعد. كن أول من يقيم!</div>'}
+                        `).join('') : '<div class="no-reviews">لا توجد تقييمات لهذا المنتج بعد.</div>'}
+                    </div>
                 </div>
             </div>
-
-            <!-- 8. منتجات مشابهة (بطاقات أفقية قابلة للتمرير) -->
-            <div class="similar-products-v2" id="similarProductsV2">
-                <h3 class="similar-title-v2">منتجات مشابهة</h3>
-                <div class="similar-scroll-v2" id="similarScrollV2">
-                    <!-- سيتم ملؤها بواسطة JavaScript -->
-                </div>
-            </div>
-
         </div>
+
+        <!-- منتجات مشابهة -->
+        <div id="similarProductsSectionDetail" class="similar-products-section"></div>
     `;
 
-    // تهيئة الـ Carousel (السحب باللمس والأسهم)
-    initCarousel();
+    // تحديث عداد الصورة
+    updateImageCounter();
+
+    // إعداد خاصية السحب على الصورة
+    setupSwipe();
 
     // تحميل المنتجات المشابهة
-    loadSimilarProductsV2(product.category, product.id);
-
-    // عرض الشاشة
+    loadSimilarProductsInDetail(product.category, product.id);
     showScreen('productDetailScreen');
-
-    // إضافة الأزرار المثبتة للجوال (ستظهر تلقائياً)
-    setTimeout(() => addStickyActionsV2(), 100);
+    setTimeout(() => addStickyActions(), 100);
 }
 
-// ========== دوال الـ Carousel ==========
-
-function initCarousel() {
-    const container = document.getElementById('carouselContainer');
+// ========== إعداد السحب (Swipe) على الصورة ==========
+function setupSwipe() {
+    const container = document.getElementById('mainImageContainer');
     if (!container) return;
-
-    // السحب باللمس
+    
     let startX = 0;
     let isDragging = false;
+    let currentTranslateX = 0;
+    let isSwiping = false;
+    const threshold = 30; // مسافة السحب المطلوبة لتغيير الصورة
 
-    container.addEventListener('touchstart', (e) => {
-        startX = e.touches[0].clientX;
+    // إزالة المستمعات القديمة لتجنب التكرار
+    container.removeEventListener('touchstart', handleTouchStart);
+    container.removeEventListener('touchmove', handleTouchMove);
+    container.removeEventListener('touchend', handleTouchEnd);
+    container.removeEventListener('mousedown', handleMouseDown);
+    document.removeEventListener('mousemove', handleMouseMove);
+    document.removeEventListener('mouseup', handleMouseUp);
+
+    // دوال اللمس
+    function handleTouchStart(e) {
+        const touch = e.touches[0];
+        startX = touch.clientX;
         isDragging = true;
-    });
-
-    container.addEventListener('touchmove', (e) => {
-        if (!isDragging) return;
-        const diff = startX - e.touches[0].clientX;
-        if (Math.abs(diff) > 50) {
-            isDragging = false;
-            if (diff > 0) {
-                nextSlide();
-            } else {
-                prevSlide();
-            }
-        }
-    });
-
-    container.addEventListener('touchend', () => {
-        isDragging = false;
-    });
-
-    // دعم السحب بالفأرة (للحاسوب)
-    let mouseDown = false;
-    let mouseStartX = 0;
-
-    container.addEventListener('mousedown', (e) => {
-        mouseDown = true;
-        mouseStartX = e.clientX;
-    });
-
-    container.addEventListener('mouseup', (e) => {
-        if (!mouseDown) return;
-        mouseDown = false;
-        const diff = mouseStartX - e.clientX;
-        if (Math.abs(diff) > 50) {
-            if (diff > 0) {
-                nextSlide();
-            } else {
-                prevSlide();
-            }
-        }
-    });
-
-    container.addEventListener('mouseleave', () => {
-        mouseDown = false;
-    });
-}
-
-function goToSlide(index) {
-    const slides = document.querySelectorAll('.carousel-slide-v2');
-    const dots = document.querySelectorAll('.dot-v2');
-    if (!slides.length) return;
-
-    // تحديث الشرائح
-    slides.forEach((slide, i) => {
-        slide.classList.toggle('active', i === index);
-    });
-
-    // تحديث النقاط
-    dots.forEach((dot, i) => {
-        dot.classList.toggle('active', i === index);
-    });
-
-    window._currentSlide = index;
-}
-
-function nextSlide() {
-    const total = window._productImages ? window._productImages.length : 0;
-    if (total <= 1) return;
-    let newIndex = (window._currentSlide + 1) % total;
-    goToSlide(newIndex);
-}
-
-function prevSlide() {
-    const total = window._productImages ? window._productImages.length : 0;
-    if (total <= 1) return;
-    let newIndex = (window._currentSlide - 1 + total) % total;
-    goToSlide(newIndex);
-}
-
-// ========== تكبير الصورة ==========
-function openImageZoom(imageUrl) {
-    if (!imageUrl) return;
-    // نفتح الصورة في مودال
-    const modal = document.getElementById('imageZoomModal');
-    if (!modal) {
-        // إنشاء المودال إذا لم يكن موجوداً
-        const newModal = document.createElement('div');
-        newModal.id = 'imageZoomModal';
-        newModal.className = 'image-zoom-modal';
-        newModal.onclick = function(e) {
-            if (e.target === this) this.classList.remove('active');
-        };
-        newModal.innerHTML = `
-            <div class="image-zoom-content">
-                <img src="${imageUrl}" alt="صورة مكبرة" id="zoomImage">
-                <button class="close-zoom-btn" onclick="document.getElementById('imageZoomModal').classList.remove('active')">×</button>
-            </div>
-        `;
-        document.body.appendChild(newModal);
+        isSwiping = false;
+        currentTranslateX = 0;
+        container.style.transition = 'none';
     }
-    const img = document.getElementById('zoomImage');
-    if (img) img.src = imageUrl;
-    modal.classList.add('active');
+
+    function handleTouchMove(e) {
+        if (!isDragging) return;
+        const touch = e.touches[0];
+        const diff = touch.clientX - startX;
+        currentTranslateX = diff;
+        // نحرك الصورة قليلاً لمتابعة الإصبع
+        const img = container.querySelector('img');
+        if (img) {
+            img.style.transform = `translateX(${diff}px)`;
+        }
+        if (Math.abs(diff) > 10) {
+            isSwiping = true;
+            e.preventDefault(); // لمنع التمرير العمودي أثناء السحب الأفقي
+        }
+    }
+
+    function handleTouchEnd(e) {
+        if (!isDragging) return;
+        isDragging = false;
+        container.style.transition = 'transform 0.3s ease';
+        const img = container.querySelector('img');
+        if (img) {
+            img.style.transform = 'translateX(0)';
+        }
+        if (isSwiping) {
+            const diff = currentTranslateX;
+            if (Math.abs(diff) > threshold) {
+                if (diff < 0) {
+                    slideGallery(1); // سحب لليسار => الصورة التالية
+                } else {
+                    slideGallery(-1); // سحب لليمين => الصورة السابقة
+                }
+            }
+        }
+        isSwiping = false;
+        currentTranslateX = 0;
+    }
+
+    // دوال الفأرة (للسطح المكتب)
+    function handleMouseDown(e) {
+        startX = e.clientX;
+        isDragging = true;
+        isSwiping = false;
+        currentTranslateX = 0;
+        container.style.transition = 'none';
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+        e.preventDefault();
+    }
+
+    function handleMouseMove(e) {
+        if (!isDragging) return;
+        const diff = e.clientX - startX;
+        currentTranslateX = diff;
+        const img = container.querySelector('img');
+        if (img) {
+            img.style.transform = `translateX(${diff}px)`;
+        }
+        if (Math.abs(diff) > 10) {
+            isSwiping = true;
+        }
+    }
+
+    function handleMouseUp(e) {
+        if (!isDragging) return;
+        isDragging = false;
+        container.style.transition = 'transform 0.3s ease';
+        const img = container.querySelector('img');
+        if (img) {
+            img.style.transform = 'translateX(0)';
+        }
+        if (isSwiping) {
+            const diff = currentTranslateX;
+            if (Math.abs(diff) > threshold) {
+                if (diff < 0) {
+                    slideGallery(1);
+                } else {
+                    slideGallery(-1);
+                }
+            }
+        }
+        isSwiping = false;
+        currentTranslateX = 0;
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+    }
+
+    // إضافة المستمعات
+    container.addEventListener('touchstart', handleTouchStart, { passive: true });
+    container.addEventListener('touchmove', handleTouchMove, { passive: false });
+    container.addEventListener('touchend', handleTouchEnd, { passive: true });
+    container.addEventListener('mousedown', handleMouseDown);
 }
 
-// ========== دوال الكمية ==========
-function changeQuantityV2(delta) {
-    const qtySpan = document.getElementById('detailQuantityV2');
-    const totalSpan = document.getElementById('totalPriceDisplayV2');
-    if (!qtySpan || !appState.currentProduct) return;
+// ========== تحديث عداد الصورة الحالية ==========
+function updateImageCounter() {
+    const images = getProductImages();
+    const counter = document.querySelector('.image-counter-overlay');
+    if (counter && images.length > 0) {
+        counter.textContent = `${currentImageIndex + 1} / ${images.length}`;
+    }
+}
+
+// ========== دالة مساعدة لتنقية صور المنتج (إزالة التكرارات والروابط الفارغة) ==========
+function sanitizeImages(imagesArray, singleImage) {
+    let result = [];
+    if (imagesArray && Array.isArray(imagesArray) && imagesArray.length) {
+        result = imagesArray.filter(url => url && typeof url === 'string' && url.trim() !== '');
+    }
+    if (singleImage && typeof singleImage === 'string' && singleImage.trim() !== '') {
+        if (!result.includes(singleImage)) {
+            result.unshift(singleImage);
+        }
+    }
+    return [...new Set(result)];
+}
+
+// ========== دوال مساعدة للكمية ==========
+function changeQuantity(delta) {
+    const qtySpan = document.getElementById('detailQuantity');
+    const priceSpan = document.getElementById('detailPrice');
+    const totalSpan = document.getElementById('totalPriceDisplay');
+    if (!qtySpan || !priceSpan || !appState.currentProduct) return;
     let qty = parseInt(qtySpan.textContent) + delta;
     if (qty < 1) qty = 1;
     if (appState.currentProduct.stock && qty > appState.currentProduct.stock) {
@@ -302,85 +313,126 @@ function changeQuantityV2(delta) {
     qtySpan.textContent = qty;
     window._detailQuantity = qty;
     const price = appState.currentProduct.price;
+    priceSpan.textContent = (price * qty).toLocaleString() + ' ج.م';
     totalSpan.textContent = `الإجمالي: ${(price * qty).toLocaleString()} ج.م`;
 }
 
-// ========== دوال مساعدة ==========
-function generateStarRating(rating) {
-    const full = Math.floor(rating);
-    const half = rating % 1 >= 0.5 ? 1 : 0;
-    const empty = 5 - full - half;
-    return '★'.repeat(full) + (half ? '★' : '') + '☆'.repeat(empty);
-}
+// ========== تغيير الصورة الرئيسية ==========
+let currentImageIndex = 0;
 
-// ========== تحميل المنتجات المشابهة (بطاقات أفقية) ==========
-function loadSimilarProductsV2(category, currentProductId, limit = 10) {
-    const container = document.getElementById('similarScrollV2');
-    if (!container) return;
-
-    let similar = appState.products.filter(p => p.category === category && p.id !== currentProductId);
-    // ترتيب عشوائي
-    similar = similar.sort(() => Math.random() - 0.5).slice(0, limit);
-
-    if (similar.length === 0) {
-        container.innerHTML = '<p style="color:#999; text-align:center; padding:20px;">لا توجد منتجات مشابهة</p>';
-        return;
+function changeMainImageByIndex(index) {
+    const images = getProductImages();
+    if (!images || index < 0 || index >= images.length) return;
+    currentImageIndex = index;
+    const mainImg = document.getElementById('detailMainImage');
+    if (mainImg) {
+        const src = images[index];
+        if (src && src.trim() !== '') {
+            mainImg.src = src;
+            mainImg.onerror = function() {
+                this.onerror = null;
+                this.parentElement.innerHTML = '<div class="no-image">📦</div>';
+            };
+        } else {
+            mainImg.parentElement.innerHTML = '<div class="no-image">📦</div>';
+        }
     }
-
-    container.innerHTML = similar.map(p => {
-        const imgUrl = p.images && p.images.length ? p.images[0] : (p.image_url || '');
-        const imgHtml = imgUrl ? `<img src="${imgUrl}" loading="lazy" onerror="this.onerror=null; this.parentElement.innerHTML='<div>📦</div>';">` : '<div>📦</div>';
-        return `
-            <div class="similar-card-v2" onclick="openProductDetail(appState.products.find(pr => pr.id === '${p.id}'))">
-                <div class="similar-card-image-v2">${imgHtml}</div>
-                <div class="similar-card-info-v2">
-                    <div class="similar-card-name-v2">${escapeHTML(p.name)}</div>
-                    <div class="similar-card-price-v2">${p.price} ج.م</div>
-                </div>
-            </div>
-        `;
-    }).join('');
+    updateImageCounter();
 }
 
-// ========== الأزرار المثبتة للجوال ==========
-function addStickyActionsV2() {
-    const existing = document.querySelector('.sticky-actions-v2');
+function getProductImages() {
+    const product = appState.currentProduct;
+    if (!product) return [];
+    return sanitizeImages(product.images, product.image_url);
+}
+
+function slideGallery(direction) {
+    const images = getProductImages();
+    if (!images.length) return;
+    let newIndex = currentImageIndex + direction;
+    if (newIndex < 0) newIndex = images.length - 1;
+    if (newIndex >= images.length) newIndex = 0;
+    changeMainImageByIndex(newIndex);
+}
+
+// ========== تكبير الصورة ==========
+let zoomActive = false;
+function toggleZoom() {
+    const container = document.getElementById('mainImageContainer');
+    if (!container) return;
+    zoomActive = !zoomActive;
+    container.classList.toggle('zoomed', zoomActive);
+}
+
+// ========== مشاركة المنتج ==========
+function shareProduct() {
+    if (!appState.currentProduct) return;
+    const url = `${window.location.origin}${window.location.pathname}?id=${appState.currentProduct.id}`;
+    const text = `اطلع على منتج ${appState.currentProduct.name} على Misar Systems`;
+    if (navigator.share) {
+        navigator.share({ title: appState.currentProduct.name, text, url }).catch(() => {});
+    } else {
+        navigator.clipboard.writeText(url).then(() => {
+            showToast('تم نسخ رابط المنتج', 'success');
+        }).catch(() => {
+            showToast('فشل النسخ، حاول يدوياً', 'error');
+        });
+    }
+}
+
+// ========== جلب المراجعات من قاعدة البيانات ==========
+async function loadProductReviews(productId) {
+    try {
+        const { data, error } = await supabaseClient
+            .from('reviews')
+            .select('*')
+            .eq('product_id', productId)
+            .order('created_at', { ascending: false });
+        if (error) throw error;
+        return data || [];
+    } catch (e) {
+        console.warn('فشل جلب المراجعات:', e);
+        return [];
+    }
+}
+
+// ========== تبديل إظهار المراجعات ==========
+function toggleReviews() {
+    const section = document.getElementById('productReviewsSection');
+    const icon = document.getElementById('reviewsToggleIcon');
+    if (!section) return;
+    const isHidden = section.style.display === 'none';
+    section.style.display = isHidden ? 'block' : 'none';
+    if (icon) icon.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+}
+
+// ========== إضافة الأزرار المثبتة ==========
+function addStickyActions() {
+    const existing = document.querySelector('.sticky-actions-mobile');
     if (existing) existing.remove();
-
-    // نأخذ الأزرار من القسم الرئيسي
-    const wrapper = document.querySelector('.product-buttons-v2');
-    if (!wrapper) return;
-
-    const sticky = document.createElement('div');
-    sticky.className = 'sticky-actions-v2';
-    sticky.innerHTML = wrapper.innerHTML;
-    // إعادة ربط الأحداث
-    const buyBtn = sticky.querySelector('.buy-now-btn-v2');
-    if (buyBtn) buyBtn.onclick = openDirectCheckout;
-    const addBtn = sticky.querySelector('.add-to-cart-btn-v2');
-    if (addBtn) addBtn.onclick = addToCartFromDetail;
-    const shareBtn = sticky.querySelector('.share-btn-v2');
-    if (shareBtn) shareBtn.onclick = shareProduct;
-
-    document.querySelector('.product-detail-wrapper-v2').appendChild(sticky);
+    const desktopActions = document.querySelector('.product-detail-actions.desktop-actions');
+    if (!desktopActions) return;
+    const stickyDiv = document.createElement('div');
+    stickyDiv.className = 'sticky-actions-mobile';
+    // زر شراء الآن
+    const buyBtn = desktopActions.querySelector('.buy-now-btn');
+    if (buyBtn) {
+        const cloneBuy = buyBtn.cloneNode(true);
+        cloneBuy.onclick = openDirectCheckout;
+        stickyDiv.appendChild(cloneBuy);
+    }
+    // زر إضافة إلى السلة
+    const addBtn = desktopActions.querySelector('.add-to-cart-btn');
+    if (addBtn) {
+        const cloneAdd = addBtn.cloneNode(true);
+        cloneAdd.onclick = addToCartFromDetail;
+        stickyDiv.appendChild(cloneAdd);
+    }
+    const wrapper = document.querySelector('.product-detail-wrapper');
+    if (wrapper) wrapper.appendChild(stickyDiv);
 }
 
-// ========== إعادة تعريف الدوال القديمة للتوافق ==========
-// (نحتفظ بالدوال القديمة للاستخدام في أماكن أخرى)
-
-window.openProductDetail = openProductDetail;
-window.goToSlide = goToSlide;
-window.nextSlide = nextSlide;
-window.prevSlide = prevSlide;
-window.openImageZoom = openImageZoom;
-window.changeQuantityV2 = changeQuantityV2;
-window.loadSimilarProductsV2 = loadSimilarProductsV2;
-window.addStickyActionsV2 = addStickyActionsV2;
-window.generateStarRating = generateStarRating;
-
-// ========== دوال الشراء المباشر وإضافة للسلة (نفس السابق) ==========
-// (تم تضمينها من قبل، لكن نكررها هنا للاكتمال)
-
+// ========== دوال الشراء المباشر ==========
 function openDirectCheckout() {
     if (!appState.user) {
         showToast('يجب تسجيل الدخول أولاً', 'warning');
@@ -390,6 +442,8 @@ function openDirectCheckout() {
         showToast('حدث خطأ، الرجاء المحاولة مرة أخرى', 'error');
         return;
     }
+
+    // تعبئة الحقول تلقائياً من بيانات المستخدم
     const userData = appState.userData || {};
     document.getElementById('directName').value = userData.name || '';
     document.getElementById('directPhone').value = userData.phone || '';
@@ -397,6 +451,8 @@ function openDirectCheckout() {
     document.getElementById('directGovernorate').value = userData.governorate || 'قنا';
     document.getElementById('directCity').value = userData.center || '';
     document.getElementById('directNotes').value = '';
+
+    // عرض المودال
     document.getElementById('directCheckoutModal').classList.add('active');
 }
 
@@ -407,16 +463,20 @@ async function confirmDirectOrder() {
     const governorate = document.getElementById('directGovernorate').value;
     const city = document.getElementById('directCity').value.trim();
     const notes = document.getElementById('directNotes').value.trim();
+
     if (!name || !phone || !address || !city) {
         showToast('يرجى ملء جميع الحقول المطلوبة', 'warning');
         return;
     }
+
     showLoading(true);
     try {
         const product = appState.currentProduct;
         const quantity = window._detailQuantity || 1;
         const totalPrice = product.price * quantity;
-        const deliveryFee = 20;
+        const deliveryFee = 20; // يمكن جعلها ديناميكية حسب المدينة
+
+        // إنشاء الطلب مباشرة
         await createOrder(
             product.id,
             quantity,
@@ -425,11 +485,15 @@ async function confirmDirectOrder() {
             name,
             phone,
             address,
-            city,
+            city, // center
             deliveryFee
         );
+
+        // إغلاق المودال
         document.getElementById('directCheckoutModal').classList.remove('active');
+
         showToast('تم تقديم الطلب بنجاح!', 'success');
+        // توجيه المستخدم إلى صفحة الطلبات
         showScreen('ordersScreen');
         if (typeof loadBuyerOrdersWithTimeline === 'function') {
             loadBuyerOrdersWithTimeline();
@@ -446,10 +510,15 @@ function closeDirectCheckout() {
     document.getElementById('directCheckoutModal').classList.remove('active');
 }
 
+// ========== إضافة إلى السلة من التفاصيل ==========
 function addToCartFromDetail() {
     if (!appState.currentProduct) return;
     const qty = window._detailQuantity || 1;
     addToCartWithQuantity(appState.currentProduct.id, qty);
+}
+
+function buyNowFromDetail() {
+    openDirectCheckout();
 }
 
 async function addToCartWithQuantity(productId, quantity) {
@@ -491,42 +560,71 @@ async function addToCartWithQuantity(productId, quantity) {
     }
 }
 
-function shareProduct() {
-    if (!appState.currentProduct) return;
-    const url = `${window.location.origin}${window.location.pathname}?id=${appState.currentProduct.id}`;
-    const text = `اطلع على منتج ${appState.currentProduct.name} على Misar Systems`;
-    if (navigator.share) {
-        navigator.share({ title: appState.currentProduct.name, text, url }).catch(() => {});
+// ========== تحميل منتجات مشابهة ==========
+function loadSimilarProductsInDetail(category, currentProductId, limit = 6) {
+    const container = document.getElementById('similarProductsSectionDetail');
+    if (!container) return;
+    let similar = appState.products.filter(p => p.category === category && p.id !== currentProductId);
+    similar = similar.slice(0, limit);
+    const hasMore = appState.products.filter(p => p.category === category && p.id !== currentProductId).length > limit;
+    let html = '';
+    if (similar.length === 0) {
+        html = `<div class="similar-products-header"><h3>منتجات مشابهة</h3><p style="color:#999;">لا توجد منتجات مشابهة</p></div>`;
     } else {
-        navigator.clipboard.writeText(url).then(() => {
-            showToast('تم نسخ رابط المنتج', 'success');
-        }).catch(() => {
-            showToast('فشل النسخ، حاول يدوياً', 'error');
-        });
+        html = `
+            <div class="similar-products-header">
+                <h3>منتجات مشابهة</h3>
+                ${hasMore ? `<button class="explore-more-btn" onclick="exploreMore('${category}')"><i class="fas fa-compass"></i> استكشاف المزيد</button>` : ''}
+            </div>
+            <div class="similar-products-grid">
+                ${similar.map(p => {
+                    const imgUrl = p.images && p.images.length ? p.images[0] : (p.image_url || '');
+                    const imgHtml = imgUrl ? `<img src="${imgUrl}" loading="lazy" onerror="this.onerror=null; this.parentElement.innerHTML='<div>📦</div>';">` : '<div>📦</div>';
+                    return `
+                        <div class="similar-product-card" onclick="openProductDetail(appState.products.find(pr => pr.id === '${p.id}'))">
+                            <div class="similar-product-image">${imgHtml}</div>
+                            <div class="similar-product-info">
+                                <div class="similar-product-name">${escapeHTML(p.name)}</div>
+                                <div class="similar-product-price">${p.price} ج.م</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
     }
+    container.innerHTML = html;
 }
 
-// ========== تحميل المراجعات (نفس السابق) ==========
-async function loadProductReviews(productId) {
-    try {
-        const { data, error } = await supabaseClient
-            .from('reviews')
-            .select('*')
-            .eq('product_id', productId)
-            .order('created_at', { ascending: false });
-        if (error) throw error;
-        return data || [];
-    } catch (e) {
-        console.warn('فشل جلب المراجعات:', e);
-        return [];
+function exploreMore(category) {
+    showScreen('marketScreen');
+    const searchInput = document.getElementById('marketSearchInput');
+    if (searchInput) {
+        searchInput.value = category;
+        filterMarketProducts(category);
     }
+    showToast(`عرض منتجات من فئة: ${category}`, 'info');
 }
 
-// تصدير الدوال العامة
+// ========== تصدير الدوال العامة ==========
+window.openProductDetail = openProductDetail;
+window.changeQuantity = changeQuantity;
+window.changeMainImageByIndex = changeMainImageByIndex;
+window.slideGallery = slideGallery;
+window.toggleZoom = toggleZoom;
+window.shareProduct = shareProduct;
+window.loadProductReviews = loadProductReviews;
+window.toggleReviews = toggleReviews;
+window.addStickyActions = addStickyActions;
+window.addToCartFromDetail = addToCartFromDetail;
+window.buyNowFromDetail = buyNowFromDetail;
+window.addToCartWithQuantity = addToCartWithQuantity;
+window.loadSimilarProductsInDetail = loadSimilarProductsInDetail;
+window.exploreMore = exploreMore;
 window.openDirectCheckout = openDirectCheckout;
 window.confirmDirectOrder = confirmDirectOrder;
 window.closeDirectCheckout = closeDirectCheckout;
-window.addToCartFromDetail = addToCartFromDetail;
-window.addToCartWithQuantity = addToCartWithQuantity;
-window.shareProduct = shareProduct;
-window.loadProductReviews = loadProductReviews;
+window.sanitizeImages = sanitizeImages;
+window.updateImageCounter = updateImageCounter;
+window.getProductImages = getProductImages;
+window.setupSwipe = setupSwipe;
