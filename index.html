@@ -83,6 +83,41 @@
         .delivery-person-info a.whatsapp {
             color: #25D366;
         }
+        /* إضافات التقييمات */
+        .star-rating {
+            display: flex;
+            gap: 5px;
+            font-size: 2rem;
+            cursor: pointer;
+            direction: ltr;
+            justify-content: center;
+        }
+        .star-rating .star {
+            color: #ccc;
+            transition: color 0.2s;
+        }
+        .star-rating .star.active {
+            color: #D4AF37;
+        }
+        .review-media-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        .review-media-preview .preview-thumb {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        .review-media-preview .preview-video {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
     </style>
 </head>
 <body>
@@ -219,7 +254,6 @@
                     <label class="input-label">المحافظة</label>
                     <select class="location-select" id="registerGovernorate">
                         <option value="قنا" selected>قنا</option>
-                        <!-- يمكن إضافة محافظات أخرى حسب الحاجة -->
                     </select>
                 </div>
 
@@ -709,7 +743,7 @@
         </div>
     </div>
 
-    <!-- ================= مودال الشراء المباشر (الجديد) ================= -->
+    <!-- ================= مودال الشراء المباشر ================= -->
     <div id="directCheckoutModal" class="modal" onclick="if(event.target===this) closeDirectCheckout()">
         <div class="modal-content">
             <h3 style="color:#1a237e; margin-bottom:15px;">
@@ -753,6 +787,63 @@
                 <button class="google-btn" style="flex:1;" onclick="closeDirectCheckout()">إلغاء</button>
             </div>
         </div>
+    </div>
+
+    <!-- ================= مودال إضافة تقييم ================= -->
+    <div id="addReviewModal" class="modal" onclick="if(event.target===this) closeReviewModal()">
+        <div class="modal-content">
+            <h3 style="color:#1a237e; margin-bottom:15px;">
+                <i class="fas fa-star" style="color:#D4AF37;"></i> 
+                <span id="reviewModalTitle">إضافة تقييم</span>
+            </h3>
+            <input type="hidden" id="reviewProductId">
+            <input type="hidden" id="reviewId">
+
+            <div class="input-group">
+                <label class="input-label">تقييمك (من 1 إلى 5 نجوم)</label>
+                <div class="star-rating" id="starRating">
+                    <span class="star" data-value="1">☆</span>
+                    <span class="star" data-value="2">☆</span>
+                    <span class="star" data-value="3">☆</span>
+                    <span class="star" data-value="4">☆</span>
+                    <span class="star" data-value="5">☆</span>
+                </div>
+                <input type="hidden" id="reviewRating" value="5">
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">عنوان التقييم (اختياري)</label>
+                <input type="text" id="reviewTitle" class="input-field" placeholder="مثال: منتج رائع">
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">تعليقك *</label>
+                <textarea id="reviewComment" class="input-field" rows="4" placeholder="اكتب تجربتك مع المنتج..."></textarea>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">صور (حتى 5 صور)</label>
+                <input type="file" id="reviewImages" accept="image/*" multiple onchange="previewReviewImages(event)">
+                <div class="review-media-preview" id="reviewImagesPreview"></div>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">فيديو (اختياري، MP4/WebM)</label>
+                <input type="file" id="reviewVideo" accept="video/*" onchange="previewReviewVideo(event)">
+                <div class="review-media-preview" id="reviewVideoPreview"></div>
+            </div>
+
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button class="login-btn" style="flex:1;" onclick="submitReview()"><i class="fas fa-paper-plane"></i> إرسال التقييم</button>
+                <button class="google-btn" style="flex:1;" onclick="closeReviewModal()">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= مودال عرض الصور ================= -->
+    <div class="image-modal" id="imageModal" onclick="closeImageModal(event)">
+        <div class="close-modal" onclick="closeImageModal(event)">×</div>
+        <div class="modal-content"><img src="" alt="صورة" id="modalImage"></div>
     </div>
 
     <!-- ================= أزرار إضافية وشات بوت ================= -->
@@ -814,9 +905,9 @@
         </div>
     </div>
 
-    <div class="image-modal" id="imageModal" onclick="closeImageModal(event)">
+    <div class="image-modal" id="founderImageModal" onclick="closeImageModal(event)">
         <div class="close-modal" onclick="closeImageModal(event)">×</div>
-        <div class="modal-content"><img src="" alt="صورة" id="modalImage"></div>
+        <div class="modal-content"><img src="" alt="صورة" id="founderModalImage"></div>
     </div>
 
     <!-- ================= التنقل السفلي ================= -->
@@ -896,12 +987,12 @@
             addInputInteractions();
         }, 1500);
 
-        // ========== مستمعات الأحداث للأزرار (الحل الأساسي) ==========
+        // ========== مستمعات الأحداث للأزرار ==========
         // 1. زر تسجيل الدخول بالبريد
         const loginBtn = document.getElementById('loginBtn');
         if (loginBtn) {
             loginBtn.addEventListener('click', function(e) {
-                e.preventDefault();   // منع أي سلوك افتراضي
+                e.preventDefault();
                 console.log('🟢 زر تسجيل الدخول تم الضغط عليه');
                 if (typeof signInWithEmail === 'function') {
                     signInWithEmail();
@@ -930,41 +1021,6 @@
         } else {
             console.warn('⚠️ لم يتم العثور على الزر registerBtn');
         }
-
-        // ========== إظهار/إخفاء حقل مركز المندوب عند تغيير نوع الحساب (الخيار التاني) ==========
-        const registerAccountType = document.getElementById('registerAccountType');
-        const deliveryCenterField = document.getElementById('deliveryCenterField');
-        const deliveryCenterSelect = document.getElementById('deliveryCenterSelect');
-
-        // ========== بحث المتجر (FIX: ربط شريط البحث بالدالة) ==========
-        const marketSearchInput = document.getElementById('marketSearchInput');
-        const clearSearchBtn = document.getElementById('clearSearch');
-        if (marketSearchInput) {
-            marketSearchInput.addEventListener('input', () => {
-                const q = (marketSearchInput.value || '').trim();
-                if (clearSearchBtn) clearSearchBtn.style.display = q ? 'block' : 'none';
-                if (typeof filterMarketProducts === 'function') filterMarketProducts(q);
-            });
-        }
-
-
-        function syncDeliveryCenterVisibility() {
-            if (!registerAccountType || !deliveryCenterField) return;
-            const isDelivery = registerAccountType.value === 'delivery';
-            deliveryCenterField.style.display = isDelivery ? 'block' : 'none';
-
-            // إذا المستخدم رجع/تبدّل نوعه، نضمن الـ select يكون جاهز
-            if (isDelivery && deliveryCenterSelect) {
-                deliveryCenterSelect.disabled = false;
-            }
-        }
-
-        if (registerAccountType) {
-            registerAccountType.addEventListener('change', syncDeliveryCenterVisibility);
-            // تزامن أولي عند فتح الصفحة
-            syncDeliveryCenterVisibility();
-        }
-
 
         // 3. زر Google
         const googleBtn = document.getElementById('googleLoginBtn');
@@ -1000,7 +1056,6 @@
         const centerSelect = document.getElementById('centerSelect');
         const villageSelect = document.getElementById('villageSelect');
         if (centerSelect && villageSelect) {
-            // عند تغيير المركز: أعد تعبئة القرى
             centerSelect.addEventListener('change', () => {
                 const center = centerSelect.value;
                 if (!center) {
@@ -1012,7 +1067,6 @@
                 loadVillagesForCenter(center, '');
             });
 
-            // إذا كان المركز محفوظ مسبقاً في appState.location: فعّل التحميل
             if (appState.location?.center) {
                 centerSelect.value = appState.location.center;
                 villageSelect.disabled = false;
@@ -1093,6 +1147,30 @@
             }, 500);
         }
         checkFounderParam();
+
+        // ========== إعداد مستمعات نجوم التقييم ==========
+        document.querySelectorAll('.star').forEach(star => {
+            star.addEventListener('click', function() {
+                const value = parseInt(this.dataset.value);
+                document.getElementById('reviewRating').value = value;
+                document.querySelectorAll('.star').forEach(s => {
+                    s.textContent = parseInt(s.dataset.value) <= value ? '★' : '☆';
+                    s.style.color = parseInt(s.dataset.value) <= value ? '#D4AF37' : '#ccc';
+                });
+            });
+            star.addEventListener('mouseenter', function() {
+                const value = parseInt(this.dataset.value);
+                document.querySelectorAll('.star').forEach(s => {
+                    s.style.color = parseInt(s.dataset.value) <= value ? '#D4AF37' : '#ccc';
+                });
+            });
+            star.addEventListener('mouseleave', function() {
+                const selected = parseInt(document.getElementById('reviewRating').value) || 5;
+                document.querySelectorAll('.star').forEach(s => {
+                    s.style.color = parseInt(s.dataset.value) <= selected ? '#D4AF37' : '#ccc';
+                });
+            });
+        });
     });
 </script>
 </body>

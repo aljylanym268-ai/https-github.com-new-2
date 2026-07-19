@@ -412,7 +412,7 @@ async function loadBuyerOrdersWithTimeline() {
     if (!container) return;
     if (orders.length === 0) { container.innerHTML = '<p style="text-align:center;">لا توجد طلبات</p>'; return; }
     container.innerHTML = '';
-    orders.forEach(order => {
+    for (const order of orders) {
         const card = document.createElement('div');
         card.className = 'order-card';
         const product = order.products || {};
@@ -435,9 +435,21 @@ async function loadBuyerOrdersWithTimeline() {
                 <div style="font-size:0.8rem;margin-top:4px;">أعط هذا الرمز للمندوب عند استلام الطلب</div>
             </div>`;
         }
-        card.innerHTML = `<div class="order-header"><span class="order-id">#${order.id.slice(0,8)}</span><span class="order-status ${order.status}">${getStatusText(order.status)}</span></div><div>${escapeHTML(product.name)} - ${order.quantity} × ${(order.total_price - (order.delivery_fee || 0)) / order.quantity} ج.م</div><div>رسوم التوصيل: ${order.delivery_fee || 0} ج.م</div><div class="order-timeline" style="margin-top:15px;">${timeline}</div>${otpDisplay}${deliveryHtml}${order.status === 'pending' ? `<button class="add-to-cart" onclick="cancelOrder('${order.id}')">إلغاء الطلب</button>` : ''}`;
+
+        // زر تقييم المنتج (يظهر فقط إذا كان الطلب delivered ولم يتم تقييم المنتج من قبل)
+        let reviewButton = '';
+        if (order.status === 'delivered' && order.product_id && appState.user) {
+            const hasReviewed = await hasUserReviewed(order.product_id, appState.user.id);
+            if (!hasReviewed) {
+                reviewButton = `<button class="add-to-cart" style="background:#D4AF37; color:#1a237e; margin-top:8px;" onclick="showAddReviewForm('${order.product_id}')">
+                    <i class="fas fa-star"></i> تقييم المنتج
+                </button>`;
+            }
+        }
+
+        card.innerHTML = `<div class="order-header"><span class="order-id">#${order.id.slice(0,8)}</span><span class="order-status ${order.status}">${getStatusText(order.status)}</span></div><div>${escapeHTML(product.name)} - ${order.quantity} × ${(order.total_price - (order.delivery_fee || 0)) / order.quantity} ج.م</div><div>رسوم التوصيل: ${order.delivery_fee || 0} ج.م</div><div class="order-timeline" style="margin-top:15px;">${timeline}</div>${otpDisplay}${deliveryHtml}${order.status === 'pending' ? `<button class="add-to-cart" onclick="cancelOrder('${order.id}')">إلغاء الطلب</button>` : ''}${reviewButton}`;
         container.appendChild(card);
-    });
+    }
 }
 
 // ===================== دوال الطلبات (البائع) =====================

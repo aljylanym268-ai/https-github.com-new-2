@@ -1,14 +1,15 @@
-// ========== ملف product.js الكامل (مع إضافة السحب على الصورة للتنقل) ==========
-// تم التعديل: إزالة الأزرار وإضافة خاصية السحب (Swipe) على الصورة نفسها
+// ========== ملف product.js المعدل (إزالة الأزرار الثابتة المكررة) ==========
 
-// ========== فتح تفاصيل المنتج (معرض صورة واحد مع سحب) ==========
+// ========== فتح تفاصيل المنتج (معرض صورة واحد مع سحب + تقييمات) ==========
 async function openProductDetail(product) {
     if (!product) return;
     appState.currentProduct = product;
 
-    // جلب المراجعات
+    // جلب التقييمات والإحصائيات
     const reviews = await loadProductReviews(product.id);
-    const avgRating = reviews.length ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length) : 0;
+    const stats = await getReviewStats(product.id);
+    const avgRating = stats.average;
+    const totalReviews = stats.total;
 
     // بناء نجوم التقييم
     const fullStars = Math.floor(avgRating);
@@ -34,7 +35,15 @@ async function openProductDetail(product) {
     const container = document.getElementById('productDetailContent');
     if (!container) return;
 
-    // بناء HTML مع معرض صور بسيط (صورة واحدة فقط + عداد)
+    // التحقق مما إذا كان المستخدم يمكنه التقييم
+    let canReview = false;
+    let userReview = null;
+    if (appState.user) {
+        canReview = await canReviewProduct(product.id, appState.user.id);
+        userReview = await getUserReview(product.id, appState.user.id);
+    }
+
+    // بناء HTML مع معرض صور بسيط + قسم التقييمات
     let galleryHtml = '';
     if (images.length > 0) {
         galleryHtml = `
@@ -51,18 +60,34 @@ async function openProductDetail(product) {
         galleryHtml = `<div class="product-detail-image-section"><div class="product-main-image-container"><div class="no-image">📦</div></div></div>`;
     }
 
+    // قسم التقييمات
+    const reviewsHtml = await renderReviewsSection(product.id, reviews, stats);
+
+    // زر إضافة تقييم (إذا كان المستخدم يستطيع)
+    let reviewActionHtml = '';
+    if (appState.user) {
+        if (canReview && !userReview) {
+            reviewActionHtml = `<button class="add-review-btn" onclick="showAddReviewForm('${product.id}')"><i class="fas fa-star"></i> إضافة تقييم</button>`;
+        } else if (userReview) {
+            reviewActionHtml = `<button class="edit-review-btn" onclick="showAddReviewForm('${product.id}')"><i class="fas fa-edit"></i> تعديل تقييمك</button>`;
+        } else {
+            reviewActionHtml = `<p style="color:#888; font-size:0.9rem;">⚠️ يمكنك تقييم هذا المنتج بعد استلام طلبك.</p>`;
+        }
+    } else {
+        reviewActionHtml = `<p style="color:#888; font-size:0.9rem;">🔒 سجل دخولك لتقييم هذا المنتج.</p>`;
+    }
+
     container.innerHTML = `
         <div class="product-detail-wrapper" id="productDetailWrapper">
 
             <!-- القسم العلوي -->
             <div class="product-detail-top-section">
                 <h1 class="product-detail-name">${escapeHTML(product.name)}</h1>
-                <div class="product-detail-meta" onclick="toggleReviews()" style="cursor:pointer;">
+                <div class="product-detail-meta">
                     <div class="product-rating-row">
                         <span class="stars">${ratingStars}</span>
                         <span class="rating-value">${avgRating.toFixed(1)}</span>
-                        <span class="rating-count">(${reviews.length} تقييم)</span>
-                        <i class="fas fa-chevron-down" id="reviewsToggleIcon" style="font-size:0.8rem; margin-right:6px; transition: transform 0.3s;"></i>
+                        <span class="rating-count">(${totalReviews} تقييم)</span>
                     </div>
                     ${product.seller_name ? `<span class="seller-badge verified">✓ ${escapeHTML(product.seller_name)}</span>` : ''}
                 </div>
@@ -97,17 +122,20 @@ async function openProductDetail(product) {
                         الإجمالي: ${product.price.toLocaleString()} ج.م
                     </span>
                 </div>
-                <div class="product-detail-actions desktop-actions">
-                    <button class="buy-now-btn" onclick="openDirectCheckout()">
+
+                <!-- ===== الأزرار (أسفل الإجمالي مباشرة) ===== -->
+                <div class="product-detail-actions desktop-actions" style="display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin:16px 0 10px;">
+                    <button class="buy-now-btn" onclick="openDirectCheckout()" style="flex:1; min-width:140px; max-width:220px;">
                         <i class="fas fa-bolt"></i> شراء الآن
                     </button>
-                    <button class="add-to-cart-btn" onclick="addToCartFromDetail()">
+                    <button class="add-to-cart-btn" onclick="addToCartFromDetail()" style="flex:1; min-width:140px; max-width:220px;">
                         <i class="fas fa-cart-plus"></i> إضافة إلى السلة
                     </button>
-                    <button class="share-btn-icon" onclick="shareProduct()" title="مشاركة المنتج">
+                    <button class="share-btn-icon" onclick="shareProduct()" title="مشاركة المنتج" style="flex:0 0 auto; min-width:50px;">
                         <i class="fas fa-share-alt"></i>
                     </button>
                 </div>
+
                 <div class="product-specifications">
                     <h3>مواصفات المنتج</h3>
                     <div class="spec-grid">
@@ -117,21 +145,13 @@ async function openProductDetail(product) {
                         ${product.brand ? `<div class="spec-item"><span class="spec-label">الماركة</span><span class="spec-value">${escapeHTML(product.brand)}</span></div>` : ''}
                     </div>
                 </div>
-                <div class="product-reviews" id="productReviewsSection" style="display: none;">
-                    <h3>تقييمات العملاء</h3>
-                    <div class="reviews-list" id="reviewsList">
-                        ${reviews.length ? reviews.map(r => `
-                            <div class="review-item">
-                                <div class="review-avatar"><i class="fas fa-user"></i></div>
-                                <div class="review-content">
-                                    <div class="review-name">${escapeHTML(r.user_name || 'مستخدم')}</div>
-                                    <div class="review-stars">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</div>
-                                    <p class="review-text">${escapeHTML(r.comment)}</p>
-                                    <div class="review-date">${new Date(r.created_at).toLocaleDateString('ar-EG')}</div>
-                                </div>
-                            </div>
-                        `).join('') : '<div class="no-reviews">لا توجد تقييمات لهذا المنتج بعد.</div>'}
+                <!-- قسم التقييمات -->
+                <div class="product-reviews-section">
+                    <div class="reviews-header">
+                        <h3>تقييمات العملاء</h3>
+                        ${reviewActionHtml}
                     </div>
+                    ${reviewsHtml}
                 </div>
             </div>
         </div>
@@ -149,7 +169,339 @@ async function openProductDetail(product) {
     // تحميل المنتجات المشابهة
     loadSimilarProductsInDetail(product.category, product.id);
     showScreen('productDetailScreen');
-    setTimeout(() => addStickyActions(), 100);
+
+    // ** إزالة الأزرار الثابتة المكررة **
+    // بدلاً من استدعاء addStickyActions، نترك الأزرار العادية فقط.
+    // إذا أردت إلغاء الأزرار الثابتة نهائياً، يمكنك حذف السطر التالي.
+    // لكننا سنترك الدالة ولكنها فارغة.
+    // setTimeout(() => addStickyActions(), 100);
+    // تم إلغاء استدعاء addStickyActions
+}
+
+// ========== عرض قسم التقييمات ==========
+async function renderReviewsSection(productId, reviews, stats) {
+    if (!reviews || reviews.length === 0) {
+        return `<div class="no-reviews">لا توجد تقييمات لهذا المنتج بعد. كن أول من يقيّم!</div>`;
+    }
+
+    // توزيع النجوم
+    const distribution = stats.distribution || { 1:0, 2:0, 3:0, 4:0, 5:0 };
+    const total = stats.total || reviews.length;
+    let distHtml = '';
+    for (let i = 5; i >= 1; i--) {
+        const count = distribution[i] || 0;
+        const percent = total > 0 ? (count / total * 100) : 0;
+        distHtml += `
+            <div class="rating-dist-row">
+                <span class="dist-stars">${'★'.repeat(i)}</span>
+                <div class="dist-bar"><div class="dist-fill" style="width:${percent}%;"></div></div>
+                <span class="dist-count">${count}</span>
+            </div>
+        `;
+    }
+
+    // قائمة التقييمات
+    let listHtml = '';
+    for (const review of reviews) {
+        const user = review.users || {};
+        const userImage = user.image_url ? `<img src="${user.image_url}" alt="${escapeHTML(user.name)}">` : `<i class="fas fa-user"></i>`;
+        const stars = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
+        const date = new Date(review.created_at).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
+        const imagesHtml = review.images && review.images.length > 0
+            ? `<div class="review-images">${review.images.map(img => `<img src="${img}" loading="lazy" onclick="openImageModalFromReview('${img}')">`).join('')}</div>`
+            : '';
+        const videoHtml = review.video
+            ? `<div class="review-video"><video controls src="${review.video}"></video></div>`
+            : '';
+        const verifiedBadge = review.is_verified_purchase
+            ? `<span class="verified-badge"><i class="fas fa-check-circle"></i> شراء موثق</span>`
+            : '';
+
+        listHtml += `
+            <div class="review-item" data-review-id="${review.id}">
+                <div class="review-avatar">${userImage}</div>
+                <div class="review-content">
+                    <div class="review-name">${escapeHTML(user.name || 'مستخدم')} ${verifiedBadge}</div>
+                    <div class="review-stars">${stars}</div>
+                    ${review.title ? `<div class="review-title">${escapeHTML(review.title)}</div>` : ''}
+                    <p class="review-text">${escapeHTML(review.comment)}</p>
+                    ${imagesHtml}
+                    ${videoHtml}
+                    <div class="review-footer">
+                        <span class="review-date">${date}</span>
+                        <button class="helpful-btn" onclick="markHelpful('${review.id}')">
+                            <i class="fas fa-thumbs-up"></i> مفيد (${review.helpful_count || 0})
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    return `
+        <div class="reviews-stats">
+            <div class="rating-summary">
+                <div class="rating-average">${stats.average.toFixed(1)}</div>
+                <div class="rating-stars">${'★'.repeat(Math.floor(stats.average))}${'☆'.repeat(5 - Math.floor(stats.average))}</div>
+                <div class="rating-count">${total} تقييم</div>
+            </div>
+            <div class="rating-distribution">${distHtml}</div>
+        </div>
+        <div class="reviews-list">${listHtml}</div>
+    `;
+}
+
+// ========== عرض نموذج إضافة تقييم ==========
+function showAddReviewForm(productId) {
+    if (!appState.user) {
+        showToast('يجب تسجيل الدخول أولاً', 'warning');
+        return;
+    }
+    // التحقق من وجود تقييم سابق لتعديله
+    getUserReview(productId, appState.user.id).then(review => {
+        const modal = document.getElementById('addReviewModal');
+        if (!modal) {
+            showToast('النموذج غير متوفر', 'error');
+            return;
+        }
+        // تعبئة الحقول إذا كان هناك تقييم سابق
+        if (review) {
+            document.getElementById('reviewRating').value = review.rating;
+            document.getElementById('reviewTitle').value = review.title || '';
+            document.getElementById('reviewComment').value = review.comment || '';
+            document.getElementById('reviewProductId').value = productId;
+            document.getElementById('reviewId').value = review.id;
+            // تحديث النجوم
+            document.querySelectorAll('.star').forEach(s => {
+                const val = parseInt(s.dataset.value);
+                s.textContent = val <= review.rating ? '★' : '☆';
+                s.style.color = val <= review.rating ? '#D4AF37' : '#ccc';
+            });
+        } else {
+            document.getElementById('reviewRating').value = 5;
+            document.getElementById('reviewTitle').value = '';
+            document.getElementById('reviewComment').value = '';
+            document.getElementById('reviewProductId').value = productId;
+            document.getElementById('reviewId').value = '';
+            // تعيين النجوم إلى 5 افتراضياً
+            document.querySelectorAll('.star').forEach(s => {
+                const val = parseInt(s.dataset.value);
+                s.textContent = val <= 5 ? '★' : '☆';
+                s.style.color = val <= 5 ? '#D4AF37' : '#ccc';
+            });
+        }
+        // تنظيف معاينة الملفات
+        document.getElementById('reviewImagesPreview').innerHTML = '';
+        document.getElementById('reviewVideoPreview').innerHTML = '';
+        document.getElementById('reviewImages').value = '';
+        document.getElementById('reviewVideo').value = '';
+        modal.classList.add('active');
+    });
+}
+
+// ========== إرسال التقييم ==========
+async function submitReview() {
+    const productId = document.getElementById('reviewProductId').value;
+    const reviewId = document.getElementById('reviewId').value;
+    const rating = parseInt(document.getElementById('reviewRating').value);
+    const title = document.getElementById('reviewTitle').value.trim();
+    const comment = document.getElementById('reviewComment').value.trim();
+    const imagesInput = document.getElementById('reviewImages');
+    const videoInput = document.getElementById('reviewVideo');
+
+    if (!rating || rating < 1 || rating > 5) {
+        showToast('يرجى اختيار تقييم من 1 إلى 5 نجوم', 'warning');
+        return;
+    }
+    if (!comment) {
+        showToast('يرجى كتابة تعليق', 'warning');
+        return;
+    }
+
+    showLoading(true);
+    try {
+        // رفع الملفات إن وجدت
+        let imageUrls = [];
+        let videoUrl = null;
+
+        // الحصول على معرف التقييم (إذا كان جديداً، سننشئه ثم نرفع الملفات)
+        let tempReviewId = reviewId;
+        if (!tempReviewId) {
+            // إنشاء سجل مؤقت للحصول على ID
+            const { data, error } = await supabaseClient
+                .from('reviews')
+                .insert({
+                    product_id: productId,
+                    user_id: appState.user.id,
+                    rating: rating,
+                    title: title,
+                    comment: comment,
+                    is_verified_purchase: false,
+                    created_at: new Date(),
+                    updated_at: new Date()
+                })
+                .select('id')
+                .single();
+            if (error) throw error;
+            tempReviewId = data.id;
+        }
+
+        // رفع الصور
+        if (imagesInput.files.length > 0) {
+            if (imagesInput.files.length > 5) {
+                throw new Error('يمكن رفع 5 صور كحد أقصى');
+            }
+            imageUrls = await uploadReviewImages(Array.from(imagesInput.files), tempReviewId);
+        }
+
+        // رفع الفيديو
+        if (videoInput.files.length > 0) {
+            const videoFile = videoInput.files[0];
+            if (videoFile.size > 50 * 1024 * 1024) throw new Error('الفيديو كبير جداً (الحد 50 ميجابايت)');
+            videoUrl = await uploadReviewVideo(videoFile, tempReviewId);
+        }
+
+        // التحقق من الشراء (is_verified_purchase)
+        const canReview = await canReviewProduct(productId, appState.user.id);
+
+        // حفظ أو تحديث التقييم
+        const reviewData = {
+            product_id: productId,
+            user_id: appState.user.id,
+            order_id: null,
+            rating: rating,
+            title: title,
+            comment: comment,
+            images: imageUrls,
+            video: videoUrl,
+            is_verified_purchase: canReview
+        };
+
+        // إذا كان هناك reviewId موجود، نقوم بالتحديث
+        if (reviewId) {
+            const { error } = await supabaseClient
+                .from('reviews')
+                .update({
+                    rating,
+                    title,
+                    comment,
+                    images: imageUrls.length > 0 ? imageUrls : undefined,
+                    video: videoUrl || undefined,
+                    updated_at: new Date()
+                })
+                .eq('id', reviewId);
+            if (error) throw error;
+        } else {
+            // إدراج كامل (لأننا أنشأنا سجلاً مؤقتاً، لكننا سنستبدله بالكامل)
+            // نمسح المؤقت ونضيف الجديد
+            if (tempReviewId) {
+                await supabaseClient.from('reviews').delete().eq('id', tempReviewId);
+            }
+            const { data, error } = await supabaseClient
+                .from('reviews')
+                .insert({
+                    product_id: productId,
+                    user_id: appState.user.id,
+                    rating: rating,
+                    title: title,
+                    comment: comment,
+                    images: imageUrls,
+                    video: videoUrl,
+                    is_verified_purchase: canReview,
+                    created_at: new Date(),
+                    updated_at: new Date()
+                })
+                .select()
+                .single();
+            if (error) throw error;
+        }
+
+        // تحديث إحصائيات المنتج
+        await updateProductRatingStats(productId);
+
+        // إغلاق المودال
+        closeReviewModal();
+
+        // إعادة تحميل تفاصيل المنتج لتحديث التقييمات
+        const product = appState.products.find(p => p.id === productId);
+        if (product) {
+            await openProductDetail(product);
+        }
+
+        showToast('تم إرسال التقييم بنجاح!', 'success');
+    } catch (err) {
+        showToast(err.message, 'error');
+        console.error(err);
+    } finally {
+        showLoading(false);
+    }
+}
+
+// ========== إغلاق مودال التقييم ==========
+function closeReviewModal() {
+    document.getElementById('addReviewModal').classList.remove('active');
+}
+
+// ========== معاينة الصور قبل الرفع ==========
+function previewReviewImages(event) {
+    const files = event.target.files;
+    const container = document.getElementById('reviewImagesPreview');
+    container.innerHTML = '';
+    for (let i = 0; i < files.length && i < 5; i++) {
+        const file = files[i];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.className = 'preview-thumb';
+            container.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+function previewReviewVideo(event) {
+    const file = event.target.files[0];
+    const container = document.getElementById('reviewVideoPreview');
+    container.innerHTML = '';
+    if (file) {
+        const video = document.createElement('video');
+        video.src = URL.createObjectURL(file);
+        video.controls = true;
+        video.className = 'preview-video';
+        container.appendChild(video);
+    }
+}
+
+// ========== تسجيل إعجاب "مفيد" ==========
+async function markHelpful(reviewId) {
+    if (!appState.user) {
+        showToast('يجب تسجيل الدخول أولاً', 'warning');
+        return;
+    }
+    try {
+        await markReviewHelpful(reviewId, appState.user.id);
+        showToast('شكراً لك! تم تسجيل تقييمك كمفيد.', 'success');
+        // تحديث عدد الإعجابات في الواجهة
+        const btn = document.querySelector(`.review-item[data-review-id="${reviewId}"] .helpful-btn`);
+        if (btn) {
+            const countSpan = btn.querySelector('.helpful-count') || btn;
+            const current = parseInt(countSpan.textContent.match(/\d+/)?.[0] || 0);
+            countSpan.textContent = ` مفيد (${current + 1})`;
+        }
+    } catch (err) {
+        showToast(err.message, 'error');
+    }
+}
+
+// ========== فتح الصورة في مودال ==========
+function openImageModalFromReview(imageSrc) {
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('modalImage');
+    if (modal && modalImg) {
+        modalImg.src = imageSrc;
+        modal.classList.add('active');
+    }
 }
 
 // ========== إعداد السحب (Swipe) على الصورة ==========
@@ -161,7 +513,7 @@ function setupSwipe() {
     let isDragging = false;
     let currentTranslateX = 0;
     let isSwiping = false;
-    const threshold = 30; // مسافة السحب المطلوبة لتغيير الصورة
+    const threshold = 30;
 
     // إزالة المستمعات القديمة لتجنب التكرار
     container.removeEventListener('touchstart', handleTouchStart);
@@ -186,14 +538,13 @@ function setupSwipe() {
         const touch = e.touches[0];
         const diff = touch.clientX - startX;
         currentTranslateX = diff;
-        // نحرك الصورة قليلاً لمتابعة الإصبع
         const img = container.querySelector('img');
         if (img) {
             img.style.transform = `translateX(${diff}px)`;
         }
         if (Math.abs(diff) > 10) {
             isSwiping = true;
-            e.preventDefault(); // لمنع التمرير العمودي أثناء السحب الأفقي
+            e.preventDefault();
         }
     }
 
@@ -209,9 +560,9 @@ function setupSwipe() {
             const diff = currentTranslateX;
             if (Math.abs(diff) > threshold) {
                 if (diff < 0) {
-                    slideGallery(1); // سحب لليسار => الصورة التالية
+                    slideGallery(1);
                 } else {
-                    slideGallery(-1); // سحب لليمين => الصورة السابقة
+                    slideGallery(-1);
                 }
             }
         }
@@ -406,30 +757,11 @@ function toggleReviews() {
     if (icon) icon.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
 }
 
-// ========== إضافة الأزرار المثبتة ==========
+// ========== إضافة الأزرار المثبتة (تم تعطيلها) ==========
 function addStickyActions() {
-    const existing = document.querySelector('.sticky-actions-mobile');
-    if (existing) existing.remove();
-    const desktopActions = document.querySelector('.product-detail-actions.desktop-actions');
-    if (!desktopActions) return;
-    const stickyDiv = document.createElement('div');
-    stickyDiv.className = 'sticky-actions-mobile';
-    // زر شراء الآن
-    const buyBtn = desktopActions.querySelector('.buy-now-btn');
-    if (buyBtn) {
-        const cloneBuy = buyBtn.cloneNode(true);
-        cloneBuy.onclick = openDirectCheckout;
-        stickyDiv.appendChild(cloneBuy);
-    }
-    // زر إضافة إلى السلة
-    const addBtn = desktopActions.querySelector('.add-to-cart-btn');
-    if (addBtn) {
-        const cloneAdd = addBtn.cloneNode(true);
-        cloneAdd.onclick = addToCartFromDetail;
-        stickyDiv.appendChild(cloneAdd);
-    }
-    const wrapper = document.querySelector('.product-detail-wrapper');
-    if (wrapper) wrapper.appendChild(stickyDiv);
+    // هذه الدالة تُركت فارغة لإلغاء الأزرار الثابتة المكررة.
+    // إذا أردت إعادة تفعيلها، يمكنك إعادة كتابتها.
+    console.log('تم تعطيل الأزرار الثابتة المكررة.');
 }
 
 // ========== دوال الشراء المباشر ==========
@@ -474,9 +806,8 @@ async function confirmDirectOrder() {
         const product = appState.currentProduct;
         const quantity = window._detailQuantity || 1;
         const totalPrice = product.price * quantity;
-        const deliveryFee = 20; // يمكن جعلها ديناميكية حسب المدينة
+        const deliveryFee = 20;
 
-        // إنشاء الطلب مباشرة
         await createOrder(
             product.id,
             quantity,
@@ -485,15 +816,13 @@ async function confirmDirectOrder() {
             name,
             phone,
             address,
-            city, // center
+            city,
             deliveryFee
         );
 
-        // إغلاق المودال
         document.getElementById('directCheckoutModal').classList.remove('active');
 
         showToast('تم تقديم الطلب بنجاح!', 'success');
-        // توجيه المستخدم إلى صفحة الطلبات
         showScreen('ordersScreen');
         if (typeof loadBuyerOrdersWithTimeline === 'function') {
             loadBuyerOrdersWithTimeline();
@@ -615,7 +944,7 @@ window.toggleZoom = toggleZoom;
 window.shareProduct = shareProduct;
 window.loadProductReviews = loadProductReviews;
 window.toggleReviews = toggleReviews;
-window.addStickyActions = addStickyActions;
+window.addStickyActions = addStickyActions; // الدالة فارغة
 window.addToCartFromDetail = addToCartFromDetail;
 window.buyNowFromDetail = buyNowFromDetail;
 window.addToCartWithQuantity = addToCartWithQuantity;
@@ -628,3 +957,11 @@ window.sanitizeImages = sanitizeImages;
 window.updateImageCounter = updateImageCounter;
 window.getProductImages = getProductImages;
 window.setupSwipe = setupSwipe;
+window.showAddReviewForm = showAddReviewForm;
+window.submitReview = submitReview;
+window.closeReviewModal = closeReviewModal;
+window.previewReviewImages = previewReviewImages;
+window.previewReviewVideo = previewReviewVideo;
+window.markHelpful = markHelpful;
+window.openImageModalFromReview = openImageModalFromReview;
+window.renderReviewsSection = renderReviewsSection;

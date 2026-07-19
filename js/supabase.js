@@ -131,7 +131,248 @@ async function uploadProductImages(files) {
     return urls;
 }
 
-// ========== المصادقة ==========
+// ========== رفع صور التقييمات ==========
+async function uploadReviewImages(files, reviewId) {
+    if (!files || files.length === 0) return [];
+    const urls = [];
+    for (const file of files) {
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        if (!allowedTypes.includes(file.type)) throw new Error(`نوع الملف ${file.name} غير مدعوم`);
+        if (file.size > 10 * 1024 * 1024) throw new Error(`الملف ${file.name} كبير جداً (الحد 10 ميجابايت)`);
+        const compressed = await compressImage(file, 1024, 1024, 0.8);
+        const uniqueName = `review-${reviewId}-${Date.now()}-${Math.random().toString(36).substring(2)}.${file.name.split('.').pop()}`;
+        const filePath = `reviews/${uniqueName}`;
+        const { error } = await supabaseClient.storage.from('review-media').upload(filePath, compressed, { cacheControl: '3600', upsert: false });
+        if (error) throw new Error(`فشل رفع ${file.name}: ${error.message}`);
+        const { data: { publicUrl } } = supabaseClient.storage.from('review-media').getPublicUrl(filePath);
+        urls.push(publicUrl);
+    }
+    return urls;
+}
+
+// ========== رفع فيديو التقييم ==========
+async function uploadReviewVideo(file, reviewId) {
+    if (!file) return null;
+    const allowedTypes = ['video/mp4', 'video/webm', 'video/ogg'];
+    if (!allowedTypes.includes(file.type)) throw new Error(`نوع الفيديو ${file.name} غير مدعوم`);
+    if (file.size > 50 * 1024 * 1024) throw new Error(`الملف ${file.name} كبير جداً (الحد 50 ميجابايت)`);
+    const uniqueName = `review-${reviewId}-${Date.now()}-${Math.random().toString(36).substring(2)}.${file.name.split('.').pop()}`;
+    const filePath = `reviews/videos/${uniqueName}`;
+    const { error } = await supabaseClient.storage.from('review-media').upload(filePath, file, { cacheControl: '3600', upsert: false });
+    if (error) throw new Error(`فشل رفع الفيديو: ${error.message}`);
+    const { data: { publicUrl } } = supabaseClient.storage.from('review-media').getPublicUrl(filePath);
+    return publicUrl;
+}
+
+// ============================================================
+// دوال نظام التقييمات والمراجعات
+// ============================================================
+
+// التحقق مما إذا كان المستخدم قد اشترى المنتج واستلمه
+async function canReviewProduct(productId, userId) {
+    if (!userId) return false;
+    const { data, error } = await supabaseClient
+        .from('orders')
+        .select('id')
+        .eq('product_id', productId)
+        .eq('buyer_id', userId)
+        .eq('status', 'delivered')
+        .maybeSingle();
+    if (error) {
+        console.error('خطأ في التحقق من الشراء:', error);
+        return false;
+    }
+    return !!data;
+}
+
+// التحقق مما إذا كان المستخدم قد قيّم المنتج من قبل
+async function hasUserReviewed(productId, userId) {
+    if (!userId) return false;
+    const { data, error } = await supabaseClient
+        .from('reviews')
+        .select('id')
+        .eq('product_id', productId)
+        .eq('user_id', userId)
+        .maybeSingle();
+    if (error) {
+        console.error('خطأ في التحقق من التقييم:', error);
+        return false;
+    }
+    return !!data;
+}
+
+// جلب تقييم المستخدم للمنتج (للتعديل)
+async function getUserReview(productId, userId) {
+    if (!userId) return null;
+    const { data, error } = await supabaseClient
+        .from('reviews')
+        .select('*')
+        .eq('product_id', productId)
+        .eq('user_id', userId)
+        .maybeSingle();
+    if (error) {
+        console.error('خطأ في جلب تقييم المستخدم:', error);
+        return null;
+    }
+    return data;
+}
+
+// إضافة أو تحديث تقييم
+async function upsertReview(reviewData) {
+    const { product_id, user_id, order_id, rating, title, comment, images, video, is_verified_purchase } = reviewData;
+    // التحقق من وجود تقييم سابق
+    const existing = await getUserReview(product_id, user_id);
+    let result;
+    if (existing) {
+        // تحديث
+        const { data, error } = await supabaseClient
+            .from('reviews')
+            .update({
+                rating,
+                title,
+                comment,
+                images: images || [],
+                video: video || null,
+                updated_at: new Date()
+            })
+            .eq('id', existing.id)
+            .select()
+            .single();
+        if (error) throw error;
+        result = data;
+    } else {
+        // إدراج جديد
+        const { data, error } = await supabaseClient
+            .from('reviews')
+            .insert({
+                product_id,
+                user_id,
+                order_id,
+                rating,
+                title,
+                comment,
+                images: images || [],
+                video: video || null,
+                is_verified_purchase: is_verified_purchase || false,
+                created_at: new Date(),
+                updated_at: new Date()
+            })
+            .select()
+            .single();
+        if (error) throw error;
+        result = data;
+    }
+    // تحديث إحصائيات المنتج (سيتم عبر trigger لكن نستدعيها احتياطاً)
+    await updateProductRatingStats(product_id);
+    return result;
+}
+
+// تحديث متوسط التقييم وعدد التقييمات في جدول المنتجات
+async function updateProductRatingStats(productId) {
+    const { data, error } = await supabaseClient
+        .from('reviews')
+        .select('rating')
+        .eq('product_id', productId);
+    if (error) {
+        console.error('خطأ في جلب تقييمات المنتج:', error);
+        return;
+    }
+    const total = data.length;
+    const avg = total > 0 ? data.reduce((sum, r) => sum + r.rating, 0) / total : 0;
+    await supabaseClient
+        .from('products')
+        .update({
+            avg_rating: Math.round(avg * 10) / 10,
+            review_count: total
+        })
+        .eq('id', productId);
+}
+
+// جلب تقييمات المنتج مع معلومات المستخدم
+async function loadProductReviews(productId) {
+    try {
+        const { data, error } = await supabaseClient
+            .from('reviews')
+            .select(`
+                *,
+                users:user_id (id, name, image_url)
+            `)
+            .eq('product_id', productId)
+            .order('created_at', { ascending: false });
+        if (error) throw error;
+        return data || [];
+    } catch (e) {
+        console.error('فشل جلب التقييمات:', e);
+        return [];
+    }
+}
+
+// جلب إحصائيات التقييمات لمنتج
+async function getReviewStats(productId) {
+    const reviews = await loadProductReviews(productId);
+    const total = reviews.length;
+    if (total === 0) return { total, average: 0, distribution: { 1:0, 2:0, 3:0, 4:0, 5:0 } };
+    const sum = reviews.reduce((s, r) => s + r.rating, 0);
+    const average = sum / total;
+    const distribution = { 1:0, 2:0, 3:0, 4:0, 5:0 };
+    reviews.forEach(r => { distribution[r.rating] = (distribution[r.rating] || 0) + 1; });
+    return { total, average, distribution };
+}
+
+// تسجيل إعجاب "مفيد"
+async function markReviewHelpful(reviewId, userId) {
+    if (!userId) throw new Error('يجب تسجيل الدخول');
+    // التحقق من أن المستخدم لم يضغط على مفيد من قبل لهذا التقييم
+    const { data: existing, error: checkError } = await supabaseClient
+        .from('review_helpful')
+        .select('id')
+        .eq('review_id', reviewId)
+        .eq('user_id', userId)
+        .maybeSingle();
+    if (checkError) throw checkError;
+    if (existing) throw new Error('لقد قمت بتحديد هذا التقييم كمفيد سابقاً');
+
+    // إضافة سجل
+    const { error: insertError } = await supabaseClient
+        .from('review_helpful')
+        .insert({ review_id: reviewId, user_id: userId, created_at: new Date() });
+    if (insertError) throw insertError;
+
+    // زيادة العدد في جدول التقييمات (استخدام RPC أو تحديث مباشر)
+    const { error: updateError } = await supabaseClient
+        .from('reviews')
+        .update({ helpful_count: supabaseClient.rpc('increment_helpful_count', { review_id: reviewId }) })
+        .eq('id', reviewId);
+    if (updateError) {
+        // في حال عدم وجود الدالة، نقوم بالتحديث المباشر
+        const { data: review } = await supabaseClient
+            .from('reviews')
+            .select('helpful_count')
+            .eq('id', reviewId)
+            .single();
+        if (review) {
+            await supabaseClient
+                .from('reviews')
+                .update({ helpful_count: (review.helpful_count || 0) + 1 })
+                .eq('id', reviewId);
+        }
+    }
+}
+
+// الحصول على عدد الإعجابات المفيدة لتقييم
+async function getHelpfulCount(reviewId) {
+    const { data, error } = await supabaseClient
+        .from('review_helpful')
+        .select('id', { count: 'exact' })
+        .eq('review_id', reviewId);
+    if (error) throw error;
+    return data.length;
+}
+
+// ============================================================
+// المصادقة
+// ============================================================
+
 async function signInWithGoogle() {
     const loginAccountType = document.getElementById('loginAccountType');
     if (!loginAccountType) {
@@ -426,7 +667,9 @@ function toggleFounderMenuItem(isFounder) {
     if (founderItem) founderItem.style.display = isFounder ? 'flex' : 'none';
 }
 
-// ========== تحميل بيانات المستخدم ==========
+// ============================================================
+// تحميل بيانات المستخدم
+// ============================================================
 async function loadUserData() {
     if (!appState.user) return;
     try {
@@ -517,7 +760,9 @@ async function loadUserData() {
     }
 }
 
-// ========== تحديث معلومات المستخدم في الواجهة ==========
+// ============================================================
+// تحديث معلومات المستخدم في الواجهة
+// ============================================================
 function updateUserInfo(isGuest = false) {
     const welcomeName = document.getElementById('welcomeName');
     const welcomeAvatar = document.getElementById('welcomeAvatar');
@@ -577,18 +822,16 @@ function updateUserInfo(isGuest = false) {
     }
 }
 
-// ========== الموقع ==========
+// ============================================================
+// الموقع
+// ============================================================
 function loadVillagesForCenter(center, selectedVillage = '') {
     const villageSelect = document.getElementById('villageSelect');
     if (!villageSelect) {
         console.warn('⚠️ عنصر villageSelect غير موجود في الصفحة');
         return;
     }
-    
-    // تفريغ القائمة الحالية
     villageSelect.innerHTML = '<option value="">اختر القرية</option>';
-    
-    // إذا كان المركز موجوداً في القائمة، أضف القرى
     if (center && appState.villagesByCenter[center]) {
         const villages = appState.villagesByCenter[center];
         villages.forEach(village => {
@@ -600,8 +843,6 @@ function loadVillagesForCenter(center, selectedVillage = '') {
     } else {
         console.log(`لا توجد قرى مسجلة للمركز: ${center}`);
     }
-    
-    // تحديد القرية المختارة سابقاً (إن وجدت)
     if (selectedVillage && villageSelect.querySelector(`option[value="${selectedVillage}"]`)) {
         villageSelect.value = selectedVillage;
     }
@@ -678,7 +919,6 @@ function openLocationSettings() {
             centerSelect.value = center;
         }
         
-        // تحميل القرى بناءً على المركز المختار
         loadVillagesForCenter(center, village);
     }, 150);
 }
@@ -707,7 +947,9 @@ function updateProfileLocation() {
     }
 }
 
-// ========== حفظ الملف الشخصي ==========
+// ============================================================
+// حفظ الملف الشخصي
+// ============================================================
 async function saveProfile() {
     if (!appState.user) return showToast('يجب تسجيل الدخول أولاً', 'warning');
     const editName = document.getElementById('editName');
@@ -754,7 +996,9 @@ async function saveProfile() {
     }
 }
 
-// ========== رفع الصورة الشخصية ==========
+// ============================================================
+// رفع الصورة الشخصية
+// ============================================================
 document.getElementById('avatarUpload')?.addEventListener('change', async function(e) {
     const file = e.target.files[0];
     if (!file || !appState.user) return;
@@ -797,7 +1041,9 @@ document.getElementById('avatarUpload')?.addEventListener('change', async functi
     }
 });
 
-// ========== إعدادات المؤسس ==========
+// ============================================================
+// إعدادات المؤسس
+// ============================================================
 async function loadGlobalFounderVisibility() {
     try {
         const { data, error } = await supabaseClient
@@ -873,7 +1119,9 @@ async function initFounderSettings() {
     }
 }
 
-// ========== دوال المؤسس ==========
+// ============================================================
+// دوال المؤسس
+// ============================================================
 async function loadFounderStats() {
     try {
         const { data, error } = await supabaseClient.from('founder_views').select('count').eq('id',1).single();
@@ -1022,7 +1270,9 @@ function contactDeveloper() {
     window.open('https://app.fastbots.ai/embed/cmillclid07mep81pmwkjqyq6', '_blank');
 }
 
-// ========== طلبات انضمام المناديب ==========
+// ============================================================
+// طلبات انضمام المناديب
+// ============================================================
 async function loadPendingDeliveries() {
     if (!appState.user || appState.userData.account_type !== 'founder') return;
     try {
@@ -1045,7 +1295,6 @@ async function loadPendingDeliveries() {
     }
 }
 
-// ========== قبول المندوب (محسّن مع إشعار وتحديث الحقول) ==========
 async function approveDeliveryPerson(userId) {
     if (!userId) {
         showToast('معرف المندوب غير صحيح', 'error');
@@ -1053,7 +1302,6 @@ async function approveDeliveryPerson(userId) {
     }
     showLoading(true);
     try {
-        // جلب بيانات المندوب قبل التحديث للحصول على البريد والاسم للإشعار
         const { data: deliveryData, error: fetchError } = await supabaseClient
             .from('user_data')
             .select('id, name, email, center')
@@ -1065,7 +1313,6 @@ async function approveDeliveryPerson(userId) {
             return;
         }
 
-        // تحديث الحالة إلى approved وتحديث updated_at
         const updates = {
             status: 'approved',
             updated_at: new Date().toISOString()
@@ -1083,7 +1330,6 @@ async function approveDeliveryPerson(userId) {
             return;
         }
 
-        // إرسال إشعار للمندوب بقبوله
         await sendNotification(
             userId,
             '🎉 تم قبول طلب الانضمام كمندوب',
@@ -1092,17 +1338,13 @@ async function approveDeliveryPerson(userId) {
 
         showToast(`تم قبول المندوب ${deliveryData.name || ''} بنجاح`, 'success');
         
-        // تحديث قوائم المناديب في لوحة المؤسس
         await loadPendingDeliveries();
         if (typeof displayAllDeliveryPersons === 'function') {
             await displayAllDeliveryPersons();
         }
         
-        // إذا كان المندوب مسجل الدخول حاليًا، يمكننا تحديث حالة المستخدم في appState
         if (appState.user && appState.user.id === userId) {
-            // تحديث userData للمندوب الحالي
             appState.userData.status = 'approved';
-            // تحديث واجهة المندوب إذا كان مفتوحًا
             if (appState.currentScreen === 'deliveryDashboardScreen') {
                 if (typeof refreshDeliveryDashboard === 'function') {
                     await refreshDeliveryDashboard();
@@ -1133,7 +1375,9 @@ async function rejectDeliveryPerson(userId) {
     }
 }
 
-// ========== إشعارات واشتراكات ==========
+// ============================================================
+// إشعارات واشتراكات
+// ============================================================
 async function sendNotification(userId, title, message, data = {}) {
     try {
         await supabaseClient.from('notifications').insert({
@@ -1185,7 +1429,9 @@ function setupRealtimeSubscriptions() {
         }).subscribe();
 }
 
-// ========== التنقل بين الشاشات ==========
+// ============================================================
+// التنقل بين الشاشات
+// ============================================================
 function showScreen(screenId) {
     if (screenId === 'sellerDashboardScreen') {
         if (!appState.user || appState.userData.account_type !== 'seller') {
@@ -1288,7 +1534,9 @@ function togglePasswordVisibility(inputId, toggleEl) {
 }
 window.togglePasswordVisibility = togglePasswordVisibility;
 
-// ========== الدردشة ==========
+// ============================================================
+// الدردشة
+// ============================================================
 function openChatbot() {
     const chatbotScreen = document.getElementById('chatbotScreen');
     if (chatbotScreen) chatbotScreen.classList.add('active');
@@ -1344,7 +1592,9 @@ function getBotResponse(msg) {
     return 'عذرًا، لم أفهم. جرب الاقتراحات أعلاه.';
 }
 
-// ========== دوال الأمان ==========
+// ============================================================
+// دوال الأمان
+// ============================================================
 function showChangePasswordModal() {
     if (!appState.user) { showToast('يجب تسجيل الدخول أولاً', 'warning'); return; }
     const modal = document.getElementById('changePasswordModal');
@@ -1378,11 +1628,24 @@ function saveSecuritySettings() {
     closeModal('securityModal');
 }
 
-// ========== تصدير الدوال العامة ==========
+// ============================================================
+// تصدير الدوال العامة
+// ============================================================
 window.supabaseClient = supabaseClient;
 window.appState = appState;
 window.compressImage = compressImage;
 window.uploadProductImages = uploadProductImages;
+window.uploadReviewImages = uploadReviewImages;
+window.uploadReviewVideo = uploadReviewVideo;
+window.canReviewProduct = canReviewProduct;
+window.hasUserReviewed = hasUserReviewed;
+window.getUserReview = getUserReview;
+window.upsertReview = upsertReview;
+window.updateProductRatingStats = updateProductRatingStats;
+window.loadProductReviews = loadProductReviews;
+window.getReviewStats = getReviewStats;
+window.markReviewHelpful = markReviewHelpful;
+window.getHelpfulCount = getHelpfulCount;
 window.showScreen = showScreen;
 window.goBack = goBack;
 window.skipLogin = skipLogin;
