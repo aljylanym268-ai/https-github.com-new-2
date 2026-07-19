@@ -1,4 +1,4 @@
-// ========== ملف product.js المعدل (إزالة الأزرار الثابتة المكررة) ==========
+// ========== ملف product.js الكامل (مع إضافة نظام التقييمات) ==========
 
 // ========== فتح تفاصيل المنتج (معرض صورة واحد مع سحب + تقييمات) ==========
 async function openProductDetail(product) {
@@ -122,20 +122,17 @@ async function openProductDetail(product) {
                         الإجمالي: ${product.price.toLocaleString()} ج.م
                     </span>
                 </div>
-
-                <!-- ===== الأزرار (أسفل الإجمالي مباشرة) ===== -->
-                <div class="product-detail-actions desktop-actions" style="display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin:16px 0 10px;">
-                    <button class="buy-now-btn" onclick="openDirectCheckout()" style="flex:1; min-width:140px; max-width:220px;">
+                <div class="product-detail-actions desktop-actions">
+                    <button class="buy-now-btn" onclick="openDirectCheckout()">
                         <i class="fas fa-bolt"></i> شراء الآن
                     </button>
-                    <button class="add-to-cart-btn" onclick="addToCartFromDetail()" style="flex:1; min-width:140px; max-width:220px;">
+                    <button class="add-to-cart-btn" onclick="addToCartFromDetail()">
                         <i class="fas fa-cart-plus"></i> إضافة إلى السلة
                     </button>
-                    <button class="share-btn-icon" onclick="shareProduct()" title="مشاركة المنتج" style="flex:0 0 auto; min-width:50px;">
+                    <button class="share-btn-icon" onclick="shareProduct()" title="مشاركة المنتج">
                         <i class="fas fa-share-alt"></i>
                     </button>
                 </div>
-
                 <div class="product-specifications">
                     <h3>مواصفات المنتج</h3>
                     <div class="spec-grid">
@@ -169,13 +166,7 @@ async function openProductDetail(product) {
     // تحميل المنتجات المشابهة
     loadSimilarProductsInDetail(product.category, product.id);
     showScreen('productDetailScreen');
-
-    // ** إزالة الأزرار الثابتة المكررة **
-    // بدلاً من استدعاء addStickyActions، نترك الأزرار العادية فقط.
-    // إذا أردت إلغاء الأزرار الثابتة نهائياً، يمكنك حذف السطر التالي.
-    // لكننا سنترك الدالة ولكنها فارغة.
-    // setTimeout(() => addStickyActions(), 100);
-    // تم إلغاء استدعاء addStickyActions
+    setTimeout(() => addStickyActions(), 100);
 }
 
 // ========== عرض قسم التقييمات ==========
@@ -732,6 +723,7 @@ function shareProduct() {
 }
 
 // ========== جلب المراجعات من قاعدة البيانات ==========
+// تم نقل هذه الدالة إلى supabase.js، لكن نتركها هنا للتوافق
 async function loadProductReviews(productId) {
     try {
         const { data, error } = await supabaseClient
@@ -757,11 +749,30 @@ function toggleReviews() {
     if (icon) icon.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
 }
 
-// ========== إضافة الأزرار المثبتة (تم تعطيلها) ==========
+// ========== إضافة الأزرار المثبتة ==========
 function addStickyActions() {
-    // هذه الدالة تُركت فارغة لإلغاء الأزرار الثابتة المكررة.
-    // إذا أردت إعادة تفعيلها، يمكنك إعادة كتابتها.
-    console.log('تم تعطيل الأزرار الثابتة المكررة.');
+    const existing = document.querySelector('.sticky-actions-mobile');
+    if (existing) existing.remove();
+    const desktopActions = document.querySelector('.product-detail-actions.desktop-actions');
+    if (!desktopActions) return;
+    const stickyDiv = document.createElement('div');
+    stickyDiv.className = 'sticky-actions-mobile';
+    // زر شراء الآن
+    const buyBtn = desktopActions.querySelector('.buy-now-btn');
+    if (buyBtn) {
+        const cloneBuy = buyBtn.cloneNode(true);
+        cloneBuy.onclick = openDirectCheckout;
+        stickyDiv.appendChild(cloneBuy);
+    }
+    // زر إضافة إلى السلة
+    const addBtn = desktopActions.querySelector('.add-to-cart-btn');
+    if (addBtn) {
+        const cloneAdd = addBtn.cloneNode(true);
+        cloneAdd.onclick = addToCartFromDetail;
+        stickyDiv.appendChild(cloneAdd);
+    }
+    const wrapper = document.querySelector('.product-detail-wrapper');
+    if (wrapper) wrapper.appendChild(stickyDiv);
 }
 
 // ========== دوال الشراء المباشر ==========
@@ -944,7 +955,7 @@ window.toggleZoom = toggleZoom;
 window.shareProduct = shareProduct;
 window.loadProductReviews = loadProductReviews;
 window.toggleReviews = toggleReviews;
-window.addStickyActions = addStickyActions; // الدالة فارغة
+window.addStickyActions = addStickyActions;
 window.addToCartFromDetail = addToCartFromDetail;
 window.buyNowFromDetail = buyNowFromDetail;
 window.addToCartWithQuantity = addToCartWithQuantity;
