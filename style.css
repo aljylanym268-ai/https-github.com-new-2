@@ -1083,15 +1083,15 @@ body {
 }
 .product-detail-actions {
     display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 10px;
     margin: 6px 0 10px;
-    justify-content: center;
+    align-items: stretch;
 }
 .product-detail-actions button {
-    flex: 1;
-    min-width: 160px;
-    max-width: 280px;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
     padding: 16px 20px;
     border: none;
     border-radius: 60px;
