@@ -3338,10 +3338,10 @@ body {
         padding: 10px 4% 100px;
     }
     .product-detail-actions.desktop-actions {
-        display: none;
+        display: flex;
     }
     .sticky-actions-mobile {
-        display: flex;
+        display: none !important;
     }
     .gallery-thumb {
         flex: 0 0 60px;
