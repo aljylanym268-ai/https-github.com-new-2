@@ -3308,10 +3308,12 @@ body {
     z-index: 997;
     gap: 10px;
     justify-content: center;
+    flex-direction: column;
+    align-items: stretch;
 }
 .sticky-actions-mobile button {
-    flex: 1;
-    max-width: 280px;
+    width: 100%;
+    max-width: 420px;
     padding: 14px 16px;
     border: none;
     border-radius: 60px;

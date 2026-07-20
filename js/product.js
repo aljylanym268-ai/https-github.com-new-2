@@ -753,10 +753,13 @@ function toggleReviews() {
 function addStickyActions() {
     const existing = document.querySelector('.sticky-actions-mobile');
     if (existing) existing.remove();
+
     const desktopActions = document.querySelector('.product-detail-actions.desktop-actions');
     if (!desktopActions) return;
+
     const stickyDiv = document.createElement('div');
     stickyDiv.className = 'sticky-actions-mobile';
+
     // زر شراء الآن
     const buyBtn = desktopActions.querySelector('.buy-now-btn');
     if (buyBtn) {
@@ -764,6 +767,7 @@ function addStickyActions() {
         cloneBuy.onclick = openDirectCheckout;
         stickyDiv.appendChild(cloneBuy);
     }
+
     // زر إضافة إلى السلة
     const addBtn = desktopActions.querySelector('.add-to-cart-btn');
     if (addBtn) {
@@ -771,6 +775,15 @@ function addStickyActions() {
         cloneAdd.onclick = addToCartFromDetail;
         stickyDiv.appendChild(cloneAdd);
     }
+
+    // زر مشاركة المنتج
+    const shareBtn = desktopActions.querySelector('.share-btn-icon');
+    if (shareBtn) {
+        const cloneShare = shareBtn.cloneNode(true);
+        cloneShare.onclick = shareProduct;
+        stickyDiv.appendChild(cloneShare);
+    }
+
     const wrapper = document.querySelector('.product-detail-wrapper');
     if (wrapper) wrapper.appendChild(stickyDiv);
 }
