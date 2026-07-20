@@ -118,7 +118,9 @@ async function openProductDetail(product) {
                         <span id="detailQuantity">1</span>
                         <button class="qty-btn" onclick="changeQuantity(1)">+</button>
                     </div>
-                    <span id="totalPriceDisplay" style="font-weight:700; color:#1a237e; margin-right:10px;">
+                </div>
+                <div class="product-total-section" style="text-align:center; margin:8px 0 12px;">
+                    <span id="totalPriceDisplay" style="font-weight:900; color:#1a237e; font-size:1.4rem;">
                         الإجمالي: ${product.price.toLocaleString()} ج.م
                     </span>
                 </div>
@@ -142,19 +144,20 @@ async function openProductDetail(product) {
                         ${product.brand ? `<div class="spec-item"><span class="spec-label">الماركة</span><span class="spec-value">${escapeHTML(product.brand)}</span></div>` : ''}
                     </div>
                 </div>
-                <!-- قسم التقييمات -->
-                <div class="product-reviews-section">
-                    <div class="reviews-header">
-                        <h3>تقييمات العملاء</h3>
-                        ${reviewActionHtml}
-                    </div>
-                    ${reviewsHtml}
-                </div>
             </div>
         </div>
 
         <!-- منتجات مشابهة -->
         <div id="similarProductsSectionDetail" class="similar-products-section"></div>
+
+        <!-- قسم التقييمات (آخر حاجة في الصفحة) -->
+        <div class="product-reviews-section" style="max-width:900px; margin:0 auto; padding:0 16px 30px;">
+            <div class="reviews-header">
+                <h3>تقييمات العملاء</h3>
+                ${reviewActionHtml}
+            </div>
+            ${reviewsHtml}
+        </div>
     `;
 
     // تحديث عداد الصورة
