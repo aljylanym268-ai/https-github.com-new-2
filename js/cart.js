@@ -370,6 +370,28 @@ async function cancelOrder(orderId) {
     catch (err) { showToast(err.message, 'error'); } finally { showLoading(false); }
 }
 
+// ========== حذف طلب من قائمة الطلبات ==========
+function deleteBuyerOrder(orderId) {
+    if (!confirm('هل أنت متأكد من حذف هذا الطلب من القائمة؟')) return;
+    
+    // إزالة الطلب من المصفوفة المحلية
+    if (appState.buyerOrders) {
+        appState.buyerOrders = appState.buyerOrders.filter(o => o.id !== orderId);
+    }
+    
+    // إعادة عرض الطلبات المفلترة
+    renderFilteredOrders();
+    showToast('تم حذف الطلب من القائمة', 'success');
+    
+    // إذا لم يعد هناك طلبات، عرض رسالة "لا توجد طلبات"
+    if (!appState.buyerOrders || appState.buyerOrders.length === 0) {
+        const container = document.getElementById('buyerOrdersList');
+        const emptyMsg = document.getElementById('ordersEmptyMessage');
+        if (container) container.innerHTML = '';
+        if (emptyMsg) emptyMsg.style.display = 'block';
+    }
+}
+
 function getStatusText(status) {
     const map = {
         pending: 'قيد الانتظار',
@@ -406,50 +428,145 @@ function generateTimeline(currentStatus) {
     return html;
 }
 
+// ========== حالة التصفية للطلبات ==========
+if (!appState.ordersFilter) {
+    appState.ordersFilter = { status: 'all', query: '' };
+}
+
+// ========== تصفية الطلبات بناءً على البحث والحالة ==========
+function filterBuyerOrders() {
+    const searchInput = document.getElementById('ordersSearchInput');
+    const clearBtn = document.getElementById('ordersClearSearch');
+    const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
+    
+    if (clearBtn) {
+        clearBtn.style.display = query ? 'block' : 'none';
+    }
+    
+    appState.ordersFilter.query = query;
+    renderFilteredOrders();
+}
+
+// ========== تعيين فلتر الحالة ==========
+function setOrdersFilter(status, btnElement) {
+    appState.ordersFilter.status = status;
+    
+    // تحديث حالة الأزرار
+    document.querySelectorAll('#ordersFilterButtons .filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    if (btnElement) btnElement.classList.add('active');
+    
+    renderFilteredOrders();
+}
+
+// ========== عرض الطلبات المفلترة ==========
+function renderFilteredOrders() {
+    const container = document.getElementById('buyerOrdersList');
+    const emptyMsg = document.getElementById('ordersEmptyMessage');
+    if (!container) return;
+    
+    const { status, query } = appState.ordersFilter;
+    
+    // تصفية حسب الحالة
+    let filtered = appState.buyerOrders || [];
+    if (status !== 'all') {
+        filtered = filtered.filter(o => o.status === status);
+    }
+    
+    // تصفية حسب نص البحث (رقم الطلب أو اسم المنتج)
+    if (query) {
+        filtered = filtered.filter(o => {
+            const orderId = (o.id || '').toLowerCase();
+            const productName = (o.products?.name || '').toLowerCase();
+            return orderId.includes(query) || productName.includes(query);
+        });
+    }
+    
+    if (filtered.length === 0) {
+        container.innerHTML = '';
+        if (emptyMsg) emptyMsg.style.display = 'block';
+        return;
+    }
+    
+    if (emptyMsg) emptyMsg.style.display = 'none';
+    
+    // عرض الطلبات المفلترة
+    container.innerHTML = '';
+    filtered.forEach(order => {
+        container.appendChild(createBuyerOrderCard(order));
+    });
+}
+
+// ========== إنشاء بطاقة طلب (دالة مساعدة) ==========
+function createBuyerOrderCard(order) {
+    const card = document.createElement('div');
+    card.className = 'order-card';
+    const product = order.products || {};
+    const timeline = generateTimeline(order.status);
+    
+    let deliveryHtml = '';
+    if (order.delivery) {
+        const img = order.delivery.image_url ? `<img src="${order.delivery.image_url}" style="width:30px;height:30px;border-radius:50%;object-fit:cover;">` : '<i class="fas fa-user" style="font-size:1.2rem;"></i>';
+        deliveryHtml = `<div class="delivery-person-info" style="margin-top:10px;padding:8px;background:#f5f7fa;border-radius:8px;display:flex;align-items:center;gap:10px;">
+            ${img}
+            <span><strong>المندوب:</strong> ${escapeHTML(order.delivery.name)}</span>
+            ${order.delivery.phone ? `<a href="tel:${order.delivery.phone}" style="color:#1a237e;margin-right:10px;"><i class="fas fa-phone"></i></a>` : ''}
+            <a href="https://wa.me/${order.delivery.phone || ''}" target="_blank" style="color:#25D366;"><i class="fab fa-whatsapp"></i></a>
+        </div>`;
+    }
+    
+    let otpDisplay = '';
+    if (order.status === 'in_delivery' && order.otp_code) {
+        otpDisplay = `<div style="margin-top:10px;padding:12px;background:#fff3cd;border-radius:8px;border:2px solid #ffc107;text-align:center;font-weight:bold;">
+            <i class="fas fa-key" style="color:#d39e00;"></i>
+            رمز تأكيد الاستلام: <span style="color:#d39e00;font-size:1.4rem;">${escapeHTML(order.otp_code)}</span>
+            <div style="font-size:0.8rem;margin-top:4px;">أعط هذا الرمز للمندوب عند استلام الطلب</div>
+        </div>`;
+    }
+    
+    // عرض أزرار الإجراءات حسب حالة الطلب
+    let actionsHtml = '';
+    if (order.status === 'pending') {
+        actionsHtml = `<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+            <button class="add-to-cart" onclick="cancelOrder('${order.id}')"><i class="fas fa-ban"></i> إلغاء الطلب</button>
+            <button class="remove-btn" style="display:inline-flex;align-items:center;gap:5px;width:auto;" onclick="deleteBuyerOrder('${order.id}')"><i class="fas fa-trash"></i> حذف</button>
+        </div>`;
+    } else if (order.status === 'cancelled' || order.status === 'delivered') {
+        actionsHtml = `<div style="margin-top:10px;">
+            <button class="remove-btn" style="display:inline-flex;align-items:center;gap:5px;width:auto;" onclick="deleteBuyerOrder('${order.id}')"><i class="fas fa-trash"></i> حذف</button>
+        </div>`;
+    }
+    
+    card.innerHTML = `<div class="order-header"><span class="order-id">#${order.id.slice(0,8)}</span><span class="order-status ${order.status}">${getStatusText(order.status)}</span></div>
+        <div>${escapeHTML(product.name)} - ${order.quantity} × ${((order.total_price - (order.delivery_fee || 0)) / order.quantity).toFixed(0)} ج.م</div>
+        <div>رسوم التوصيل: ${order.delivery_fee || 0} ج.م</div>
+        <div class="order-timeline" style="margin-top:15px;">${timeline}</div>
+        ${otpDisplay}${deliveryHtml}
+        ${actionsHtml}`;
+    
+    return card;
+}
+
 async function loadBuyerOrdersWithTimeline() {
     const orders = await loadBuyerOrders();
     const container = document.getElementById('buyerOrdersList');
     if (!container) return;
-    if (orders.length === 0) { container.innerHTML = '<p style="text-align:center;">لا توجد طلبات</p>'; return; }
-    container.innerHTML = '';
-    for (const order of orders) {
-        const card = document.createElement('div');
-        card.className = 'order-card';
-        const product = order.products || {};
-        const timeline = generateTimeline(order.status);
-        let deliveryHtml = '';
-        if (order.delivery) {
-            const img = order.delivery.image_url ? `<img src="${order.delivery.image_url}" style="width:30px;height:30px;border-radius:50%;object-fit:cover;">` : '<i class="fas fa-user" style="font-size:1.2rem;"></i>';
-            deliveryHtml = `<div class="delivery-person-info" style="margin-top:10px;padding:8px;background:#f5f7fa;border-radius:8px;display:flex;align-items:center;gap:10px;">
-                ${img}
-                <span><strong>المندوب:</strong> ${escapeHTML(order.delivery.name)}</span>
-                ${order.delivery.phone ? `<a href="tel:${order.delivery.phone}" style="color:#1a237e;margin-right:10px;"><i class="fas fa-phone"></i></a>` : ''}
-                <a href="https://wa.me/${order.delivery.phone || ''}" target="_blank" style="color:#25D366;"><i class="fab fa-whatsapp"></i></a>
-            </div>`;
-        }
-        let otpDisplay = '';
-        if (order.status === 'in_delivery' && order.otp_code) {
-            otpDisplay = `<div style="margin-top:10px;padding:12px;background:#fff3cd;border-radius:8px;border:2px solid #ffc107;text-align:center;font-weight:bold;">
-                <i class="fas fa-key" style="color:#d39e00;"></i>
-                رمز تأكيد الاستلام: <span style="color:#d39e00;font-size:1.4rem;">${escapeHTML(order.otp_code)}</span>
-                <div style="font-size:0.8rem;margin-top:4px;">أعط هذا الرمز للمندوب عند استلام الطلب</div>
-            </div>`;
-        }
-
-        // زر تقييم المنتج (يظهر فقط إذا كان الطلب delivered ولم يتم تقييم المنتج من قبل)
-        let reviewButton = '';
-        if (order.status === 'delivered' && order.product_id && appState.user) {
-            const hasReviewed = await hasUserReviewed(order.product_id, appState.user.id);
-            if (!hasReviewed) {
-                reviewButton = `<button class="add-to-cart" style="background:#D4AF37; color:#1a237e; margin-top:8px;" onclick="showAddReviewForm('${order.product_id}')">
-                    <i class="fas fa-star"></i> تقييم المنتج
-                </button>`;
-            }
-        }
-
-        card.innerHTML = `<div class="order-header"><span class="order-id">#${order.id.slice(0,8)}</span><span class="order-status ${order.status}">${getStatusText(order.status)}</span></div><div>${escapeHTML(product.name)} - ${order.quantity} × ${(order.total_price - (order.delivery_fee || 0)) / order.quantity} ج.م</div><div>رسوم التوصيل: ${order.delivery_fee || 0} ج.م</div><div class="order-timeline" style="margin-top:15px;">${timeline}</div>${otpDisplay}${deliveryHtml}${order.status === 'pending' ? `<button class="add-to-cart" onclick="cancelOrder('${order.id}')">إلغاء الطلب</button>` : ''}${reviewButton}`;
-        container.appendChild(card);
+    
+    // تخزين الطلبات في الحالة العامة للتصفية
+    appState.buyerOrders = orders;
+    
+    if (orders.length === 0) {
+        container.innerHTML = '<p style="text-align:center; padding:30px;">لا توجد طلبات</p>';
+        const emptyMsg = document.getElementById('ordersEmptyMessage');
+        if (emptyMsg) emptyMsg.style.display = 'none';
+        return;
     }
+    
+    // عرض مع تطبيق التصفية الحالية
+    renderFilteredOrders();
+    
+    // ملاحظة: تم نقل الكود الأصلي لإنشاء البطاقات إلى createBuyerOrderCard
 }
 
 // ===================== دوال الطلبات (البائع) =====================
@@ -995,3 +1112,8 @@ window.displayAvailableOrders = displayAvailableOrders;
 window.displayMyDeliveryOrders = displayMyDeliveryOrders;
 window.createOrderCardForDelivery = createOrderCardForDelivery;
 window.switchDeliveryTab = switchDeliveryTab;
+window.filterBuyerOrders = filterBuyerOrders;
+window.setOrdersFilter = setOrdersFilter;
+window.renderFilteredOrders = renderFilteredOrders;
+window.createBuyerOrderCard = createBuyerOrderCard;
+window.deleteBuyerOrder = deleteBuyerOrder;

@@ -3387,3 +3387,361 @@ body {
     font-size: 4rem;
     color: #ccc;
 }
+/* ============================================================
+   تنسيقات لوحة تحكم المؤسس (Founder Dashboard)
+   ============================================================ */
+
+/* علامات التبويب */
+.founder-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 12px 5%;
+    background: var(--sand);
+    border-bottom: 2px solid var(--gold);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.founder-tab {
+    background: transparent;
+    border: 2px solid transparent;
+    border-radius: 30px;
+    padding: 8px 18px;
+    font-weight: 700;
+    color: var(--brown-mid);
+    cursor: pointer;
+    transition: 0.2s;
+    white-space: nowrap;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.founder-tab i {
+    font-size: 1rem;
+}
+
+.founder-tab:hover {
+    background: rgba(212,175,55,0.1);
+}
+
+.founder-tab.active {
+    background: var(--gold);
+    color: var(--blue-royal);
+    border-color: var(--gold);
+    box-shadow: var(--shadow-gold);
+}
+
+/* محتوى التاب */
+.founder-tab-content {
+    padding: 20px 5% 40px;
+}
+
+.founder-tab-panel {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.founder-tab-panel.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* شبكة الإحصائيات */
+.founder-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.stat-card-founder {
+    background: white;
+    border-radius: 16px;
+    padding: 18px 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    border: 1px solid #e8e0d4;
+    text-align: center;
+    transition: 0.2s;
+}
+
+.stat-card-founder:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(212,175,55,0.15);
+    border-color: var(--gold);
+}
+
+.stat-card-founder .stat-icon {
+    font-size: 2rem;
+    color: var(--gold);
+    margin-bottom: 6px;
+}
+
+.stat-card-founder .stat-number {
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: var(--blue-royal);
+    line-height: 1.2;
+}
+
+.stat-card-founder .stat-label {
+    font-size: 0.85rem;
+    color: var(--brown-mid);
+    margin-top: 4px;
+}
+
+/* شريط الأدوات (بحث + فلاتر) */
+.founder-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+    align-items: center;
+    background: white;
+    padding: 12px 16px;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    border: 1px solid #f0ede8;
+}
+
+.founder-toolbar .search-box {
+    flex: 1;
+    min-width: 200px;
+}
+
+.founder-toolbar .filter-btn {
+    padding: 6px 14px;
+    border-radius: 30px;
+    border: 1px solid var(--gold);
+    background: transparent;
+    font-weight: 700;
+    font-size: 0.8rem;
+    cursor: pointer;
+    color: var(--brown-dark);
+    transition: 0.2s;
+}
+
+.founder-toolbar .filter-btn.active,
+.founder-toolbar .filter-btn:hover {
+    background: var(--gold);
+    color: var(--blue-royal);
+}
+
+/* الجداول */
+.founder-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    font-size: 0.9rem;
+}
+
+.founder-table th {
+    background: var(--blue-royal);
+    color: var(--text-light);
+    padding: 12px 10px;
+    text-align: right;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.founder-table td {
+    padding: 10px;
+    border-bottom: 1px solid #f0ede8;
+    vertical-align: middle;
+}
+
+.founder-table tr:hover td {
+    background: #faf8f5;
+}
+
+.founder-table .avatar-img {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--gold);
+}
+
+.founder-table .status-badge {
+    padding: 3px 12px;
+    border-radius: 30px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: inline-block;
+}
+
+.status-badge.pending { background: #ff9800; color: #fff; }
+.status-badge.approved { background: #4caf50; color: #fff; }
+.status-badge.suspended { background: #f44336; color: #fff; }
+.status-badge.rejected { background: #9e9e9e; color: #fff; }
+.status-badge.active { background: #2196f3; color: #fff; }
+.status-badge.inactive { background: #9e9e9e; color: #fff; }
+.status-badge.published { background: #4caf50; color: #fff; }
+.status-badge.hidden { background: #ff9800; color: #fff; }
+.status-badge.review { background: #ff5722; color: #fff; }
+.status-badge.available { background: #4caf50; color: #fff; }
+.status-badge.reserved { background: #ff9800; color: #fff; }
+.status-badge.sold { background: #f44336; color: #fff; }
+
+/* أزرار الإجراءات */
+.action-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.action-group .btn-sm {
+    padding: 4px 10px;
+    border: none;
+    border-radius: 30px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.btn-sm.approve { background: #4caf50; color: #fff; }
+.btn-sm.reject { background: #f44336; color: #fff; }
+.btn-sm.suspend { background: #ff9800; color: #fff; }
+.btn-sm.reactivate { background: #2196f3; color: #fff; }
+.btn-sm.delete { background: #d32f2f; color: #fff; }
+.btn-sm.edit { background: #1a237e; color: var(--gold); }
+.btn-sm.view { background: #607d8b; color: #fff; }
+.btn-sm.contact { background: #25D366; color: #fff; }
+.btn-sm.message { background: #9c27b0; color: #fff; }
+.btn-sm.hide { background: #ff9800; color: #fff; }
+.btn-sm.unhide { background: #4caf50; color: #fff; }
+.btn-sm.review { background: #ff5722; color: #fff; }
+
+.btn-sm:hover {
+    transform: scale(0.95);
+    opacity: 0.9;
+}
+
+/* ترقيم الصفحات */
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.pagination button {
+    padding: 6px 14px;
+    border: 1px solid var(--gold);
+    background: white;
+    border-radius: 30px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.pagination button.active {
+    background: var(--gold);
+    color: var(--blue-royal);
+}
+
+.pagination button:hover:not(.active) {
+    background: var(--sand-dark);
+}
+
+/* زر الإضافة */
+.add-btn {
+    background: var(--gold);
+    color: var(--blue-royal);
+    border: none;
+    border-radius: 30px;
+    padding: 10px 20px;
+    font-weight: 900;
+    font-size: 0.95rem;
+    cursor: pointer;
+    margin-top: 15px;
+    box-shadow: var(--shadow-gold);
+    transition: 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.add-btn:hover {
+    transform: translateY(-2px);
+}
+
+/* بطاقات الإعدادات */
+.founder-card {
+    background: white;
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+    border: 1px solid #f0ede8;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.founder-card h3 {
+    color: var(--blue-royal);
+    margin-bottom: 20px;
+    font-weight: 900;
+}
+
+/* استجابة */
+@media (max-width: 768px) {
+    .founder-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .founder-tabs {
+        gap: 4px;
+        padding: 8px 3%;
+    }
+    .founder-tab {
+        font-size: 0.75rem;
+        padding: 6px 12px;
+    }
+    .founder-table {
+        font-size: 0.75rem;
+    }
+    .founder-table th, .founder-table td {
+        padding: 6px 4px;
+    }
+    .founder-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .founder-toolbar .search-box {
+        min-width: unset;
+    }
+    .action-group .btn-sm {
+        font-size: 0.6rem;
+        padding: 3px 6px;
+    }
+}
+
+@media (max-width: 480px) {
+    .founder-stats-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+    .stat-card-founder .stat-number {
+        font-size: 1.4rem;
+    }
+    .founder-tab {
+        font-size: 0.65rem;
+        padding: 4px 10px;
+    }
+    .founder-tab i {
+        font-size: 0.8rem;
+    }
+}
