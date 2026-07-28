@@ -398,12 +398,9 @@ window.deleteProductAdminConfirm = async function(productId) {
 
     showLoading(true);
     try {
-        const { error } = await supabaseClient.rpc('delete_product_with_orders', {
-            product_id: productId
-        });
-        if (error) throw error;
-
-        showToast('✅ تم حذف المنتج وجميع طلباته بنجاح', 'success');
+        // استدعاء دالة الحذف الفعلي
+        await window.hardDeleteProductAdmin(productId);
+        showToast('✅ تم حذف المنتج نهائياً', 'success');
         
         // تحديث الجدول وعرض المنتجات
         await loadProductsTableAdmin();
@@ -1687,78 +1684,6 @@ function renderPagination(containerId, total, currentPage, pageSize, onPageChang
     }
     container.innerHTML = html;
 }
-// ============================================================
-// نظام التوجيه (Routing) – معالجة معلمات الرابط
-// ============================================================
-
-function handleRoute() {
-    const params = new URLSearchParams(window.location.search);
-    const productId = params.get('id');
-    const storeId = params.get('store');
-    const founder = params.get('founder');
-
-    // مسح معلمات الرابط بعد المعالجة (اختياري)
-    // window.history.replaceState({}, document.title, window.location.pathname);
-
-    if (productId) {
-        // فتح تفاصيل المنتج
-        const product = appState.products.find(p => p.id === productId);
-        if (product) {
-            // تأكد من أن الشاشة موجودة
-            const detailScreen = document.getElementById('productDetailScreen');
-            if (detailScreen) {
-                openProductDetail(product);
-                // تحديث الرابط (سيتم في openProductDetail)
-                return true;
-            }
-        } else {
-            // المنتج غير موجود، حاول التحميل ثم البحث
-            loadProductsFromDB().then(() => {
-                const found = appState.products.find(p => p.id === productId);
-                if (found) {
-                    openProductDetail(found);
-                } else {
-                    showToast('المنتج غير موجود', 'error');
-                    showScreen('homeScreen');
-                }
-            });
-            return true;
-        }
-    } else if (storeId) {
-        // فتح متجر البائع
-        showStorePage(storeId);
-        return true;
-    } else if (founder) {
-        // فتح صفحة المؤسس
-        if (founder === 'mohamed_saad') {
-            openFounderProfile();
-        } else {
-            showToast('رابط المؤسس غير صحيح', 'error');
-        }
-        return true;
-    }
-    return false;
-}
-
-// استمع لتغيير الرابط (popstate) للرجوع
-window.addEventListener('popstate', function(event) {
-    // إذا كان هناك حالة سابقة، يمكننا العودة
-    const params = new URLSearchParams(window.location.search);
-    const productId = params.get('id');
-    if (productId) {
-        const product = appState.products.find(p => p.id === productId);
-        if (product) {
-            openProductDetail(product);
-        } else {
-            showScreen('homeScreen');
-        }
-    } else {
-        showScreen('homeScreen');
-    }
-});
-
-// تصدير الدالة
-window.handleRoute = handleRoute;
 // ===================== تصدير الدوال العامة =====================
 window.loadProductsFromDB = loadProductsFromDB;
 window.loadFeaturedProducts = loadFeaturedProducts;

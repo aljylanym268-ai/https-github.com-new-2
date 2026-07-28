@@ -819,7 +819,6 @@ function openLocationSettings() {
         if (centerSelect) centerSelect.value = center;
         loadVillagesForCenter(center, village);
     }, 150);
-
 }
 
 function updateWelcomeLocation() {
@@ -932,6 +931,7 @@ document.getElementById('avatarUpload')?.addEventListener('change', async functi
         console.error(err);
     } finally { showLoading(false); }
 });
+
 // ============================================================
 // إعدادات المؤسس (رؤية الصفحة)
 // ============================================================
@@ -1030,9 +1030,7 @@ async function loadFounderStats() {
         if (sharesEl) sharesEl.textContent = total;
     }
 }
-
 async function refreshFounderStats() { await loadFounderStats(); showToast('تم تحديث الإحصائيات', 'success'); }
-
 async function trackFounderView() {
     try { await supabaseClient.rpc('increment_founder_view'); } catch(e) {
         let current = parseInt(localStorage.getItem('founder_views') || '0');
@@ -1043,7 +1041,6 @@ async function trackFounderView() {
     const viewsEl = document.getElementById('founderViewsCount');
     if (viewsEl) viewsEl.textContent = appState.founderViews;
 }
-
 async function trackShare(shareType) {
     try {
         const { data, error } = await supabaseClient.from('founder_shares').select('count').eq('share_type', shareType).maybeSingle();
@@ -1078,7 +1075,6 @@ async function trackShare(shareType) {
         if (sharesEl) sharesEl.textContent = total;
     }
 }
-
 async function loadShareCounts() {
     try {
         const { data, error } = await supabaseClient.from('founder_shares').select('share_type, count');
@@ -1106,13 +1102,11 @@ async function loadShareCounts() {
         }
     } catch (err) { console.warn(err); }
 }
-
 function getFounderShareLink() {
     const founderUsername = 'mohamed_saad';
     const baseUrl = window.location.origin + window.location.pathname;
     return `${baseUrl}?founder=${founderUsername}`;
 }
-
 async function shareFounderPage(method) {
     await loadGlobalFounderVisibility();
     if (!appState.founderPageVisible) {
@@ -1136,8 +1130,6 @@ function openFounderProfile() {
         showToast('⛔ صفحة المؤسس غير متاحة حالياً', 'warning');
         return;
     }
-    // تهيئة إعدادات المؤسس (للتأكد من أن المستمع للتبديل يعمل)
-    initFounderSettings();
     closeChatbot();
     const founderScreen = document.getElementById('founderProfileScreen');
     if (founderScreen) founderScreen.classList.add('active');
@@ -1152,7 +1144,6 @@ function closeFounderProfile() {
     if (founderScreen) founderScreen.classList.remove('active');
     openChatbot();
 }
-
 function openImageModal() {
     const img = document.querySelector('.founder-avatar img');
     if (!img) return;
@@ -1161,13 +1152,11 @@ function openImageModal() {
     if (modalImage) modalImage.src = img.src;
     if (imageModal) imageModal.classList.add('active');
 }
-
 function closeImageModal(event) {
     if (event.target === document.getElementById('imageModal') || event.target.classList.contains('close-modal')) {
         document.getElementById('imageModal').classList.remove('active');
     }
 }
-
 function contactDeveloper() {
     window.open('https://app.fastbots.ai/embed/cmillclid07mep81pmwkjqyq6', '_blank');
 }
@@ -1260,6 +1249,7 @@ async function rejectDeliveryPerson(userId) {
         showToast(err.message, 'error');
     } finally { showLoading(false); }
 }
+
 // ============================================================
 // إشعارات واشتراكات
 // ============================================================
@@ -1895,78 +1885,7 @@ async function saveAppSettings(settings) {
     }
     await logActivity(appState.user.id, 'update_app_settings', { count: settings.length });
 }
-// ============================================================
-// نظام التوجيه (Routing) – معالجة معلمات الرابط
-// ============================================================
 
-function handleRoute() {
-    const params = new URLSearchParams(window.location.search);
-    const productId = params.get('id');
-    const storeId = params.get('store');
-    const founder = params.get('founder');
-
-    // مسح معلمات الرابط بعد المعالجة (اختياري)
-    // window.history.replaceState({}, document.title, window.location.pathname);
-
-    if (productId) {
-        // فتح تفاصيل المنتج
-        const product = appState.products.find(p => p.id === productId);
-        if (product) {
-            // تأكد من أن الشاشة موجودة
-            const detailScreen = document.getElementById('productDetailScreen');
-            if (detailScreen) {
-                openProductDetail(product);
-                // تحديث الرابط (سيتم في openProductDetail)
-                return true;
-            }
-        } else {
-            // المنتج غير موجود، حاول التحميل ثم البحث
-            loadProductsFromDB().then(() => {
-                const found = appState.products.find(p => p.id === productId);
-                if (found) {
-                    openProductDetail(found);
-                } else {
-                    showToast('المنتج غير موجود', 'error');
-                    showScreen('homeScreen');
-                }
-            });
-            return true;
-        }
-    } else if (storeId) {
-        // فتح متجر البائع
-        showStorePage(storeId);
-        return true;
-    } else if (founder) {
-        // فتح صفحة المؤسس
-        if (founder === 'mohamed_saad') {
-            openFounderProfile();
-        } else {
-            showToast('رابط المؤسس غير صحيح', 'error');
-        }
-        return true;
-    }
-    return false;
-}
-
-// استمع لتغيير الرابط (popstate) للرجوع
-window.addEventListener('popstate', function(event) {
-    // إذا كان هناك حالة سابقة، يمكننا العودة
-    const params = new URLSearchParams(window.location.search);
-    const productId = params.get('id');
-    if (productId) {
-        const product = appState.products.find(p => p.id === productId);
-        if (product) {
-            openProductDetail(product);
-        } else {
-            showScreen('homeScreen');
-        }
-    } else {
-        showScreen('homeScreen');
-    }
-});
-
-// تصدير الدالة
-window.handleRoute = handleRoute;
 // ============================================================
 // تصدير جميع الدوال العامة
 // ============================================================
@@ -2038,27 +1957,6 @@ window.generateOTP = generateOTP;
 window.loadFounderStats = loadFounderStats;
 window.trackFounderView = trackFounderView;
 window.loadVillagesForCenter = loadVillagesForCenter;
-// ... كل الدوال السابقة ...
-
-// ===== تصدير دوال المؤسس (الأساسية) =====
-window.loadGlobalFounderVisibility = loadGlobalFounderVisibility;
-window.initFounderSettings = initFounderSettings;
-window.handleToggleChange = handleToggleChange;
-window.loadFounderStats = loadFounderStats;
-window.refreshFounderStats = refreshFounderStats;
-window.trackFounderView = trackFounderView;
-window.trackShare = trackShare;
-window.loadShareCounts = loadShareCounts;
-window.getFounderShareLink = getFounderShareLink;
-window.shareFounderPage = shareFounderPage;
-window.openFounderProfile = openFounderProfile;
-window.closeFounderProfile = closeFounderProfile;
-window.openImageModal = openImageModal;
-window.closeImageModal = closeImageModal;
-window.contactDeveloper = contactDeveloper;
-window.approveDeliveryPerson = approveDeliveryPerson;
-window.rejectDeliveryPerson = rejectDeliveryPerson;
-window.loadPendingDeliveries = loadPendingDeliveries;
 
 // ===== تصدير دوال المؤسس CRUD =====
 window.getAllDeliveries = getAllDeliveries;
