@@ -650,17 +650,23 @@
                     </table>
                 </div>
                 <div class="pagination" id="sellersPagination"></div>
-            </div>
+</div>
 
             <!-- تبويب المنتجات -->
             <div id="tab-products" class="founder-tab-panel">
                 <div class="founder-toolbar">
-                    <div class="search-box"><i class="fas fa-search"></i><input type="text" id="productSearchInput" placeholder="ابحث باسم المنتج، البائع، القسم..." oninput="filterProductsAdmin()"></div>
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="productSearchInput" placeholder="ابحث باسم المنتج، البائع، القسم..." oninput="filterProductsAdmin()">
+                    </div>
                     <button class="filter-btn" onclick="filterProductsAdminByStatus('all')">الكل</button>
                     <button class="filter-btn" onclick="filterProductsAdminByStatus('published')">منشور</button>
                     <button class="filter-btn" onclick="filterProductsAdminByStatus('hidden')">مخفي</button>
                     <button class="filter-btn" onclick="filterProductsAdminByStatus('review')">قيد المراجعة</button>
-                </div>
+                    <button class="filter-btn" onclick="filterProductsAdminByStatus('unavailable')">غير متاح</button>
+                    <button class="filter-btn" onclick="filterProductsAdminByStatus('deleted')">محذوف</button>
+<button class="filter-btn" onclick="deleteAllProductsAdmin()" style="background:#d32f2f;color:#fff;font-weight:bold;">🗑️ حذف الكل</button>
+                </div> <!-- end founder-toolbar -->
                 <div id="productsTableWrapper">
                     <table class="founder-table" id="productsTable">
                         <thead>
@@ -1093,6 +1099,11 @@
         setTimeout(() => {
             document.getElementById('loadingScreen').style.display = 'none';
             showScreen(appState.currentScreen);
+            // معالجة الرابط إذا كان يحتوي على معلمات
+if (!handleRoute()) {
+    // إذا لم يتم توجيهه، نعرض الشاشة الافتراضية
+    // showScreen(appState.currentScreen) تم استدعاؤها بالفعل
+}
             if (appState.location) {
                 updateWelcomeLocation();
                 updateProfileLocation();
