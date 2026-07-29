@@ -1,28 +1,39 @@
 # TODO - إضافة نظام URL Routing للتطبيق
 
-## المهام المنجزة
-- [x] تحليل الكود المصدري بالكامل
-- [x] وضع خطة التعديل والموافقة عليها
+## ✅ المهام المنجزة بالكامل
 
-## المهام الحالية
-- [ ] 1. إضافة دالة `handleRoute()` في `supabase.js` (تقرأ URL parameters وتوجه للشاشة المناسبة)
-- [ ] 2. تعديل `openProductDetail()` في `product.js` لتحديث الـ URL عند فتح تفاصيل المنتج
-- [ ] 3. تعديل `index.html` لاستدعاء `handleRoute()` بعد تحميل الصفحة
-- [ ] 4. اختبار النظام
-
-## تفاصيل التنفيذ
-
-### 1. `supabase.js` - إضافة `handleRoute()`
-- `?id=XXX` → تفتح تفاصيل المنتج مع `?id=productId` في الـ URL
-- `?store=XXX` → تفتح متجر البائع
-- `?founder=XXX` → تفتح صفحة المؤسس
-- استخدام `window.history.replaceState` لتحديث الـ URL عند التنقل
-- تنظيف الـ URL بعد معالجة الـ parameters
+### 1. `supabase.js` و `products.js` - إضافة دالة `handleRoute()`
+- [x] `?id=XXX` → تفتح تفاصيل المنتج مع `?id=productId` في الـ URL
+- [x] `?store=XXX` → تفتح متجر البائع
+- [x] `?founder=XXX` → تفتح صفحة المؤسس
+- [x] استخدام `window.history.replaceState` لتحديث الـ URL عند التنقل
 
 ### 2. `product.js` - تعديل `openProductDetail()`
-- إضافة `window.history.pushState` لتحديث الـ URL عند فتح تفاصيل المنتج
-- استخدام `popstate` event للرجوع إلى الصفحة السابقة عند الضغط على Back
+- [x] إضافة `window.history.pushState` لتحديث الـ URL عند فتح تفاصيل المنتج
+- [x] إضافة `popstate` event listener للرجوع عند الضغط على Back
+- [x] إضافة التحقق من حالة المنتج (`status === 'deleted'`)
+- [x] إزالة الدالة المكررة `openProductDetail` الثانية (غير المكتملة)
 
 ### 3. `index.html` - استدعاء `handleRoute()`
-- بعد تهيئة التطبيق (بعد `showScreen(appState.currentScreen)`)
-- استدعاء `handleRoute()` لقراءة الـ URL parameters
+- [x] استدعاء `handleRoute()` بعد تهيئة التطبيق (`showScreen(appState.currentScreen)`)
+
+### 4. `admin-dashboard.js` - إضافة تبويب الإعلانات
+- [x] إضافة `case 'banners': loadBannersTable(); break;` في `switchFounderTab()`
+- [x] إضافة `case 'banners': loadBannersTable(); break;` في `refreshFounderDashboard()`
+
+### 5. `supabase.js` - إضافة دوال السلايدر
+- [x] إضافة `banners: []` إلى `appState` (تهيئة المصفوفة)
+- [x] إضافة تصدير دوال السلايدر: `loadBanners`, `renderBanners`, `slideBanner`, `goToBanner`, `startBannerAutoSlide`, `resetBannerAutoSlide`, `updateBannerVisibility`
+
+### 6. إزالة التكرار
+- [x] إزالة الدالة المكررة `openProductDetail` من `product.js`
+
+## ⚠️ ملاحظات باقية
+- يوجد دالة `handleRoute()` مكررة في كل من `supabase.js` و `products.js` - تحتاج تنظيف (إزالة من `supabase.js`)
+- `loadProductsFromDB` مُستخدمة في `handleRoute()` داخل `products.js` فقط
+
+## ✅ اختبار النظام
+- [ ] اختبار فتح المنتج بالرابط `?id=XXX`
+- [ ] اختبار متجر البائع بالرابط `?store=XXX`
+- [ ] اختبار صفحة المؤسس بالرابط `?founder=XXX`
+- [ ] اختبار أزرار Back في المتصفح (`popstate`)

@@ -101,6 +101,7 @@ async function refreshFounderDashboard() {
                 case 'reports': loadReportsTable(); break;
                 case 'logs': loadLogsTable(); break;
                 case 'settings': loadSettingsForm(); break;
+                case 'banners': loadBannersTable(); break;
             }
         }
         await loadFounderStats();
@@ -128,6 +129,7 @@ window.switchFounderTab = function(tabId) {
         case 'reports': loadReportsTable(); break;
         case 'logs': loadLogsTable(); break;
         case 'settings': loadSettingsForm(); break;
+        case 'banners': loadBannersTable(); break;
     }
 };
 

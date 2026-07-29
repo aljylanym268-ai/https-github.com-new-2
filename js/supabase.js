@@ -36,7 +36,8 @@ const appState = {
     previousScreen: 'homeScreen',
     currentScreen: 'homeScreen',
     ordersSubscription: null,
-    notificationsSubscription: null
+    notificationsSubscription: null,
+    banners: []
 };
 
 // ========== دوال مساعدة ==========
@@ -1964,6 +1965,154 @@ window.addEventListener('popstate', function(event) {
         showScreen('homeScreen');
     }
 });
+// ===== دوال الإعلانات (Banners) =====
+async function getAllBanners() {
+    const { data, error } = await supabaseClient
+        .from('banners')
+        .select('*')
+        .order('sort_order', { ascending: true })
+        .order('created_at', { ascending: false });
+    if (error) throw error;
+    return data || [];
+}
+
+async function getActiveBanners() {
+    const { data, error } = await supabaseClient
+        .from('banners')
+        .select('*')
+        .eq('active', true)
+        .order('sort_order', { ascending: true })
+        .order('created_at', { ascending: false });
+    if (error) throw error;
+    return data || [];
+}
+
+async function saveBanner(bannerData) {
+    const { data, error } = await supabaseClient
+        .from('banners')
+        .upsert(bannerData)
+        .select()
+        .maybeSingle();
+    if (error) throw error;
+    await logActivity(appState.user.id, bannerData.id ? 'update_banner' : 'add_banner', { banner_id: data.id });
+    return data;
+}
+
+async function deleteBanner(bannerId) {
+    const { data, error } = await supabaseClient
+        .from('banners')
+        .delete()
+        .eq('id', bannerId)
+        .select()
+        .maybeSingle();
+    if (error) throw error;
+    await logActivity(appState.user.id, 'delete_banner', { banner_id: bannerId });
+    return data;
+}
+
+// رفع صورة الإعلان
+async function uploadBannerImage(file) {
+    const compressed = await compressImage(file, 1200, 600, 0.8);
+    const path = `banners/${Date.now()}-${file.name}`;
+    const { error } = await supabaseClient.storage.from('banner-images').upload(path, compressed);
+    if (error) throw error;
+    const { data } = supabaseClient.storage.from('banner-images').getPublicUrl(path);
+    return data.publicUrl;
+}
+
+// ===== دوال عرض السلايدر =====
+let bannerInterval = null;
+let currentBannerIndex = 0;
+
+async function loadBanners() {
+    try {
+        const banners = await getActiveBanners();
+        appState.banners = banners;
+        renderBanners(banners);
+        startBannerAutoSlide();
+    } catch (err) {
+        console.error('فشل تحميل الإعلانات:', err);
+    }
+}
+
+function renderBanners(banners) {
+    const container = document.getElementById('sliderContainer');
+    const dotsContainer = document.getElementById('sliderDots');
+    if (!container) return;
+
+    if (!banners || banners.length === 0) {
+        container.innerHTML = `<div class="slide-item" style="background: var(--sand); display:flex; align-items:center; justify-content:center; height:200px; border-radius:16px; color:var(--brown-mid);">
+            <p>لا توجد إعلانات حالياً</p>
+        </div>`;
+        if (dotsContainer) dotsContainer.innerHTML = '';
+        return;
+    }
+
+    // بناء الشرائح
+    container.innerHTML = banners.map((b, index) => `
+        <div class="slide-item ${index === 0 ? 'active' : ''}" data-index="${index}">
+            <a href="${b.link || '#'}" ${b.link ? `target="${b.link.startsWith('http') ? '_blank' : '_self'}"` : ''} 
+               onclick="${b.link ? `return true` : `event.preventDefault(); showToast('لا يوجد رابط لهذا الإعلان', 'info'); return false;`}">
+                <img src="${b.image_url}" alt="${escapeHTML(b.title)}" loading="lazy">
+                <div class="slide-content">
+                    <h2>${escapeHTML(b.title)}</h2>
+                    ${b.description ? `<p>${escapeHTML(b.description)}</p>` : ''}
+                </div>
+            </a>
+        </div>
+    `).join('');
+
+    // بناء النقاط
+    if (dotsContainer) {
+        dotsContainer.innerHTML = banners.map((_, index) => `
+            <span class="dot ${index === 0 ? 'active' : ''}" onclick="goToBanner(${index})"></span>
+        `).join('');
+    }
+
+    currentBannerIndex = 0;
+    // تحديث عرض الشريحة النشطة
+    updateBannerVisibility(banners.length);
+}
+
+function updateBannerVisibility(total) {
+    const items = document.querySelectorAll('.slide-item');
+    const dots = document.querySelectorAll('.dot');
+    items.forEach((item, i) => {
+        item.classList.toggle('active', i === currentBannerIndex);
+    });
+    dots.forEach((dot, i) => {
+        dot.classList.toggle('active', i === currentBannerIndex);
+    });
+}
+
+function slideBanner(direction) {
+    const total = appState.banners?.length || 0;
+    if (total === 0) return;
+    currentBannerIndex = (currentBannerIndex + direction + total) % total;
+    updateBannerVisibility(total);
+    resetBannerAutoSlide();
+}
+
+function goToBanner(index) {
+    const total = appState.banners?.length || 0;
+    if (index < 0 || index >= total) return;
+    currentBannerIndex = index;
+    updateBannerVisibility(total);
+    resetBannerAutoSlide();
+}
+
+function startBannerAutoSlide() {
+    clearInterval(bannerInterval);
+    if (!appState.banners || appState.banners.length <= 1) return;
+    bannerInterval = setInterval(() => {
+        slideBanner(1);
+    }, 5000);
+}
+
+function resetBannerAutoSlide() {
+    clearInterval(bannerInterval);
+    startBannerAutoSlide();
+}
 
 // تصدير الدالة
 window.handleRoute = handleRoute;
@@ -2088,3 +2237,17 @@ window.getAllActivityLogs = getAllActivityLogs;
 window.sendBulkNotification = sendBulkNotification;
 window.getAppSettings = getAppSettings;
 window.saveAppSettings = saveAppSettings;
+window.getAllBanners = getAllBanners;
+window.getActiveBanners = getActiveBanners;
+window.saveBanner = saveBanner;
+window.deleteBanner = deleteBanner;
+window.uploadBannerImage = uploadBannerImage;
+
+// ===== تصدير دوال السلايدر =====
+window.loadBanners = loadBanners;
+window.renderBanners = renderBanners;
+window.slideBanner = slideBanner;
+window.goToBanner = goToBanner;
+window.startBannerAutoSlide = startBannerAutoSlide;
+window.resetBannerAutoSlide = resetBannerAutoSlide;
+window.updateBannerVisibility = updateBannerVisibility;
