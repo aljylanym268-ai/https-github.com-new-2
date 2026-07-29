@@ -200,13 +200,57 @@ body {
     filter: drop-shadow(0 0 6px var(--gold));
 }
 .header-title {
-    font-size: 1.3rem;
+    font-size: 1.8rem;
     font-weight: 900;
     margin-right: 5px;
-    color: var(--gold);
-    text-shadow: var(--gold-glow);
-    letter-spacing: 1px;
+    color: transparent;
+    background: linear-gradient(145deg, #F4D03F 0%, #D4AF37 35%, #B8860B 60%, #D4AF37 85%, #F4D03F 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    text-shadow: none;
+    letter-spacing: 3px;
     white-space: nowrap;
+    font-family: 'Cinzel', 'Cairo', serif;
+    text-transform: uppercase;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.7)) drop-shadow(0 0 30px rgba(212, 175, 55, 0.4)) drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+    animation: pharaonicShimmer 3s ease-in-out infinite;
+}
+
+@keyframes pharaonicShimmer {
+    0%, 100% { 
+        filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.7)) drop-shadow(0 0 30px rgba(212, 175, 55, 0.4)) drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+        background: linear-gradient(145deg, #F4D03F 0%, #D4AF37 35%, #B8860B 60%, #D4AF37 85%, #F4D03F 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+    }
+    50% { 
+        filter: drop-shadow(0 0 25px rgba(212, 175, 55, 1)) drop-shadow(0 0 50px rgba(212, 175, 55, 0.6)) drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+        background: linear-gradient(145deg, #FFE066 0%, #F4D03F 30%, #D4AF37 50%, #F4D03F 70%, #FFE066 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+    }
+}
+
+.header-title::before {
+    content: "𓂀";
+    font-size: 1.2rem;
+    color: #D4AF37;
+    filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.8));
+    animation: none;
+    display: inline-block;
+}
+
+.header-title::after {
+    content: "𓋴";
+    font-size: 1.2rem;
+    color: #D4AF37;
+    filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.8));
+    animation: none;
+    display: inline-block;
 }
 .header-actions {
     display: flex;
