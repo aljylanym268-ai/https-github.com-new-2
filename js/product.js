@@ -3,6 +3,17 @@
 // ========== فتح تفاصيل المنتج (معرض صورة واحد مع سحب + تقييمات) ==========
 async function openProductDetail(product) {
     if (!product) return;
+    
+    // التحقق من حالة المنتج - منع فتح المنتج المحذوف
+    if (product.status === 'deleted') {
+        showToast('⛔ هذا المنتج غير متاح حالياً', 'error');
+        return;
+    }
+
+    // تحديث الرابط مع معرف المنتج
+    const newUrl = `${window.location.pathname}?id=${product.id}`;
+    window.history.pushState({ productId: product.id }, '', newUrl);
+
     appState.currentProduct = product;
 
     // جلب التقييمات والإحصائيات
@@ -960,23 +971,6 @@ function exploreMore(category) {
         filterMarketProducts(category);
     }
     showToast(`عرض منتجات من فئة: ${category}`, 'info');
-}
-async function openProductDetail(product) {
-    if (!product) return;
-    
-    // التحقق من حالة المنتج - منع فتح المنتج المحذوف
-    if (product.status === 'deleted') {
-        showToast('⛔ هذا المنتج غير متاح حالياً', 'error');
-        return;
-    }
-
-    // تحديث الرابط مع معرف المنتج
-    const newUrl = `${window.location.pathname}?id=${product.id}`;
-    window.history.pushState({ productId: product.id }, '', newUrl);
-
-    // ... باقي الكود كما هو (بدءاً من appState.currentProduct = product;)
-    appState.currentProduct = product;
-    // ...
 }
 // ========== تصدير الدوال العامة ==========
 window.openProductDetail = openProductDetail;
