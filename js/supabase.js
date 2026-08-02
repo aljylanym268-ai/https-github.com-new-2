@@ -35,6 +35,7 @@ const appState = {
     founderShares: { whatsapp:0, facebook:0, twitter:0, copy:0 },
     previousScreen: 'homeScreen',
     currentScreen: 'homeScreen',
+    navStack: [],
     ordersSubscription: null,
     notificationsSubscription: null,
     banners: []
@@ -1358,10 +1359,25 @@ function showScreen(screenId) {
     if (screen) {
         screen.classList.remove('hidden');
         screen.classList.add('active');
-        appState.previousScreen = appState.currentScreen;
-        appState.currentScreen = screenId;
+        // سجل التنقل: عند الانتقال لشاشة رئيسية (تاب) نمسح السجل،
+        // وعند الانتقال لشاشة فرعية نضيف الشاشة الحالية للسجل
+        if (appState.currentScreen !== screenId) {
+            const mainTabs = ['homeScreen', 'marketScreen', 'servicesScreen', 'cartScreen', 'profileScreen'];
+            if (mainTabs.includes(screenId)) {
+                appState.navStack = [];
+            } else {
+                appState.navStack.push(appState.currentScreen);
+            }
+            appState.previousScreen = appState.currentScreen;
+            appState.currentScreen = screenId;
+        }
         const backBtn = document.querySelector('.back-btn');
         if (backBtn) backBtn.classList.toggle('active', screenId !== 'homeScreen' && screenId !== 'locationScreen');
+    }
+    // عند مغادرة صفحة المنتج/المتجر ننظف معلمة الرابط (?id=) حتى لا
+    // يُعاد فتح المنتج تلقائياً عند إعادة تحميل الصفحة أو استعادة التبويب
+    if (screenId !== 'productDetailScreen' && screenId !== 'storeScreen') {
+        clearProductUrl();
     }
     if (screenId === 'marketScreen') {
         const searchInput = document.getElementById('marketSearchInput');
@@ -1380,7 +1396,29 @@ function showScreen(screenId) {
     }
     if (screenId === 'loginScreen' || screenId === 'registerScreen') setTimeout(addInputInteractions, 50);
 }
-function goBack() { showScreen(appState.previousScreen || 'homeScreen'); }
+function goBack() {
+    // تنظيف الرابط عند الخروج من صفحة المنتج أو المتجر
+    if (appState.currentScreen === 'productDetailScreen' || appState.currentScreen === 'storeScreen') {
+        clearProductUrl();
+    }
+    if (appState.navStack.length > 0) {
+        const prev = appState.navStack.pop();
+        if (!prev || prev === appState.currentScreen) {
+            showScreen('homeScreen');
+            return;
+        }
+        // نجعل الشاشة الحالية تساوي الهدف مؤقتاً حتى لا يُعاد إضافته للسجل
+        appState.currentScreen = prev;
+        showScreen(prev);
+    } else {
+        showScreen('homeScreen');
+    }
+}
+function clearProductUrl() {
+    if (new URLSearchParams(window.location.search).has('id')) {
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+}
 function updateNavigation(screenId) {
     document.querySelectorAll('.nav-item').forEach((item, index) => {
         item.classList.remove('active');
@@ -1950,10 +1988,13 @@ function handleRoute() {
 }
 
 // استمع لتغيير الرابط (popstate) للرجوع
+// ملاحظة: هذا المستمع الوحيد لتجنب السلوك المتعارض مع المنتجات
 window.addEventListener('popstate', function(event) {
-    // إذا كان هناك حالة سابقة، يمكننا العودة
     const params = new URLSearchParams(window.location.search);
     const productId = params.get('id');
+    const storeId = params.get('store');
+    const founder = params.get('founder');
+
     if (productId) {
         const product = appState.products.find(p => p.id === productId);
         if (product) {
@@ -1961,7 +2002,20 @@ window.addEventListener('popstate', function(event) {
         } else {
             showScreen('homeScreen');
         }
+    } else if (storeId) {
+        showStorePage(storeId);
+    } else if (founder) {
+        openFounderProfile();
     } else {
+        // الرجوع إلى الشاشة السابقة في سجل التنقل إن وجدت
+        if (appState.navStack.length > 0) {
+            const prev = appState.navStack.pop();
+            if (prev && prev !== appState.currentScreen) {
+                appState.currentScreen = prev;
+                showScreen(prev);
+                return;
+            }
+        }
         showScreen('homeScreen');
     }
 });

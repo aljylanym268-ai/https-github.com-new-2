@@ -273,24 +273,9 @@ async function updateStoreTools() { if (!appState.user || appState.userData.acco
 async function showStorePage(identifier) { showLoading(true); let sellerData = null; if (identifier.startsWith('user_') || (identifier.length > 20 && identifier.includes('-'))) { const { data, error } = await supabaseClient.from('user_data').select('*').eq('id', identifier).single(); if (!error && data) sellerData = data; } else { const { data, error } = await supabaseClient.from('user_data').select('*').eq('username', identifier).single(); if (!error && data) sellerData = data; } if (!sellerData) { showLoading(false); showToast('البائع غير موجود', 'error'); showScreen('homeScreen'); return; } const { data: products } = await supabaseClient.from('products').select('*').eq('user_id', sellerData.id).order('created_at', { ascending: false }); const container = document.getElementById('storeContent'); const avatarUrl = sellerData.image_url || ''; const avatarHtml = avatarUrl ? `<img src="${avatarUrl}" alt="صورة البائع">` : '<i class="fas fa-user" style="font-size:3rem; color:#aaa;"></i>'; const bioHtml = sellerData.bio ? `<div class="store-bio">${escapeHTML(sellerData.bio)}</div>` : ''; let productsHtml = '<div class="products-grid" id="storeProductsGrid">'; if (products && products.length) { products.forEach(p => { const img = p.images && p.images[0] ? p.images[0] : (p.image_url || ''); productsHtml += `<div class="product-card" onclick="openProductDetailFromStore('${p.id}')"><div class="product-image"><img src="${img}" loading="lazy" onerror="this.onerror=null;this.parentElement.innerHTML='<div>📦</div>';"> <div class="product-tag">${p.category || 'عام'}</div></div><div class="product-info"><div class="product-title">${escapeHTML(p.name)}</div><div class="product-price">${p.price} ج.م</div><button class="add-to-cart" onclick="event.stopPropagation(); addToCart('${p.id}')"><i class="fas fa-cart-plus"></i> إضافة للسلة</button></div></div>`; }); } else { productsHtml += '<p style="grid-column:span2; text-align:center; padding:30px;">لا توجد منتجات متاحة حالياً</p>'; } productsHtml += '</div>'; container.innerHTML = `<div class="store-header"><div class="store-avatar">${avatarHtml}</div><div class="store-name">${escapeHTML(sellerData.name || sellerData.email?.split('@')[0] || 'بائع')}</div>${bioHtml}</div><div class="store-products"><h2 style="color:#1a237e; margin-bottom:15px;">جميع المنتجات</h2>${productsHtml}</div>`; showLoading(false); showScreen('storeScreen'); }
 function openProductDetailFromStore(productId) { const product = appState.products.find(p => p.id === productId); if (product) openProductDetail(product); else showToast('المنتج غير موجود', 'error'); }
 
-// ===================== إضافة دالة إظهار/إخفاء كلمة المرور =====================
-/**
- * تبديل إظهار/إخفاء كلمة المرور
- * @param {string} inputId - معرف حقل الإدخال
- * @param {HTMLElement} toggleEl - العنصر الذي تم النقر عليه (الـ span)
- */
-function togglePasswordVisibility(inputId, toggleEl) {
-    const input = document.getElementById(inputId);
-    if (!input || !toggleEl) return;
-
-    const isPassword = input.type === 'password';
-    input.type = isPassword ? 'text' : 'password';
-
-    const icon = toggleEl.querySelector('i');
-    if (icon) {
-        icon.className = isPassword ? 'fas fa-eye-slash' : 'fas fa-eye';
-    }
-}
+// ===================== دالة إظهار/إخفاء كلمة المرور =====================
+// ملاحظة: دالة togglePasswordVisibility معرّفة وتُصدَّر من js/supabase.js
+// (المصدر الوحيد) لتجنب التكرار والتعارض.
 // ============================================================
 // دوال إدارة المنتجات من المؤسس (مكملة)
 // ============================================================
@@ -1688,77 +1673,10 @@ function renderPagination(containerId, total, currentPage, pageSize, onPageChang
     container.innerHTML = html;
 }
 // ============================================================
-// نظام التوجيه (Routing) – معالجة معلمات الرابط
+// نظام التوجيه (Routing)
+// ملاحظة: دالة handleRoute ومستمع popstate معرّفان في js/supabase.js
+// (المصدر الوحيد) لتجنب التكرار والسلوك المتعارض مع زر الرجوع.
 // ============================================================
-
-function handleRoute() {
-    const params = new URLSearchParams(window.location.search);
-    const productId = params.get('id');
-    const storeId = params.get('store');
-    const founder = params.get('founder');
-
-    // مسح معلمات الرابط بعد المعالجة (اختياري)
-    // window.history.replaceState({}, document.title, window.location.pathname);
-
-    if (productId) {
-        // فتح تفاصيل المنتج
-        const product = appState.products.find(p => p.id === productId);
-        if (product) {
-            // تأكد من أن الشاشة موجودة
-            const detailScreen = document.getElementById('productDetailScreen');
-            if (detailScreen) {
-                openProductDetail(product);
-                // تحديث الرابط (سيتم في openProductDetail)
-                return true;
-            }
-        } else {
-            // المنتج غير موجود، حاول التحميل ثم البحث
-            loadProductsFromDB().then(() => {
-                const found = appState.products.find(p => p.id === productId);
-                if (found) {
-                    openProductDetail(found);
-                } else {
-                    showToast('المنتج غير موجود', 'error');
-                    showScreen('homeScreen');
-                }
-            });
-            return true;
-        }
-    } else if (storeId) {
-        // فتح متجر البائع
-        showStorePage(storeId);
-        return true;
-    } else if (founder) {
-        // فتح صفحة المؤسس
-        if (founder === 'mohamed_saad') {
-            openFounderProfile();
-        } else {
-            showToast('رابط المؤسس غير صحيح', 'error');
-        }
-        return true;
-    }
-    return false;
-}
-
-// استمع لتغيير الرابط (popstate) للرجوع
-window.addEventListener('popstate', function(event) {
-    // إذا كان هناك حالة سابقة، يمكننا العودة
-    const params = new URLSearchParams(window.location.search);
-    const productId = params.get('id');
-    if (productId) {
-        const product = appState.products.find(p => p.id === productId);
-        if (product) {
-            openProductDetail(product);
-        } else {
-            showScreen('homeScreen');
-        }
-    } else {
-        showScreen('homeScreen');
-    }
-});
-
-// تصدير الدالة
-window.handleRoute = handleRoute;
 // ===================== تصدير الدوال العامة =====================
 window.loadProductsFromDB = loadProductsFromDB;
 window.loadFeaturedProducts = loadFeaturedProducts;
@@ -1802,7 +1720,7 @@ window.copyStoreLink = copyStoreLink;
 window.shareStoreLink = shareStoreLink;
 window.showStorePage = showStorePage;
 window.openProductDetailFromStore = openProductDetailFromStore;
-window.togglePasswordVisibility = togglePasswordVisibility;  // ✅ إضافة الدالة الجديدة
+// ملاحظة: togglePasswordVisibility تُصدَّر من js/supabase.js (المصدر الوحيد)
 // تصدير دوال إدارة المنتجات (المؤسس)
 // ملاحظة: deleteProductAdmin موجودة في supabase.js ويتم تصديرها هناك
 window.hardDeleteProductAdmin = hardDeleteProductAdmin;
