@@ -37,7 +37,8 @@ const appState = {
     currentScreen: 'homeScreen',
     ordersSubscription: null,
     notificationsSubscription: null,
-    banners: []
+    banners: [],
+    navStack: []
 };
 
 // ========== دوال مساعدة ==========
