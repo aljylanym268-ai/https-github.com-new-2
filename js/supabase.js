@@ -36,9 +36,7 @@ const appState = {
     previousScreen: 'homeScreen',
     currentScreen: 'homeScreen',
     ordersSubscription: null,
-    notificationsSubscription: null,
-    banners: [],
-    navStack: []
+    notificationsSubscription: null
 };
 
 // ========== دوال مساعدة ==========
@@ -821,7 +819,6 @@ function openLocationSettings() {
         if (centerSelect) centerSelect.value = center;
         loadVillagesForCenter(center, village);
     }, 150);
-
 }
 
 function updateWelcomeLocation() {
@@ -934,6 +931,7 @@ document.getElementById('avatarUpload')?.addEventListener('change', async functi
         console.error(err);
     } finally { showLoading(false); }
 });
+
 // ============================================================
 // إعدادات المؤسس (رؤية الصفحة)
 // ============================================================
@@ -1032,9 +1030,7 @@ async function loadFounderStats() {
         if (sharesEl) sharesEl.textContent = total;
     }
 }
-
 async function refreshFounderStats() { await loadFounderStats(); showToast('تم تحديث الإحصائيات', 'success'); }
-
 async function trackFounderView() {
     try { await supabaseClient.rpc('increment_founder_view'); } catch(e) {
         let current = parseInt(localStorage.getItem('founder_views') || '0');
@@ -1045,7 +1041,6 @@ async function trackFounderView() {
     const viewsEl = document.getElementById('founderViewsCount');
     if (viewsEl) viewsEl.textContent = appState.founderViews;
 }
-
 async function trackShare(shareType) {
     try {
         const { data, error } = await supabaseClient.from('founder_shares').select('count').eq('share_type', shareType).maybeSingle();
@@ -1080,7 +1075,6 @@ async function trackShare(shareType) {
         if (sharesEl) sharesEl.textContent = total;
     }
 }
-
 async function loadShareCounts() {
     try {
         const { data, error } = await supabaseClient.from('founder_shares').select('share_type, count');
@@ -1108,13 +1102,11 @@ async function loadShareCounts() {
         }
     } catch (err) { console.warn(err); }
 }
-
 function getFounderShareLink() {
     const founderUsername = 'mohamed_saad';
     const baseUrl = window.location.origin + window.location.pathname;
     return `${baseUrl}?founder=${founderUsername}`;
 }
-
 async function shareFounderPage(method) {
     await loadGlobalFounderVisibility();
     if (!appState.founderPageVisible) {
@@ -1138,8 +1130,6 @@ function openFounderProfile() {
         showToast('⛔ صفحة المؤسس غير متاحة حالياً', 'warning');
         return;
     }
-    // تهيئة إعدادات المؤسس (للتأكد من أن المستمع للتبديل يعمل)
-    initFounderSettings();
     closeChatbot();
     const founderScreen = document.getElementById('founderProfileScreen');
     if (founderScreen) founderScreen.classList.add('active');
@@ -1154,7 +1144,6 @@ function closeFounderProfile() {
     if (founderScreen) founderScreen.classList.remove('active');
     openChatbot();
 }
-
 function openImageModal() {
     const img = document.querySelector('.founder-avatar img');
     if (!img) return;
@@ -1163,13 +1152,11 @@ function openImageModal() {
     if (modalImage) modalImage.src = img.src;
     if (imageModal) imageModal.classList.add('active');
 }
-
 function closeImageModal(event) {
     if (event.target === document.getElementById('imageModal') || event.target.classList.contains('close-modal')) {
         document.getElementById('imageModal').classList.remove('active');
     }
 }
-
 function contactDeveloper() {
     window.open('https://app.fastbots.ai/embed/cmillclid07mep81pmwkjqyq6', '_blank');
 }
@@ -1262,6 +1249,7 @@ async function rejectDeliveryPerson(userId) {
         showToast(err.message, 'error');
     } finally { showLoading(false); }
 }
+
 // ============================================================
 // إشعارات واشتراكات
 // ============================================================
@@ -1897,226 +1885,7 @@ async function saveAppSettings(settings) {
     }
     await logActivity(appState.user.id, 'update_app_settings', { count: settings.length });
 }
-// ============================================================
-// نظام التوجيه (Routing) – معالجة معلمات الرابط
-// ============================================================
 
-function handleRoute() {
-    const params = new URLSearchParams(window.location.search);
-    const productId = params.get('id');
-    const storeId = params.get('store');
-    const founder = params.get('founder');
-
-    // مسح معلمات الرابط بعد المعالجة (اختياري)
-    // window.history.replaceState({}, document.title, window.location.pathname);
-
-    if (productId) {
-        // فتح تفاصيل المنتج
-        const product = appState.products.find(p => p.id === productId);
-        if (product) {
-            // تأكد من أن الشاشة موجودة
-            const detailScreen = document.getElementById('productDetailScreen');
-            if (detailScreen) {
-                openProductDetail(product);
-                // تحديث الرابط (سيتم في openProductDetail)
-                return true;
-            }
-        } else {
-            // المنتج غير موجود، حاول التحميل ثم البحث
-            loadProductsFromDB().then(() => {
-                const found = appState.products.find(p => p.id === productId);
-                if (found) {
-                    openProductDetail(found);
-                } else {
-                    showToast('المنتج غير موجود', 'error');
-                    showScreen('homeScreen');
-                }
-            });
-            return true;
-        }
-    } else if (storeId) {
-        // فتح متجر البائع
-        showStorePage(storeId);
-        return true;
-    } else if (founder) {
-        // فتح صفحة المؤسس
-        if (founder === 'mohamed_saad') {
-            openFounderProfile();
-        } else {
-            showToast('رابط المؤسس غير صحيح', 'error');
-        }
-        return true;
-    }
-    return false;
-}
-
-// استمع لتغيير الرابط (popstate) للرجوع
-window.addEventListener('popstate', function(event) {
-    // إذا كان هناك حالة سابقة، يمكننا العودة
-    const params = new URLSearchParams(window.location.search);
-    const productId = params.get('id');
-    if (productId) {
-        const product = appState.products.find(p => p.id === productId);
-        if (product) {
-            openProductDetail(product);
-        } else {
-            showScreen('homeScreen');
-        }
-    } else {
-        showScreen('homeScreen');
-    }
-});
-// ===== دوال الإعلانات (Banners) =====
-async function getAllBanners() {
-    const { data, error } = await supabaseClient
-        .from('banners')
-        .select('*')
-        .order('sort_order', { ascending: true })
-        .order('created_at', { ascending: false });
-    if (error) throw error;
-    return data || [];
-}
-
-async function getActiveBanners() {
-    const { data, error } = await supabaseClient
-        .from('banners')
-        .select('*')
-        .eq('active', true)
-        .order('sort_order', { ascending: true })
-        .order('created_at', { ascending: false });
-    if (error) throw error;
-    return data || [];
-}
-
-async function saveBanner(bannerData) {
-    const { data, error } = await supabaseClient
-        .from('banners')
-        .upsert(bannerData)
-        .select()
-        .maybeSingle();
-    if (error) throw error;
-    await logActivity(appState.user.id, bannerData.id ? 'update_banner' : 'add_banner', { banner_id: data.id });
-    return data;
-}
-
-async function deleteBanner(bannerId) {
-    const { data, error } = await supabaseClient
-        .from('banners')
-        .delete()
-        .eq('id', bannerId)
-        .select()
-        .maybeSingle();
-    if (error) throw error;
-    await logActivity(appState.user.id, 'delete_banner', { banner_id: bannerId });
-    return data;
-}
-
-// رفع صورة الإعلان
-async function uploadBannerImage(file) {
-    const compressed = await compressImage(file, 1200, 600, 0.8);
-    const path = `banners/${Date.now()}-${file.name}`;
-    const { error } = await supabaseClient.storage.from('banner-images').upload(path, compressed);
-    if (error) throw error;
-    const { data } = supabaseClient.storage.from('banner-images').getPublicUrl(path);
-    return data.publicUrl;
-}
-
-// ===== دوال عرض السلايدر =====
-let bannerInterval = null;
-let currentBannerIndex = 0;
-
-async function loadBanners() {
-    try {
-        const banners = await getActiveBanners();
-        appState.banners = banners;
-        renderBanners(banners);
-        startBannerAutoSlide();
-    } catch (err) {
-        console.error('فشل تحميل الإعلانات:', err);
-    }
-}
-
-function renderBanners(banners) {
-    const container = document.getElementById('sliderContainer');
-    const dotsContainer = document.getElementById('sliderDots');
-    if (!container) return;
-
-    if (!banners || banners.length === 0) {
-        container.innerHTML = `<div class="slide-item" style="background: var(--sand); display:flex; align-items:center; justify-content:center; height:200px; border-radius:16px; color:var(--brown-mid);">
-            <p>لا توجد إعلانات حالياً</p>
-        </div>`;
-        if (dotsContainer) dotsContainer.innerHTML = '';
-        return;
-    }
-
-    // بناء الشرائح
-    container.innerHTML = banners.map((b, index) => `
-        <div class="slide-item ${index === 0 ? 'active' : ''}" data-index="${index}">
-            <a href="${b.link || '#'}" ${b.link ? `target="${b.link.startsWith('http') ? '_blank' : '_self'}"` : ''} 
-               onclick="${b.link ? `return true` : `event.preventDefault(); showToast('لا يوجد رابط لهذا الإعلان', 'info'); return false;`}">
-                <img src="${b.image_url}" alt="${escapeHTML(b.title)}" loading="lazy">
-                <div class="slide-content">
-                    <h2>${escapeHTML(b.title)}</h2>
-                    ${b.description ? `<p>${escapeHTML(b.description)}</p>` : ''}
-                </div>
-            </a>
-        </div>
-    `).join('');
-
-    // بناء النقاط
-    if (dotsContainer) {
-        dotsContainer.innerHTML = banners.map((_, index) => `
-            <span class="dot ${index === 0 ? 'active' : ''}" onclick="goToBanner(${index})"></span>
-        `).join('');
-    }
-
-    currentBannerIndex = 0;
-    // تحديث عرض الشريحة النشطة
-    updateBannerVisibility(banners.length);
-}
-
-function updateBannerVisibility(total) {
-    const items = document.querySelectorAll('.slide-item');
-    const dots = document.querySelectorAll('.dot');
-    items.forEach((item, i) => {
-        item.classList.toggle('active', i === currentBannerIndex);
-    });
-    dots.forEach((dot, i) => {
-        dot.classList.toggle('active', i === currentBannerIndex);
-    });
-}
-
-function slideBanner(direction) {
-    const total = appState.banners?.length || 0;
-    if (total === 0) return;
-    currentBannerIndex = (currentBannerIndex + direction + total) % total;
-    updateBannerVisibility(total);
-    resetBannerAutoSlide();
-}
-
-function goToBanner(index) {
-    const total = appState.banners?.length || 0;
-    if (index < 0 || index >= total) return;
-    currentBannerIndex = index;
-    updateBannerVisibility(total);
-    resetBannerAutoSlide();
-}
-
-function startBannerAutoSlide() {
-    clearInterval(bannerInterval);
-    if (!appState.banners || appState.banners.length <= 1) return;
-    bannerInterval = setInterval(() => {
-        slideBanner(1);
-    }, 5000);
-}
-
-function resetBannerAutoSlide() {
-    clearInterval(bannerInterval);
-    startBannerAutoSlide();
-}
-
-// تصدير الدالة
-window.handleRoute = handleRoute;
 // ============================================================
 // تصدير جميع الدوال العامة
 // ============================================================
@@ -2188,27 +1957,6 @@ window.generateOTP = generateOTP;
 window.loadFounderStats = loadFounderStats;
 window.trackFounderView = trackFounderView;
 window.loadVillagesForCenter = loadVillagesForCenter;
-// ... كل الدوال السابقة ...
-
-// ===== تصدير دوال المؤسس (الأساسية) =====
-window.loadGlobalFounderVisibility = loadGlobalFounderVisibility;
-window.initFounderSettings = initFounderSettings;
-window.handleToggleChange = handleToggleChange;
-window.loadFounderStats = loadFounderStats;
-window.refreshFounderStats = refreshFounderStats;
-window.trackFounderView = trackFounderView;
-window.trackShare = trackShare;
-window.loadShareCounts = loadShareCounts;
-window.getFounderShareLink = getFounderShareLink;
-window.shareFounderPage = shareFounderPage;
-window.openFounderProfile = openFounderProfile;
-window.closeFounderProfile = closeFounderProfile;
-window.openImageModal = openImageModal;
-window.closeImageModal = closeImageModal;
-window.contactDeveloper = contactDeveloper;
-window.approveDeliveryPerson = approveDeliveryPerson;
-window.rejectDeliveryPerson = rejectDeliveryPerson;
-window.loadPendingDeliveries = loadPendingDeliveries;
 
 // ===== تصدير دوال المؤسس CRUD =====
 window.getAllDeliveries = getAllDeliveries;
@@ -2238,17 +1986,3 @@ window.getAllActivityLogs = getAllActivityLogs;
 window.sendBulkNotification = sendBulkNotification;
 window.getAppSettings = getAppSettings;
 window.saveAppSettings = saveAppSettings;
-window.getAllBanners = getAllBanners;
-window.getActiveBanners = getActiveBanners;
-window.saveBanner = saveBanner;
-window.deleteBanner = deleteBanner;
-window.uploadBannerImage = uploadBannerImage;
-
-// ===== تصدير دوال السلايدر =====
-window.loadBanners = loadBanners;
-window.renderBanners = renderBanners;
-window.slideBanner = slideBanner;
-window.goToBanner = goToBanner;
-window.startBannerAutoSlide = startBannerAutoSlide;
-window.resetBannerAutoSlide = resetBannerAutoSlide;
-window.updateBannerVisibility = updateBannerVisibility;

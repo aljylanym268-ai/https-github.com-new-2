@@ -1,31 +1,31 @@
-# خطة إصلاح مشكلة التوقف والتجميد في التطبيق
+# TODO: إصلاح مشاكل الإعلانات
 
-## ✅ تم تحليل المشكلة
+## المعلومات التي تم جمعها
+- نظام الإعلانات يتكون من: `js/banners.js` (سلايدر الواجهة)، `js/admin-banners.js` (لوحة تحكم المؤسس CRUD)، `banners.css`، وجزء HTML في `index.html`.
+- `index.html` يعرّف دالة `window.switchFounderTab` في سكربت inline بدون معالجة تبويب `banners`.
+- هذه الدالة تلغي تعريف `switchFounderTab` في `js/admin-dashboard.js` الذي كان يستدعي `refreshBannersAdmin()`.
+- `js/banners.js` لا يخفي السلايدر عند فشل جلب البيانات (فقط عند صفر بيانات).
+- دالة `previewBannerImage` غير مربوطة بحقل `bannerImageInput`.
 
-### أسباب المشكلة:
-1. **مسارات ملفات JavaScript خاطئة في index.html** - 9 ملفات 404
-2. **ملف admin-reports.js مفقود** - يسبب خطأ 404
-3. **ازدواجية في دالة switchFounderTab** - معرفة في admin-dashboard.js و inline script
-4. **نقص رسائل التصحيح** - صعوبة تحديد مكان توقف التنفيذ
+## الخطة
 
-### خطة الإصلاح:
+### 1. تعديل index.html
+- إضافة `case 'banners'` في `switchFounderTab` (السكربت inline) لاستدعاء `refreshBannersAdmin()`.
 
-#### الخطوة 1: تصحيح مسارات admin scripts في index.html
-- تغيير `js/admin-couriers.js` → `js/js/admin-couriers.js`
-- تغيير `js/admin-users.js` → `js/js/js/admin-users.js`
-- تغيير `js/admin-products.js` → `js/js/js/js/admin-products.js`
-- تغيير `js/admin-properties.js` → `js/js/js/js/js/admin-properties.js`
-- تغيير `js/admin-services.js` → `js/js/js/js/js/js/admin-services.js`
-- تغيير `js/admin-orders.js` → `js/js/js/js/js/js/js/admin-orders.js`
-- تغيير `js/admin-logs.js` → `js/js/js/js/js/js/js/js/admin-logs.js`
-- تغيير `js/admin-settings.js` → `js/js/js/js/js/js/js/js/js/admin-settings.js`
-- إصلاح مسار `js/admin-reports.js` (إنشاء الملف المفقود)
+### 2. تعديل js/banners.js
+- إخفاء السلايدر عند حدوث خطأ في التحميل (وليس فقط عند صفر بيانات).
 
-#### الخطوة 2: إنشاء ملف admin-reports.js
-- إنشاء ملف يحتوي على الدوال الأساسية للبلاغات
+### 3. تعديل js/admin-banners.js
+- ربط `bannerImageInput` بالدالة `previewBannerImage` لعرض معاينة الصورة فور اختيارها.
 
-#### الخطوة 3: إضافة رسائل تصحيح
-- إضافة console.log في showScreen(), handleRoute(), goBack()
+## الملفات التي سيتم تعديلها
+1. `index.html`
+2. `js/banners.js`
+3. `js/admin-banners.js`
 
-#### الخطوة 4: إزالة الازدواجية
-- إزالة دالة switchFounderTab من admin-dashboard.js (النسخة in-line هي الرسمية)
+## الخطوات المتبعة
+- [x] تعديل index.html لإضافة case banners
+- [x] تعديل js/banners.js لإخفاء السلايدر عند الخطأ
+- [x] تعديل js/admin-banners.js لربط معاينة الصورة
+- [ ] اختبار الوظائف
+
