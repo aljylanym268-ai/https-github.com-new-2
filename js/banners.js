@@ -41,8 +41,8 @@ function renderHeroSlides(banners) {
         slide.setAttribute('aria-roledescription','slide');
         slide.setAttribute('aria-label', `${i+1} / ${banners.length}`);
         const imageUrl = b.image_url || '';
-        slide.style.backgroundImage = `url('${imageUrl}')`;
-        slide.innerHTML = `\n            <div class="overlay"></div>\n            <div class="content">\n                <h2>${escapeHTML(b.title || '')}</h2>\n                <p>${escapeHTML(b.description || '')}</p>\n                <div style="margin-top:10px;"><button class=\"btn-view\">عرض الإعلان</button></div>\n            </div>\n        `;
+        // Use a real <img> element so the banner image is clearly visible
+        slide.innerHTML = '\n            <img class="hero-slide-img" src="' + escapeHTML(imageUrl) + '" alt="' + escapeHTML(b.title || 'إعلان') + '" loading="lazy" onerror="this.style.display=\'none\';">\n            <div class="overlay"></div>\n            <div class="content">\n                <h2>' + escapeHTML(b.title || '') + '</h2>\n                <p>' + escapeHTML(b.description || '') + '</p>\n            </div>\n            <button class="btn-view">عرض الإعلان</button>\n        ';
 
         // View button opens vertical detail modal; keep image click opening the link if needed
         slide.querySelector('.btn-view').addEventListener('click', (ev) => {
@@ -86,7 +86,11 @@ function updateHeroPosition() {
     const dots = document.querySelectorAll('#heroDots button');
     if (slides.length === 0) return;
     const container = document.getElementById('heroSlides');
-    container.style.transform = `translateX(-${heroIndex * 100}%)`;
+    // Check document direction: in RTL, flex items lay out right-to-left,
+    // so we must translate in the opposite (positive X) direction.
+    const isRTL = getComputedStyle(document.documentElement).direction === 'rtl';
+    const offset = heroIndex * 100;
+    container.style.transform = isRTL ? `translateX(${offset}%)` : `translateX(-${offset}%)`;
     dots.forEach((d, i) => d.classList.toggle('active', i === heroIndex));
 }
 
@@ -157,3 +161,4 @@ document.addEventListener('DOMContentLoaded', function() {
         loadHeroBanners().catch(() => {});
     }
 });
+

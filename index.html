@@ -189,9 +189,9 @@
         </div>
     </div>
 
-    <!-- ========== الشاشة الرئيسية ========== -->
+<!-- ========== الشاشة الرئيسية ========== -->
     <div class="screen hidden" id="homeScreen">
-        <div class="app-header">
+        <div class="app-header home-header">
             <div class="header-content">
                 <div class="header-left">
                     <button class="back-btn" onclick="goBack()"><i class="fas fa-arrow-right"></i></button>
@@ -204,8 +204,8 @@
                 </div>
             </div>
         </div>
-        <div class="welcome-section">
-            <div style="display:flex; align-items:center; justify-content:space-between;">
+<div class="welcome-section">
+<div style="display:flex; align-items:center; justify-content:space-between;">
                 <div class="welcome-text"><h1 id="welcomeName">مرحباً، زائر</h1><p id="welcomeLocation">موقعك: قنا - قنا</p></div>
                 <div class="user-avatar" id="welcomeAvatar" onclick="showScreen('editProfileScreen')"><i class="fas fa-user"></i></div>
             </div>
@@ -215,7 +215,17 @@
             <div class="hero-slides" id="heroSlides" aria-live="polite"></div>
             <button class="hero-arrow prev" id="heroPrev" aria-label="السابق">‹</button>
             <button class="hero-arrow next" id="heroNext" aria-label="التالي">›</button>
-            <div class="hero-dots" id="heroDots" role="tablist" aria-label="اختيارات الإعلان"></div>
+<div class="hero-dots" id="heroDots" role="tablist" aria-label="اختيارات الإعلان"></div>
+        </div>
+
+        <!-- ========== أزرار الوصول السريع تحت الإعلان ========== -->
+        <div class="home-quick-actions">
+            <button class="quick-action-btn" onclick="showScreen('ordersScreen')">
+                <i class="fas fa-shopping-bag"></i><span>طلباتي</span>
+            </button>
+            <button class="quick-action-btn" onclick="showScreen('cartScreen')">
+                <i class="fas fa-shopping-cart"></i><span>السلة</span>
+            </button>
         </div>
 
         <!-- Banner Detail Modal (vertical/fullscreen) -->
@@ -268,11 +278,11 @@
         </div>
     </div>
 
-    <!-- ========== شاشة السلة ========== -->
+<!-- ========== شاشة السلة ========== -->
     <div class="screen hidden" id="cartScreen">
-        <div class="app-header">
+        <div class="app-header home-header">
             <div class="header-content">
-                <div class="header-left"><button class="back-btn active" onclick="goBack()"><i class="fas fa-arrow-right"></i></button><div class="header-title">سلة التسوق</div></div>
+                <div class="header-left"><button class="back-btn active" onclick="goBack()"><i class="fas fa-arrow-right"></i></button><img src="https://i.ibb.co/XktM4crn/1767120438295.png" alt="Misar Systems" class="app-logo" loading="lazy"><div class="header-title">سلة التسوق</div></div>
                 <div class="header-actions">
                     <button class="header-icon" onclick="loadCart()"><i class="fas fa-sync-alt"></i></button>
                 </div>
@@ -303,20 +313,20 @@
     </div>
 
     <!-- ========== شاشة الخدمات ========== -->
-    <div class="screen hidden" id="servicesScreen">
-        <div class="app-header">
+<div class="screen hidden" id="servicesScreen">
+        <div class="app-header home-header">
             <div class="header-content">
-                <div class="header-left"><button class="back-btn active" onclick="goBack()"><i class="fas fa-arrow-right"></i></button><div class="header-title">الخدمات</div></div>
+                <div class="header-left"><button class="back-btn active" onclick="goBack()"><i class="fas fa-arrow-right"></i></button><img src="https://i.ibb.co/XktM4crn/1767120438295.png" alt="Misar Systems" class="app-logo" loading="lazy"><div class="header-title">الخدمات</div></div>
             </div>
         </div>
         <div class="services-list" id="servicesList"></div>
     </div>
 
-    <!-- ========== شاشة الملف الشخصي ========== -->
+<!-- ========== شاشة الملف الشخصي ========== -->
     <div class="screen hidden" id="profileScreen">
-        <div class="app-header">
+        <div class="app-header home-header">
             <div class="header-content">
-                <div class="header-left"><button class="back-btn active" onclick="goBack()"><i class="fas fa-arrow-right"></i></button><div class="header-title">الملف الشخصي</div></div>
+                <div class="header-left"><button class="back-btn active" onclick="goBack()"><i class="fas fa-arrow-right"></i></button><img src="https://i.ibb.co/XktM4crn/1767120438295.png" alt="Misar Systems" class="app-logo" loading="lazy"><div class="header-title">الملف الشخصي</div></div>
             </div>
         </div>
         <div class="profile-header">
@@ -332,8 +342,7 @@
             <div class="stat-card"><div class="stat-value">0</div><div class="stat-label">نقاط</div></div>
         </div>
         <div class="profile-menu">
-            <a href="#" class="menu-item" onclick="showScreen('ordersScreen')"><div class="menu-icon"><i class="fas fa-shopping-bag"></i></div><div class="menu-text">طلباتي</div><i class="fas fa-chevron-left menu-arrow"></i></a>
-            <a href="#" class="menu-item" onclick="showScreen('walletScreen')"><div class="menu-icon"><i class="fas fa-wallet"></i></div><div class="menu-text">المحفظة الإلكترونية</div><i class="fas fa-chevron-left menu-arrow"></i></a>
+<a href="#" class="menu-item" onclick="showScreen('ordersScreen')"><div class="menu-icon"><i class="fas fa-shopping-bag"></i></div><div class="menu-text">طلباتي</div><i class="fas fa-chevron-left menu-arrow"></i></a>
             <a href="#" class="menu-item" id="sellerDashboardMenuItem" style="display:none;" onclick="showScreen('sellerDashboardScreen')"><div class="menu-icon"><i class="fas fa-store"></i></div><div class="menu-text">لوحة البائع</div><i class="fas fa-chevron-left menu-arrow"></i></a>
             <a href="#" class="menu-item" id="deliveryDashboardMenuItem" style="display:none;" onclick="showScreen('deliveryDashboardScreen')"><div class="menu-icon"><i class="fas fa-truck"></i></div><div class="menu-text">لوحة المندوب</div><i class="fas fa-chevron-left menu-arrow"></i></a>
             <a href="#" class="menu-item" id="founderDashboardMenuItem" style="display:none;" onclick="showScreen('founderDashboardScreen')"><div class="menu-icon"><i class="fas fa-crown"></i></div><div class="menu-text">لوحة تحكم المؤسس</div><i class="fas fa-chevron-left menu-arrow"></i></a>
@@ -846,16 +855,7 @@
         </div> <!-- end founder-tab-content -->
     </div> <!-- end founderDashboardScreen -->
 
-    <!-- ========== شاشات أخرى ========== -->
-    <div class="screen hidden" id="walletScreen">
-        <div class="app-header">
-            <div class="header-content">
-                <div class="header-left"><button class="back-btn active" onclick="goBack()"><i class="fas fa-arrow-right"></i></button><div class="header-title">المحفظة الإلكترونية</div></div>
-            </div>
-        </div>
-        <div style="text-align:center; padding:50px;"><i class="fas fa-wallet" style="font-size:4rem; color:#1a237e;"></i><h3 style="margin:20px 0;">المحفظة قيد التطوير</h3><p>سيتم إضافة هذه الميزة قريباً</p></div>
-    </div>
-
+<!-- ========== شاشات أخرى ========== -->
     <div class="screen hidden" id="electronicsScreen">
         <div class="app-header"><div class="header-content"><div class="header-left"><button class="back-btn active" onclick="goBack()"><i class="fas fa-arrow-right"></i></button><div class="header-title">إلكترونيات</div></div></div></div>
         <div class="products-section"><div class="products-grid" id="electronicsProducts"></div></div>
@@ -1120,7 +1120,7 @@
             appState.currentScreen = appState.location ? 'homeScreen' : 'locationScreen';
         }
 
-        // 3. تحميل البيانات الأساسية
+// 3. تحميل البيانات الأساسية
         await loadProductsFromDB();
         loadFeaturedProducts();
         loadMarketProducts();
@@ -1128,9 +1128,58 @@
         loadCart();
         await updateCartBadgeFromDB();
 
+        // 3.5 معالجة روابط URL المشتركة (منتج أو متجر)
+        try {
+            const urlParams = new URLSearchParams(window.location.search);
+            const productId = urlParams.get('id');
+            const storeId = urlParams.get('store');
+            const founderParam = urlParams.get('founder');
+
+            if (productId) {
+                const product = appState.products.find(p => p.id === productId);
+                if (product) {
+                    appState.currentScreen = 'productDetailScreen';
+                    setTimeout(() => {
+                        document.getElementById('loadingScreen').style.display = 'none';
+                        openProductDetail(product);
+                        // إزالة المعامل من الرابط دون إعادة تحميل الصفحة
+                        const cleanUrl = window.location.pathname + window.location.hash;
+                        window.history.replaceState({}, '', cleanUrl);
+                    }, 1500);
+                }
+            } else if (storeId) {
+                appState.currentScreen = 'storeScreen';
+                setTimeout(() => {
+                    document.getElementById('loadingScreen').style.display = 'none';
+                    if (typeof showStorePage === 'function') {
+                        showStorePage(decodeURIComponent(storeId));
+                    }
+                    const cleanUrl = window.location.pathname + window.location.hash;
+                    window.history.replaceState({}, '', cleanUrl);
+                }, 1500);
+            } else if (founderParam) {
+                appState.currentScreen = 'homeScreen';
+                setTimeout(() => {
+                    document.getElementById('loadingScreen').style.display = 'none';
+                    if (typeof openFounderProfile === 'function') {
+                        openFounderProfile();
+                    }
+                    const cleanUrl = window.location.pathname + window.location.hash;
+                    window.history.replaceState({}, '', cleanUrl);
+                }, 1500);
+            }
+        } catch (urlErr) {
+            console.warn('فشل معالجة معاملات الرابط:', urlErr);
+        }
+
         // 4. إخفاء شاشة التحميل وعرض الشاشة المناسبة
         setTimeout(() => {
             document.getElementById('loadingScreen').style.display = 'none';
+            // إذا تم التعامل مع رابط منتج/متجر/مؤسس أعلاه، لا نعرض الشاشة الافتراضية
+            const handledByUrl = !!(new URLSearchParams(window.location.search).get('id') ||
+                new URLSearchParams(window.location.search).get('store') ||
+                new URLSearchParams(window.location.search).get('founder'));
+            if (handledByUrl) return;
             showScreen(appState.currentScreen);
             if (appState.location) {
                 updateWelcomeLocation();

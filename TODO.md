@@ -6,6 +6,7 @@
 - هذه الدالة تلغي تعريف `switchFounderTab` في `js/admin-dashboard.js` الذي كان يستدعي `refreshBannersAdmin()`.
 - `js/banners.js` لا يخفي السلايدر عند فشل جلب البيانات (فقط عند صفر بيانات).
 - دالة `previewBannerImage` غير مربوطة بحقل `bannerImageInput`.
+- مشكلة إضافية: السلايدر لا يعرض سوى الإعلان الأول بسبب اتجاه RTL — `.hero-slides` (flex) تُرتب العناصر من اليمين لليسار بينما كان الكود يستخدم `translateX(-...)`. تم إصلاح ذلك في `updateHeroPosition()` ليكتشف الاتجاه ويستخدم `translateX(+)` عند RTL.
 
 ## الخطة
 
@@ -27,5 +28,7 @@
 - [x] تعديل index.html لإضافة case banners
 - [x] تعديل js/banners.js لإخفاء السلايدر عند الخطأ
 - [x] تعديل js/admin-banners.js لربط معاينة الصورة
-- [ ] اختبار الوظائف
+- [x] إصلاح اتجاه السلايدر في RTL في updateHeroPosition
+- [x] تحسين CSS (موضع زر العرض + تنسيق المودال على الموبايل)
+- [ ] اختبار الوظائف (يدوي في المتصفح)
 
