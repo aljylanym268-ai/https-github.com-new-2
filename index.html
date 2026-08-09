@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Misar Systems | مسار سيستمز</title>
     <meta name="theme-color" content="#1a237e">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -132,11 +133,13 @@
                 </div>
                 <h1 class="register-title">إنشاء حساب جديد</h1>
                 <p class="register-subtitle">أدخل بياناتك للتسجيل</p>
-                <select class="account-type-select" id="registerAccountType">
+<select class="account-type-select" id="registerAccountType">
                     <option value="client" selected>عميل</option>
                     <option value="seller">بائع</option>
                     <option value="delivery">مندوب</option>
                 </select>
+                <button class="google-btn" id="googleRegisterBtn"><i class="fab fa-google"></i> التسجيل عبر Google</button>
+                <div style="text-align:center; margin:15px 0; color:#aaa;">أو أنشئ حساباً بالبريد الإلكتروني</div>
                 <div class="input-group">
                     <label class="input-label">المحافظة</label>
                     <select class="location-select" id="registerGovernorate">
@@ -336,10 +339,8 @@
             <div class="profile-location" id="profileLocation">المنطقة: غير محددة</div>
             <div class="edit-avatar-icon" onclick="showScreen('editProfileScreen')"><i class="fas fa-pen"></i></div>
         </div>
-        <div class="profile-stats">
-            <div class="stat-card"><div class="stat-value" id="profileOrdersCount">0</div><div class="stat-label">طلبات</div></div>
-            <div class="stat-card"><div class="stat-value">0</div><div class="stat-label">رصيد</div></div>
-            <div class="stat-card"><div class="stat-value">0</div><div class="stat-label">نقاط</div></div>
+<div class="profile-stats" style="justify-content:center;">
+            <div class="stat-card" style="flex:0 0 auto; min-width:120px;"><div class="stat-value" id="profileOrdersCount">0</div><div class="stat-label">طلبات</div></div>
         </div>
         <div class="profile-menu">
 <a href="#" class="menu-item" onclick="showScreen('ordersScreen')"><div class="menu-icon"><i class="fas fa-shopping-bag"></i></div><div class="menu-text">طلباتي</div><i class="fas fa-chevron-left menu-arrow"></i></a>
@@ -355,7 +356,8 @@
             </div>
             <div style="margin: 20px 0 10px; color:#1a237e; font-weight:700;">إعدادات الحساب</div>
             <a href="#" class="menu-item" onclick="showChangePasswordModal()"><div class="menu-icon"><i class="fas fa-key"></i></div><div class="menu-text">تغيير كلمة المرور</div><i class="fas fa-chevron-left menu-arrow"></i></a>
-            <a href="#" class="menu-item" onclick="showSecurityModal()"><div class="menu-icon"><i class="fas fa-shield-alt"></i></div><div class="menu-text">إعدادات الأمان</div><i class="fas fa-chevron-left menu-arrow"></i></a>
+<a href="#" class="menu-item" onclick="showSecurityModal()"><div class="menu-icon"><i class="fas fa-shield-alt"></i></div><div class="menu-text">إعدادات الأمان</div><i class="fas fa-chevron-left menu-arrow"></i></a>
+            <a href="#" class="menu-item" onclick="showNotificationSettingsModal()"><div class="menu-icon"><i class="fas fa-bell"></i></div><div class="menu-text">إعدادات الإشعارات</div><i class="fas fa-chevron-left menu-arrow"></i></a>
             <a href="#" class="menu-item warning" onclick="switchAccount()"><div class="menu-icon"><i class="fas fa-exchange-alt"></i></div><div class="menu-text">تبديل الحساب</div><i class="fas fa-chevron-left menu-arrow"></i></a>
             <a href="#" class="menu-item danger" id="logoutMenuItem" style="display:none;" onclick="confirmLogout()"><div class="menu-icon"><i class="fas fa-sign-out-alt"></i></div><div class="menu-text">تسجيل الخروج</div><i class="fas fa-chevron-left menu-arrow"></i></a>
             <a href="#" class="menu-item" id="loginMenuItem" onclick="showScreen('loginScreen')"><div class="menu-icon"><i class="fas fa-sign-in-alt"></i></div><div class="menu-text">تسجيل الدخول</div><i class="fas fa-chevron-left menu-arrow"></i></a>
@@ -402,11 +404,11 @@
         <div class="products-section" style="padding-top:20px;"><div id="productDetailContent"></div></div>
     </div>
 
-    <!-- ========== شاشة متجر البائع ========== -->
+<!-- ========== شاشة متجر البائع ========== -->
     <div class="screen hidden" id="storeScreen">
-        <div class="app-header">
+        <div class="app-header home-header">
             <div class="header-content">
-                <div class="header-left"><button class="back-btn active" onclick="goBack()"><i class="fas fa-arrow-right"></i></button><div class="header-title">متجر البائع</div></div>
+                <div class="header-left"><button class="back-btn active" onclick="goBack()"><i class="fas fa-arrow-right"></i></button><img src="https://i.ibb.co/XktM4crn/1767120438295.png" alt="Misar Systems" class="app-logo" loading="lazy"><div class="header-title"><span class="title-main">𓂀 ☥ متجر البائع ☥ 𓂀</span></div></div>
             </div>
         </div>
         <div id="storeContent"><div style="text-align:center; padding:50px;">جاري تحميل المتجر...</div></div>
@@ -900,6 +902,16 @@
         </div>
     </div>
 
+<div id="notificationSettingsModal" class="modal" onclick="if(event.target===this) closeModal('notificationSettingsModal')">
+        <div class="modal-content">
+            <h3 style="color:#1a237e; margin-bottom:15px;"><i class="fas fa-bell"></i> إعدادات الإشعارات</h3>
+            <p style="margin-bottom:20px;">تحكم في إشعارات النظام التي تظهر على جهازك حتى عند إغلاق التطبيق.</p>
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;"><span>تفعيل إشعارات النظام</span><label class="switch"><input type="checkbox" id="notificationsToggle"><span class="slider round"></span></label></div>
+            <p id="notificationSettingsStatus" style="color:#666; font-size:0.9rem;">جاري الفحص...</p>
+            <div style="display:flex; gap:10px; margin-top:20px;"><button class="login-btn" style="flex:1;" onclick="sendTestNotification()"><i class="fas fa-paper-plane"></i> إرسال إشعار تجريبي</button><button class="google-btn" style="flex:1;" onclick="closeModal('notificationSettingsModal')">إغلاق</button></div>
+        </div>
+    </div>
+
     <div id="directCheckoutModal" class="modal" onclick="if(event.target===this) closeDirectCheckout()">
         <div class="modal-content">
             <h3 style="color:#1a237e; margin-bottom:15px;"><i class="fas fa-bolt" style="color:#D4AF37;"></i> شراء الآن</h3>
@@ -1104,7 +1116,7 @@
 
         // 2. جلسة المستخدم
         const { data: { session } } = await supabaseClient.auth.getSession();
-        if (session) {
+if (session) {
             const user = session.user;
             appState.user = {
                 id: user.id,
@@ -1112,6 +1124,12 @@
                 user_metadata: user.user_metadata
             };
             await loadUserData();
+            // تطبيق نوع الحساب الذي اختاره المستخدم قبل تسجيل الدخول عبر Google (إن وُجد)
+            const appliedType = await applyPendingAccountType();
+            if (appliedType) {
+                // إعادة تحميل بيانات المستخدم بعد تطبيق نوع الحساب
+                await loadUserData();
+            }
             appState.currentScreen = appState.userData.account_type === 'seller' ? 'sellerDashboardScreen' :
                                      (appState.userData.account_type === 'delivery' ? 'deliveryDashboardScreen' :
                                      (appState.userData.account_type === 'founder' ? 'founderDashboardScreen' :
@@ -1127,6 +1145,17 @@
         loadServices();
         loadCart();
         await updateCartBadgeFromDB();
+
+        // 3.2 تسجيل Service Worker لتفعيل الإشعارات على الهاتف (PWA)
+        if ('serviceWorker' in navigator) {
+            try {
+                const registration = await navigator.serviceWorker.register('./sw.js');
+                console.log('✅ تم تسجيل Service Worker بنجاح');
+                appState.swRegistration = registration;
+            } catch (swErr) {
+                console.warn('فشل تسجيل Service Worker:', swErr);
+            }
+        }
 
         // 3.5 معالجة روابط URL المشتركة (منتج أو متجر)
         try {
@@ -1214,6 +1243,11 @@
                     user_metadata: session.user.user_metadata
                 };
                 await loadUserData();
+                // تطبيق نوع الحساب الذي اختاره المستخدم قبل تسجيل الدخول عبر Google (إن وُجد)
+                const appliedType = await applyPendingAccountType();
+                if (appliedType) {
+                    await loadUserData();
+                }
                 toggleLoginMenu(true);
                 const accountType = appState.userData?.account_type || 'client';
                 toggleSellerMenuItem(accountType === 'seller');
@@ -1265,11 +1299,23 @@
             else showToast('حدث خطأ في النظام', 'error');
         });
 
-        // زر Google
+// زر Google (تسجيل الدخول)
         document.getElementById('googleLoginBtn')?.addEventListener('click', function(e) {
             e.preventDefault();
             if (typeof signInWithGoogle === 'function') signInWithGoogle();
             else showToast('حدث خطأ في النظام', 'error');
+        });
+
+        // زر Google (التسجيل) - يستخدم نوع الحساب المختار في شاشة التسجيل
+        document.getElementById('googleRegisterBtn')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (typeof signUpWithGoogle === 'function') {
+                signUpWithGoogle();
+            } else if (typeof signInWithGoogle === 'function') {
+                signInWithGoogle();
+            } else {
+                showToast('حدث خطأ في النظام', 'error');
+            }
         });
 
         // روابط التبديل
@@ -1335,10 +1381,19 @@
         // مستمع تغيير نوع المستلم في الإشعارات
         document.getElementById('notificationRecipients')?.addEventListener('change', function() {
             const specificEmail = document.getElementById('specificUserEmail');
-            if (this.value === 'specific') {
+if (this.value === 'specific') {
                 specificEmail.style.display = 'block';
             } else {
                 specificEmail.style.display = 'none';
+            }
+        });
+
+        // مستمع تبديل إعدادات الإشعارات
+        document.getElementById('notificationsToggle')?.addEventListener('change', function() {
+            if (typeof toggleSystemNotifications === 'function') {
+                toggleSystemNotifications(this.checked);
+            } else {
+                showToast('حدث خطأ في النظام', 'error');
             }
         });
 
